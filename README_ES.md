@@ -1,10 +1,10 @@
-# Crucible Skills
+# Crucible
 
-**Ingeniería de verificación para metodologías de agentes de IA.**
+**Ingeniería de verificación para metodologías de agentes de IA — construido sobre Nebius AI Cloud con NVIDIA Nemotron.**
 
 [English](README.md) · **Español** · [Technical README](TECHNICAL.md)
 
-![Logo de Crucible Skills](visual/logo.png)
+![Logo de Crucible](visual/logo.png)
 
 > **Estado: en progreso — primero el contrato arquitectónico y de evaluación.**
 
@@ -12,7 +12,17 @@ Las skills de agentes son metodología ejecutable: cambian qué detecta, prioriz
 
 > **¿La metodología es coherente, verificable, componible y realmente vale la pena agregarla al corpus?**
 
-Crucible Skills busca responderla con evidencia estructurada, no con un puntaje opaco.
+Crucible busca responderla con evidencia estructurada, no con un puntaje opaco.
+
+## Construido con
+
+| Herramienta | Rol |
+|---|---|
+| **Nebius AI Cloud** | Ejecución del modelo para el harness diferencial conductual (L5) y la confirmación semántica (L2.5) |
+| **Nebius Token Factory** | Autenticación y gestión de tokens para inferencia |
+| **NVIDIA Nemotron** (`nvidia/nemotron-3-super-120b-a12b`) | Genera el comportamiento observado por oráculos deterministas y confirma findings de auditoría |
+
+El modelo es **causal para el experimento**, no un narrador. Genera el comportamiento que observan los oráculos deterministas; el LLM nunca decide findings, sellos ni veredictos.
 
 ## Por qué existe ahora
 
@@ -53,7 +63,9 @@ Ver el detalle completo en el [Technical README](TECHNICAL.md) y el mapa de cons
 
 ## Estado de implementación
 
-Ya existen ocho niveles coherentes: el compilador L1 transforma un corpus real en una Skill IR versionada, con source spans y digest SHA-256 determinista; el auditor L2 consume esa IR, emite findings con evidencia y estado epistémico (CONFIRMED / CANDIDATE / OBSERVATION), sella un AuditArtifact (`crucible-audit/v1`) y documenta 0 checks abstados. 28 checks están implementados: BROKEN_REFERENCE, SELF_COMPOSITION, COMPOSITION_CYCLE, ORPHAN_SKILL, REQUIREMENT_WITHOUT_CHECK, STRUCTURAL_REDUNDANCY, METHODOLOGICAL_VACUITY (reglas pero sin pasos procedurales ni checks), NORMATIVE_CONFLICT (mismo subject, modalidad opuesta), SEMANTIC_REDUNDANCY (Jaccard token overlap >= 2/3 con Fraction, sin floats; capa de confirmación LLM diferida), CONDITIONAL_CONTRADICTION (mismo subject, conditions superpuestas, polaridad efectiva opuesta), SCOPE_TRIGGER_MISMATCH (trigger declarado comparte cero tokens con el contenido de las reglas), DESCRIPTION_BODY_GAP (descripción sustantiva pero cero reglas, checks y pasos procedurales extraíbles; 15 findings CANDIDATE en el corpus real), CHECK_WITHOUT_ORACLE (check sin indicador de verificación extraíble; 16 findings CANDIDATE en el corpus real), CLAIM_WITHOUT_PROVENANCE (regla con claim numérico/referencia a standard sin citación de fuente; 0 findings en el corpus real), UNBOUNDED_RETRY (retry/repeat sin max attempts, timeout, backoff o circuit breaker; 4 findings CANDIDATE en el corpus real), LLM_IN_DECISION_PATH (LLM/model usado para decisión consecuencial sin guard determinista; 0 findings en el corpus real), OVERCLAIM (claim absoluto — always, never, guaranteed, failsafe — sin calificación; 2 findings CANDIDATE en el corpus real), MISSING_FAILURE_MODE (reglas y pasos pero cero mención de failure, error, exception, fallback o recovery; 0 findings en el corpus real), NON_DETERMINISTIC_INSTRUCTION (random, arbitrary, pick any — sin seed o anchor reproducible; 3 findings CANDIDATE en el corpus real), IRREVERSIBLE_WITHOUT_REVIEW (delete, drop, destroy, force-push, truncate, purge — sin review, backup, idempotency o rollback; 18 findings CANDIDATE en el corpus real), SECRET_IN_OUTPUT (secret enviado a log/print/echo/stdout sin redaction/mask/hash/encrypt; 1 finding CANDIDATE en el corpus real), SILENT_FAILURE (error ignored/swallowed/suppressed sin log/report/raise/retry; 0 findings en el corpus real), HARDCODED_CREDENTIAL (secret/password/token hardcoded en código sin env var/vault/KMS; 0 findings en el corpus real), UNBOUNDED_RESOURCE (load all/read all/load into memory sin limit/max/batch/stream/paginate; 0 findings en el corpus real), UNVALIDATED_EXTERNAL_INPUT (user input/request/stdin/argv aceptado sin validate/sanitize/schema/type check; 0 findings en el corpus real), MISSING_TIMEOUT (wait indefinitely/block forever/wait until success sin timeout/deadline/TTL; 0 findings en el corpus real), FLOATING_POINT_IN_DECISION_PATH (float comparado por equality o usado para money sin Fraction/Decimal/integer/epsilon; 0 findings en el corpus real), y UNPINNED_DEPENDENCY (pip/npm/cargo install sin version pin o lock file; 0 findings en el corpus real). La IR extrae subjects de reglas, condiciones, triggers, pasos procedurales, oracle_kind de checks y claims de reglas para soportar estos checks. La capa de confirmación L2.5 toma TODOS los CANDIDATEs del L2 audit y pregunta a un executor (Nemotron vía Nebius, o mock determinista) si cada uno es un defecto real o un falso positivo. La confirmación es un artifact separado (`crucible-confirmation/v1`) con su propio digest SHA-256. El L2 audit artifact NUNCA se modifica — la confirmación es una OBSERVATION, no una promoción a CONFIRMED. Si `NEBIUS_API_KEY` no está set, la confirmación es BLOCKED, no simulada.
+Ya existen 13 niveles coherentes, con 420 tests pasando. L1 transforma un corpus real en una Skill IR versionada, con source spans y digest SHA-256 determinista; L2 implementa 28 checks de metodología e ingeniería; L3 modela composición tipada; L4 prueba el auditor con 8 mutaciones (6/6 KILLED en alcance, 2 ABSTAINED fuera de alcance); L5–L7 cubren diferencial conductual, reparación y replay; L8 integra CI, reportes sellados y viewer HTML; L9–L13 agregan extracción style-agnostic, taxonomía de defectos de ingeniería, API pública, confirmación Nemotron y validación corpus-agnóstica.
+
+La capa de confirmación L2.5 toma todos los CANDIDATEs del audit L2 y pregunta a un executor (Nemotron vía Nebius, o mock determinista) si cada uno es un defecto real o un falso positivo. La confirmación es un artifact separado (`crucible-confirmation/v1`) con su propio digest SHA-256; el audit L2 nunca se modifica. Si `NEBIUS_API_KEY` no está configurada, la ejecución se reporta como BLOCKED, no simulada.
 
 ## Principio de construcción
 

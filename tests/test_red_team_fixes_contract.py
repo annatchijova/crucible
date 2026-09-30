@@ -101,14 +101,16 @@ class TestRT01PathTraversal:
 class TestRT02SymlinkLeak:
     """RT-02: copytree must preserve symlinks so the compiler can catch them."""
 
-    def test_copytree_preserves_symlinks(self) -> None:
+    def test_copytree_preserves_symlinks(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Invariant: scan_installed_skills uses symlinks=True so the
         compiler's symlink check catches symlinked SKILL.md files.
         Mutation: revert to symlinks=False -> symlink content leaks."""
-        import shutil
+        monkeypatch.setenv("HOME", str(tmp_path))
         home = Path.home()
         fake_dir = home / ".claude" / "skills" / "crucible-rt02-test"
-        fake_dir.mkdir(exist_ok=True)
+        fake_dir.mkdir(parents=True, exist_ok=True)
         leak_target = Path(tempfile.gettempdir()) / "crucible-rt02-leak.md"
         leak_target.write_text(
             "---\nname: rt02-leaked\ndescription: secret\n---\n\n"
