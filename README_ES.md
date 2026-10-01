@@ -3,7 +3,9 @@
 Plan activo: [objetivos, criterios de cierre y bloque de ejecución](docs/NEXT_LEVELS.md).
 El bloque actual es evidencia de runtime y replay offline, no sumar funciones al
 scanner. `--report --local-executor` mantiene local también la confirmación aunque
-haya una API key; el bundle de replay y la evidencia real de reparación siguen pendientes.
+haya una API key. El [contrato de almacenamiento del bundle](docs/REPLAY_BUNDLE.md)
+está implementado; siguen pendientes la captura del runtime, la ejecución del
+replay offline y la evidencia real de reparación.
 
 **Ingeniería de verificación para metodologías de agentes de IA — construido sobre Nebius AI Cloud con NVIDIA Nemotron.**
 

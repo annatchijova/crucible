@@ -40,8 +40,11 @@ for methodological accuracy or release readiness.
    path and retain a full evidence bundle, including rejected/failed outcomes.
    A favorable single run does not close independent evaluation.
 
-R1 is locally verified by `tests/test_report_local_boundary.py`; R2–R4 remain
-pending. This turn does not establish a replay bundle or a real repair run.
+R1 is locally verified by `tests/test_report_local_boundary.py`. R2 now has an
+[initial storage/validation contract](REPLAY_BUNDLE.md) and executable negative
+controls in `tests/test_replay_bundle_contract.py`. Runtime capture, origin links
+and CLI export remain pending, so R2 is not closed. R3/R4 remain pending; no real
+repair run or historical-artifact conversion is claimed.
 
 ### Selection and closure discipline
 
