@@ -75,3 +75,33 @@ def test_directory_budget_applies_without_skill_files(tmp_path, monkeypatch):
     monkeypatch.setattr('crucible.api._MAX_COLLECTION_DIRECTORIES', 2, raising=False)
     with pytest.raises(ValueError, match='directory limit'):
         scan_installed_collection()
+
+
+def test_byte_budget_counts_invalid_inputs(tmp_path, monkeypatch):
+    monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))
+    first = package(tmp_path, '.codex/skills/a')
+    first.write_text('invalid')
+    package(tmp_path, '.codex/skills/b')
+    monkeypatch.setattr('crucible.api._MAX_COLLECTION_BYTES', 7, raising=False)
+    with pytest.raises(ValueError, match='byte limit'):
+        scan_installed_collection()
+
+
+def test_byte_budget_accepts_exact_boundary(tmp_path, monkeypatch):
+    monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))
+    path = package(tmp_path, '.codex/skills/a')
+    monkeypatch.setattr('crucible.api._MAX_COLLECTION_BYTES', path.stat().st_size, raising=False)
+    assert scan_installed_collection()['status'] == 'COMPLETE'
+
+
+def test_entry_budget_includes_symlink_errors(tmp_path, monkeypatch):
+    monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))
+    external = tmp_path / 'external'
+    external.mkdir()
+    root = tmp_path / '.codex/skills'
+    root.mkdir(parents=True)
+    for name in ('a', 'b'):
+        (root / name).symlink_to(external, target_is_directory=True)
+    monkeypatch.setattr('crucible.api._MAX_SCAN_SKILLS', 1)
+    with pytest.raises(ValueError, match='entry limit'):
+        scan_installed_collection()

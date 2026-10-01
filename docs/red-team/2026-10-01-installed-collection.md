@@ -18,6 +18,18 @@ Executed tests in `tests/test_installed_collection.py` demonstrate:
 
 Limits: this is not a complete filesystem security audit. Concurrent replacement
 between stat and read, ancestor symlinks, per-directory enumeration memory,
-aggregate byte budgets, and downstream reference resolution need further review.
-The 500-entry guard and 1MB per-skill limit do not bound all traversal costs.
+downstream reference resolution need further review.
+The entry, byte and directory limits do not bound all traversal costs.
 Composition across independent packages is deliberately not evaluated.
+
+## Follow-up: aggregate budgets
+
+Regression tests reproduced missing aggregate byte accounting and error entries
+bypassing the entry limit. Both are fixed: all recorded entries share the cap,
+and admitted skill file sizes count toward a 20,000,000-byte budget even if parsing
+fails. Equality at the byte boundary is accepted. Files above the individual
+1MB limit are rejected without compilation. Whole-scan budget failures propagate
+to a CLI JSON ERROR with exit code 1 rather than a traceback.
+
+Byte accounting uses filesystem sizes before compilation. It assumes files are
+not concurrently replaced or grown; it is not an atomic bounded-read guarantee.

@@ -121,7 +121,11 @@ def main() -> int:
 
     if args.scan_installed_collection:
         from .api import scan_installed_collection
-        result = scan_installed_collection()
+        try:
+            result = scan_installed_collection()
+        except (ValueError, OSError) as exc:
+            print(json.dumps({'status': 'ERROR', 'error': str(exc)}, sort_keys=True))
+            return 1
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
         return 0 if result['status'] == 'COMPLETE' else 1
 

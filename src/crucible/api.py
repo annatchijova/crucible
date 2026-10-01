@@ -24,6 +24,11 @@ from .compiler import compile_corpus, compile_skill_file
 from .ir import digest_payload
 
 _MAX_COLLECTION_DIRECTORIES = 10_000
+_MAX_COLLECTION_BYTES = 20_000_000
+
+
+class _CollectionLimitError(ValueError):
+    """A whole-scan limit, not an error confined to one package."""
 from .graph import build_composition_graph
 
 
@@ -163,15 +168,21 @@ def scan_installed_collection() -> dict[str, Any]:
     """
     entries = []
     directories_seen = 0
+    bytes_seen = 0
+
+    def add_entry(entry):
+        if len(entries) >= _MAX_SCAN_SKILLS:
+            raise _CollectionLimitError('installed collection exceeds scan entry limit')
+        entries.append(entry)
     for root in _standard_skill_dirs():
         if not root.exists():
             continue
         if root.is_symlink():
-            entries.append({'source_path': str(root), 'status': 'ERROR',
+            add_entry({'source_path': str(root), 'status': 'ERROR',
                             'error': 'symlinked collection root is not allowed'})
             continue
         def walk_error(error):
-            entries.append({'source_path': str(error.filename), 'status': 'ERROR',
+            add_entry({'source_path': str(error.filename), 'status': 'ERROR',
                             'error': 'directory could not be read'})
         for directory, dirs, files in os.walk(root, followlinks=False, onerror=walk_error):
             directories_seen += 1
@@ -182,7 +193,7 @@ def scan_installed_collection() -> dict[str, Any]:
                 child = Path(directory) / name
                 if child.is_symlink():
                     dirs.remove(name)
-                    entries.append({'source_path': str(child), 'status': 'ERROR',
+                    add_entry({'source_path': str(child), 'status': 'ERROR',
                                     'error': 'symlinked directory is not allowed'})
             if 'SKILL.md' not in files:
                 continue
@@ -193,15 +204,21 @@ def scan_installed_collection() -> dict[str, Any]:
             try:
                 if path.is_symlink() or not path.is_file():
                     raise ValueError('SKILL.md must be a regular non-symlink file')
-                if path.stat().st_size > 1_000_000:
+                size = path.stat().st_size
+                if size > 1_000_000:
                     raise ValueError('SKILL.md exceeds 1MB')
+                if bytes_seen + size > _MAX_COLLECTION_BYTES:
+                    raise _CollectionLimitError('installed collection exceeds byte limit')
+                bytes_seen += size
                 ir = compile_skill_file(path)
                 entry.update(status='ANALYZED',
                              skill_name=ir['skills'][0]['identity']['name'],
                              audit=audit_corpus(ir), ir=_redact_ir(ir))
+            except _CollectionLimitError:
+                raise
             except (ValueError, OSError, UnicodeError) as exc:
                 entry.update(status='ERROR', error=str(exc))
-            entries.append(entry)
+            add_entry(entry)
     analyzed = sum(e['status'] == 'ANALYZED' for e in entries)
     payload = {
         'schema_version': 'crucible-installed-collection/v1',

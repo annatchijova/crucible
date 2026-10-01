@@ -39,3 +39,14 @@ def test_coverage_flag_requires_installed_mode(monkeypatch):
     with pytest.raises(SystemExit) as exc:
         main()
     assert exc.value.code == 2
+
+
+def test_collection_limit_has_machine_readable_error(monkeypatch, capsys):
+    def fail():
+        raise ValueError('installed collection exceeds directory limit')
+    monkeypatch.setattr('crucible.api.scan_installed_collection', fail)
+    monkeypatch.setattr(sys, 'argv', ['crucible', '--scan-installed-collection'])
+    assert main() == 1
+    result = json.loads(capsys.readouterr().out)
+    assert result['status'] == 'ERROR'
+    assert 'directory limit' in result['error']
