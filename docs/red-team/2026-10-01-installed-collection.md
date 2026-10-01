@@ -63,7 +63,25 @@ the exact 1,000,000-byte boundary, and preservation of relative paths and parsed
 content. Existing parsing and artifact contracts remain unchanged for admitted
 files; oversized files are newly rejected.
 
-Remaining scope: root resolution still accepts symlink aliases before corpus
+Remaining scope at that stage: root resolution still accepts symlink aliases before corpus
 discovery, traversal is path-based and materializes matches, and the corpus has
 no aggregate byte/traversal budget. Legacy installed-skill staging copies are
 not protected by the new reader. No atomic filesystem snapshot is claimed.
+
+## Follow-up: corpus discovery and aggregate budgets
+
+Five pre-fix tests failed: exact and cumulative byte limits, empty-directory
+accounting, unrelated-entry accounting, and preservation of a permission error.
+The old `rglob` traversal masked that permission error as an empty corpus.
+
+Discovery now streams directory entries with `scandir`, rejects more than
+100,000 entries or 10,000 directories (root included), and checks the optional
+skill-count cap before sorting admitted paths. The shared reader enforces the
+remaining 20,000,000-byte corpus allowance as well as the per-file limit.
+Errors abort rather than seal a partial corpus. Additional tests prove early
+iterator termination, exact discovery boundaries and failure on an unreadable
+subtree even when a readable skill exists.
+
+Remaining scope: path-based discovery can still race directory replacement;
+root aliases and legacy staging copies retain the limitations above. Count and
+byte limits do not bound filesystem latency or all downstream analysis costs.

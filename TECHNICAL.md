@@ -290,9 +290,15 @@ parent with a symlink cannot redirect the final open. Unsupported platforms fail
 visibly. This does not provide an atomic filesystem snapshot or descriptor-based
 discovery. `compile_corpus` now uses the same byte reader with a 1,000,000-byte
 per-file cap and preserves corpus-relative source paths. It still resolves its
-root (accepting symlink aliases), gathers paths with `rglob`, and has no aggregate
-byte or traversal budget. The legacy installed-skill staging copy also remains
-outside this descriptor guarantee.
+root (accepting symlink aliases). Iterative `scandir` discovery bounds directories
+at 10,000 including the root and entries at 100,000 including unrelated files;
+only admitted paths are sorted for canonical output. Enumeration errors propagate
+instead of producing a partial corpus. A shared 20,000,000-byte allowance is
+enforced by the byte reader, independently of the optional skill-count cap.
+Discovery remains path-based and vulnerable to concurrent directory replacement;
+the legacy installed-skill staging copy also remains outside the descriptor
+guarantee. Limits bound counts and input, not filesystem latency or all parser
+and downstream analysis costs.
 
 - Natural-language contradiction and entailment are not fully decidable from Markdown.
 - Trigger overlap may require a conservative candidate classification before behavioral confirmation.

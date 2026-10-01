@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 from typing import Any
 
 from .ir import SCHEMA_VERSION, digest_bytes, digest_payload
+
+_MAX_CORPUS_BYTES = 20_000_000
+_MAX_CORPUS_DIRECTORIES = 10_000
+_MAX_CORPUS_ENTRIES = 100_000
 
 # Match "MUST NOT" / "SHOULD NOT" (with space) before bare MUST/SHOULD/MAY
 # so that negated modalities are captured correctly.
@@ -97,28 +102,61 @@ _ACTION_VERBS = {
 }
 
 
+def _discover_corpus(root: Path, max_skills: int | None) -> list[Path]:
+    """Bound enumeration before sorting; propagate incomplete traversal errors."""
+    pending = [root]
+    paths = []
+    directories = 1
+    entries = 0
+    while pending:
+        directory = pending.pop()
+        if directories > _MAX_CORPUS_DIRECTORIES:
+            raise ValueError('corpus exceeds directory limit')
+        with os.scandir(directory) as children:
+            for child in children:
+                entries += 1
+                if entries > _MAX_CORPUS_ENTRIES:
+                    raise ValueError('corpus exceeds discovery entry limit')
+                path = Path(child.path)
+                if child.name == 'SKILL.md':
+                    paths.append(path)
+                    if max_skills is not None and len(paths) > max_skills:
+                        raise ValueError(
+                            f'corpus contains at least {len(paths)} SKILL.md files, '
+                            f'exceeding the limit of {max_skills}'
+                        )
+                if child.is_dir(follow_symlinks=False):
+                    directories += 1
+                    if directories > _MAX_CORPUS_DIRECTORIES:
+                        raise ValueError('corpus exceeds directory limit')
+                    pending.append(path)
+    return sorted(paths, key=lambda p: p.relative_to(root).as_posix())
+
+
 def compile_corpus(root: Path | str, max_skills: int | None = None) -> dict[str, Any]:
     """Compile every ``SKILL.md`` below *root* into a canonical artifact.
 
     If *max_skills* is set and the corpus contains more SKILL.md files
     than the limit, a ValueError is raised to prevent resource exhaustion
-    (RT-04 fix).
+    (RT-04 fix). Discovery entries, directories and cumulative input bytes
+    are bounded even when *max_skills* is None.
     """
     corpus_root = Path(root).resolve()
     if not corpus_root.is_dir():
         raise ValueError(f"corpus root is not a directory: {root}")
 
-    paths = sorted(corpus_root.rglob("SKILL.md"), key=lambda p: p.relative_to(corpus_root).as_posix())
+    paths = _discover_corpus(corpus_root, max_skills)
     if not paths:
         raise ValueError(f"corpus contains no SKILL.md files: {root}")
 
-    if max_skills is not None and len(paths) > max_skills:
-        raise ValueError(
-            f"corpus contains {len(paths)} SKILL.md files, "
-            f"exceeding the limit of {max_skills}"
-        )
-
-    skills = [_compile_skill(path, corpus_root) for path in paths]
+    skills = []
+    bytes_seen = 0
+    for path in paths:
+        if path.is_symlink():
+            raise ValueError(f'{path.relative_to(corpus_root)}: symlinked SKILL.md is not allowed')
+        raw_bytes = _read_skill_bytes(path, min(1_000_000, _MAX_CORPUS_BYTES - bytes_seen))
+        bytes_seen += len(raw_bytes)
+        skills.append(_compile_skill(path, corpus_root, raw_bytes=raw_bytes))
     names = [skill["identity"]["name"] for skill in skills]
     duplicates = sorted({name for name in names if names.count(name) > 1})
     if duplicates:

@@ -98,9 +98,12 @@ de la ruta. Lee sin bloquearse en FIFO y con límite de bytes; rechaza cambios
 observados de tamaño o timestamps. El compilador de repositorios ahora comparte
 esta lectura acotada (1 MB por archivo), conservando rutas de origen relativas.
 Todavía resuelve la raíz antes de descubrir archivos: admite aliases symlink de
-esa raíz. El descubrimiento sigue basado en rutas y el compilador de repositorios
-aún no impone presupuestos globales de bytes o recorrido. No representa una
-instantánea del filesystem.
+esa raíz. El descubrimiento sigue basado en rutas. El compilador de repositorios
+limita la entrada acumulada a 20 MB, los directorios a 10.000 (incluida la raíz)
+y las entradas descubiertas a 100.000 (incluidos archivos ajenos a las skills).
+Los errores de enumeración abortan la compilación; estos presupuestos rigen
+incluso sin límite explícito de cantidad de skills. No representa una instantánea
+del filesystem.
 
 Hay un diferencial conductual real guardado, con el mutante distinguible del
 original y la reparación. Otra ejecución real de confirmación devolvió 2 apoyos
