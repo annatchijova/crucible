@@ -246,10 +246,11 @@ def _open_path_descriptor(path: Path, *, directory: bool = False,
         os.close(directory_fd)
 
 
-def compile_skill_file(path: Path | str, max_bytes: int = 1_000_000) -> dict[str, Any]:
+def compile_skill_file(path: Path | str, max_bytes: int = 1_000_000,
+                       *, identities: dict | None = None) -> dict[str, Any]:
     """Compile exactly one entry point using the existing extraction rules."""
     path = Path(path)
-    raw_bytes = _read_skill_bytes(path, max_bytes)
+    raw_bytes = _read_skill_bytes(path, max_bytes, identities=identities)
     skill = _compile_skill(path, path.parent, raw_bytes=raw_bytes)
     payload = {'schema_version': SCHEMA_VERSION, 'skills': [skill]}
     payload['artifact_digest'] = digest_payload(payload)

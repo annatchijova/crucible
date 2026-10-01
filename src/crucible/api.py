@@ -14,6 +14,7 @@ The API is stateless: no input is retained after the response is sent.
 from __future__ import annotations
 
 import os
+import stat
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,7 @@ from .compiler import (
 from .ir import digest_payload
 
 _MAX_COLLECTION_DIRECTORIES = 10_000
+_MAX_COLLECTION_DISCOVERY_ENTRIES = 100_000
 _MAX_COLLECTION_BYTES = 20_000_000
 
 
@@ -210,33 +212,69 @@ def scan_installed_collection() -> dict[str, Any]:
     """
     entries = []
     directories_seen = 0
+    discovery_entries_seen = 0
     bytes_seen = 0
 
     def add_entry(entry):
         if len(entries) >= _MAX_SCAN_SKILLS:
             raise _CollectionLimitError('installed collection exceeds scan entry limit')
         entries.append(entry)
+
+    def admit_directory():
+        nonlocal directories_seen
+        directories_seen += 1
+        if directories_seen > _MAX_COLLECTION_DIRECTORIES:
+            raise _CollectionLimitError('installed collection exceeds directory limit')
+
+    def walk(root, identities):
+        nonlocal discovery_entries_seen
+        admit_directory()
+        pending = [root]
+        while pending:
+            directory = pending.pop()
+            dirs = []
+            files = []
+            try:
+                with _scan_corpus_directory(directory, identities=identities) as children:
+                    for child in children:
+                        discovery_entries_seen += 1
+                        if discovery_entries_seen > _MAX_COLLECTION_DISCOVERY_ENTRIES:
+                            raise _CollectionLimitError('installed collection exceeds discovery entry limit')
+                        path = directory / child.name
+                        if child.name == 'SKILL.md':
+                            files.append(child.name)
+                            identities[path] = _file_identity(child.stat(follow_symlinks=False))
+                        if child.is_symlink():
+                            if child.name != 'SKILL.md':
+                                add_entry({'source_path': str(path), 'status': 'ERROR',
+                                           'error': 'symlinked collection entry is not allowed'})
+                        elif child.is_dir(follow_symlinks=False):
+                            admit_directory()
+                            identities[path] = _file_identity(child.stat(follow_symlinks=False))
+                            dirs.append(path)
+            except _CollectionLimitError:
+                raise
+            except (OSError, ValueError) as exc:
+                add_entry({'source_path': str(directory), 'status': 'ERROR',
+                           'error': str(exc)})
+                continue
+            yield directory, files
+            pending.extend(sorted(dirs, reverse=True))
+
     for root in _standard_skill_dirs():
-        if not root.exists():
+        try:
+            root_info = root.stat(follow_symlinks=False)
+        except FileNotFoundError:
             continue
-        if root.is_symlink():
+        except OSError as exc:
+            add_entry({'source_path': str(root), 'status': 'ERROR', 'error': str(exc)})
+            continue
+        if stat.S_ISLNK(root_info.st_mode):
             add_entry({'source_path': str(root), 'status': 'ERROR',
                             'error': 'symlinked collection root is not allowed'})
             continue
-        def walk_error(error):
-            add_entry({'source_path': str(error.filename), 'status': 'ERROR',
-                            'error': 'directory could not be read'})
-        for directory, dirs, files in os.walk(root, followlinks=False, onerror=walk_error):
-            directories_seen += 1
-            if directories_seen > _MAX_COLLECTION_DIRECTORIES:
-                raise ValueError('installed collection exceeds directory limit')
-            dirs.sort()
-            for name in list(dirs):
-                child = Path(directory) / name
-                if child.is_symlink():
-                    dirs.remove(name)
-                    add_entry({'source_path': str(child), 'status': 'ERROR',
-                                    'error': 'symlinked directory is not allowed'})
+        identities = {root: _file_identity(root_info)}
+        for directory, files in walk(root, identities):
             if 'SKILL.md' not in files:
                 continue
             if len(entries) >= _MAX_SCAN_SKILLS:
@@ -252,7 +290,7 @@ def scan_installed_collection() -> dict[str, Any]:
                 if bytes_seen + size > _MAX_COLLECTION_BYTES:
                     raise _CollectionLimitError('installed collection exceeds byte limit')
                 bytes_seen += size
-                ir = compile_skill_file(path, max_bytes=size)
+                ir = compile_skill_file(path, max_bytes=size, identities=identities)
                 entry.update(status='ANALYZED',
                              skill_name=ir['skills'][0]['identity']['name'],
                              audit=audit_corpus(ir), ir=_redact_ir(ir))
@@ -261,6 +299,7 @@ def scan_installed_collection() -> dict[str, Any]:
             except (ValueError, OSError, UnicodeError) as exc:
                 entry.update(status='ERROR', error=str(exc))
             add_entry(entry)
+    entries.sort(key=lambda entry: entry['source_path'])
     analyzed = sum(e['status'] == 'ANALYZED' for e in entries)
     payload = {
         'schema_version': 'crucible-installed-collection/v1',

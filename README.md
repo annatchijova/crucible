@@ -161,8 +161,9 @@ and package discovery share a 100,000-entry/10,000-directory source budget acros
 all roots. Entries are counted before sorting, including unrelated files and
 duplicate candidates; empty roots also consume the directory budget.
 
-Limits: 500 recorded entries, 10,000 visited directories, 1 MB per skill, and
-20 MB cumulative admitted input. On supported POSIX platforms, collection reads
+Collection limits: 500 report entries, 100,000 discovery entries (including
+unrelated files), 10,000 admitted directories, 1 MB per skill, and 20 MB cumulative
+admitted input, shared across roots. On supported POSIX platforms, collection reads
 use pinned directory descriptors to reject symlinks in every path component and
 a nonblocking file descriptor with bounded reads. Observed size/timestamp changes
 reject the read. The repository compiler now shares this bounded reader (1 MB
@@ -173,8 +174,10 @@ Recorded device/inode identities for the root, discovered directories and skill
 files are checked on opened descriptors before enumeration or reading; detected
 replacements abort. This is not a snapshot: inode reuse and in-place content
 changes between discovery and opening remain outside this check.
-Installed-collection discovery still uses
-path-based traversal. The repository compiler caps cumulative input at 20 MB, directories
+Installed-collection discovery also enumerates pinned descriptors and checks
+recorded identities before reading. Symlinks and invalid entry points are reported
+as errors; per-directory errors retain partial coverage and valid neighbors.
+Report entries are ordered by source path. The repository compiler caps cumulative input at 20 MB, directories
 at 10,000 (including the root), and discovered entries at 100,000 (including
 unrelated files). Enumeration errors abort compilation; these limits also apply
 when no skill-count cap is supplied. This is not a whole filesystem snapshot.

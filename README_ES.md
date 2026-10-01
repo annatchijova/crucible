@@ -102,8 +102,9 @@ entradas y 10.000 directorios entre todas las raíces. Las entradas se cuentan
 antes de ordenar, incluidos archivos ajenos y candidatos duplicados; las raíces
 vacías también consumen presupuesto de directorios.
 
-Límites: 500 entradas registradas, 10.000 directorios visitados, 1 MB por skill y
-20 MB acumulados de entrada admitida. En plataformas POSIX compatibles, el modo
+Límites de la colección: 500 entradas de reporte, 100.000 entradas descubiertas
+(incluidos archivos ajenos), 10.000 directorios admitidos, 1 MB por skill y
+20 MB acumulados de entrada, compartidos entre raíces. En plataformas POSIX compatibles, el modo
 colección fija descriptores de directorio y rechaza symlinks en cada componente
 de la ruta. Lee sin bloquearse en FIFO y con límite de bytes; rechaza cambios
 observados de tamaño o timestamps. El compilador de repositorios ahora comparte
@@ -115,7 +116,10 @@ directorios descubiertos y archivos de skills; los contrasta con los descriptore
 antes de enumerar o leer y aborta ante reemplazos detectados. No es una instantánea:
 la reutilización de inodes y los cambios de contenido sobre el mismo inode entre
 descubrimiento y apertura quedan fuera de esa comprobación.
-El descubrimiento de la colección instalada sigue basado en rutas.
+La colección instalada también enumera descriptores fijados y verifica las
+identidades registradas antes de leer. Los symlinks y puntos de entrada inválidos
+se reportan como errores; los errores por directorio conservan cobertura parcial
+y vecinos válidos. El reporte se ordena por ruta de origen.
 El compilador de repositorios
 limita la entrada acumulada a 20 MB, los directorios a 10.000 (incluida la raíz)
 y las entradas descubiertas a 100.000 (incluidos archivos ajenos a las skills).

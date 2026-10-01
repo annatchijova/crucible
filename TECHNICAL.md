@@ -287,8 +287,13 @@ captured bytes without reopening the path. This rejects tested final-symlink
 replacement, FIFO and growth cases. Each ancestor is opened with O_DIRECTORY and
 O_NOFOLLOW relative to the previous descriptor; replacing an already opened
 parent with a symlink cannot redirect the final open. Unsupported platforms fail
-visibly. This does not provide an atomic filesystem snapshot; installed-collection
-discovery remains path-based. `compile_corpus` uses the same byte reader with a 1,000,000-byte
+visibly. This does not provide an atomic filesystem snapshot. Installed-collection
+discovery now uses pinned descriptors with recorded directory/file identities,
+100,000 discovery entries and 10,000 admitted directories shared across roots.
+Enumeration errors produce partial coverage without hiding valid neighbors;
+global limits abort. Symlinks (including dangling entries) and directories named
+SKILL.md are reported as errors. Report entries are sorted by source path before
+sealing. `compile_corpus` uses the same byte reader with a 1,000,000-byte
 per-file cap and preserves corpus-relative source paths. It still resolves its
 root (accepting symlink aliases). Iterative `scandir` discovery bounds directories
 at 10,000 including the root and entries at 100,000 including unrelated files;
@@ -304,8 +309,8 @@ Detected replacements fail closed without retaining a descriptor per entry.
 Identity metadata is runtime-only and does not enter canonical artifacts.
 This does not detect inode reuse or preserve content as it existed at discovery;
 same-inode edits before opening are not a snapshot violation detected by this check.
-Root resolution, mount changes and installed-collection discovery remain outside
-this guarantee. Legacy installed staging now discovers each selected package with
+Root resolution and mount changes remain outside this guarantee.
+Legacy installed staging now discovers each selected package with
 the corpus walker and copies only bounded, identity-checked SKILL.md bytes into
 the private temporary tree. Nested paths and package precedence are preserved;
 the 500-file and 20 MB budgets are shared across staged packages. Non-skill
