@@ -58,11 +58,11 @@ def test_initial_listing_stops_at_first_excess_entry(tmp_path, monkeypatch):
     def children():
         for name in ('a', 'b', 'c'):
             consumed.append(name)
-            yield SimpleNamespace(name=name)
+            yield SimpleNamespace(name=name, is_dir=lambda **kwargs: False)
         pytest.fail('enumeration continued beyond the first excess entry')
 
     @contextmanager
-    def scan(root):
+    def scan(root, **kwargs):
         yield children()
 
     monkeypatch.setattr(api, '_scan_corpus_directory', scan)

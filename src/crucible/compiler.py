@@ -148,7 +148,8 @@ def _discover_corpus(root: Path, max_skills: int | None,
     """Bound enumeration before sorting; propagate incomplete traversal errors."""
     if identities is None:
         identities = {}
-    identities[root] = _file_identity(root.stat(follow_symlinks=False))
+    if root not in identities:
+        identities[root] = _file_identity(root.stat(follow_symlinks=False))
     pending = [root]
     paths = []
     if budget is None:

@@ -315,8 +315,10 @@ all source roots. Root listing streams through a pinned descriptor, charges
 each entry before sorting, and counts roots even when empty. Duplicate and
 non-package entries consume listing budget; skipped package interiors are not
 traversed. The staged corpus is subsequently compiled with its own budget.
-These counters do not bind package identity back to initial root selection;
-the cross-stage identity checks begin at selected-package discovery.
+Initial listing records root and directory device/inode pairs. Those identities
+are retained into selected-package discovery and reads, rejecting detected
+replacement rather than resetting the identity at the next stage. Initial root
+selection and skipped duplicate contents are not covered by this binding.
 Limits bound counts and input, not filesystem latency or all parser
 and downstream analysis costs.
 

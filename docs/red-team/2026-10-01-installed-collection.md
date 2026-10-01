@@ -149,6 +149,10 @@ count entries before sorting and abort at the first excess entry. Empty roots
 consume directory budget. Six tests cover those cases and exact boundaries;
 existing precedence and canonical artifact contracts remain unchanged.
 
-Remaining scope: identity binding starts at selected-package discovery, not the
+Remaining scope at that stage: identity binding starts at selected-package discovery, not the
 initial listing. Installed-collection discovery is still a separate walker.
 Resource counters do not provide a filesystem snapshot or a wall-clock deadline.
+
+The subsequent [listing identity review](2026-10-01-installed-listing-identity.md)
+reproduces and fixes ordinary directory replacement between listing and discovery,
+and records the already-rejected symlink variants separately.

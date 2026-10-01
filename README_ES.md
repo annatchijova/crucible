@@ -93,7 +93,9 @@ no se descubren automáticamente.
 
 El modo antiguo `--scan-installed` conserva la prioridad por nombre y copia
 temporalmente solo los `SKILL.md`, manteniendo rutas anidadas y verificando la
-identidad de origen. Admite hasta 500 archivos de skills, 20 MB acumulados y
+identidad de origen. Las identidades de raíz y directorios registradas al listar
+se conservan al abrir los paquetes seleccionados; los reemplazos detectados
+abortan. Admite hasta 500 archivos de skills, 20 MB acumulados y
 1 MB por archivo; no copia adjuntos ajenos al análisis. La enumeración inicial y
 el descubrimiento de paquetes comparten un presupuesto de origen de 100.000
 entradas y 10.000 directorios entre todas las raíces. Las entradas se cuentan

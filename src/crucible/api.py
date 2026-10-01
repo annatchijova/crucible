@@ -21,7 +21,7 @@ from typing import Any
 from .auditor import audit_corpus
 from .compiler import (
     compile_corpus, compile_skill_file, _discover_corpus, _read_skill_bytes,
-    _scan_corpus_directory, _TraversalBudget,
+    _scan_corpus_directory, _TraversalBudget, _file_identity,
 )
 from .ir import digest_payload
 
@@ -79,14 +79,21 @@ def scan_directory(directory: str) -> dict[str, Any]:
     }
 
 
-def _installed_children(root: Path, budget: _TraversalBudget) -> list[Path]:
+def _installed_children(root: Path, budget: _TraversalBudget,
+                        *, identities: dict | None = None) -> list[Path]:
     """Bound the initial listing before sorting, including non-package entries."""
     budget.add_directory()
+    if identities is None:
+        identities = {}
+    identities[root] = _file_identity(root.stat(follow_symlinks=False))
     paths = []
-    with _scan_corpus_directory(root) as children:
+    with _scan_corpus_directory(root, identities=identities) as children:
         for child in children:
             budget.add_entry()
-            paths.append(root / child.name)
+            path = root / child.name
+            if child.is_dir(follow_symlinks=False):
+                identities[path] = _file_identity(child.stat(follow_symlinks=False))
+            paths.append(path)
     return sorted(paths)
 
 
@@ -122,7 +129,10 @@ def scan_installed_skills() -> dict[str, Any]:
         staged_bytes = 0
         traversal_budget = _TraversalBudget()
         for skill_dir in skill_dirs:
-            for skill_path in _installed_children(skill_dir, traversal_budget):
+            identities = {}
+            for skill_path in _installed_children(
+                skill_dir, traversal_budget, identities=identities
+            ):
                 if not skill_path.is_dir():
                     continue
                 skill_md = skill_path / "SKILL.md"
@@ -140,7 +150,6 @@ def scan_installed_skills() -> dict[str, Any]:
                         "skipped_from": str(skill_dir),
                     })
                     continue
-                identities = {}
                 paths = _discover_corpus(
                     skill_path, _MAX_SCAN_SKILLS - staged_skills,
                     identities=identities, budget=traversal_budget,
