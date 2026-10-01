@@ -134,3 +134,21 @@ Remaining scope: the initial sorted package listing is unbounded; discovery
 budgets apply per selected package rather than globally across source roots.
 The installed-collection walker is unchanged. Filesystem snapshot and inode
 limitations from the corpus reader still apply.
+
+## Follow-up: shared source traversal budget
+
+Initial package listing previously materialized every child before any limit,
+and each selected package reset its discovery counters. Three pre-fix tests
+demonstrated unrestricted unrelated entries and missing global entry/directory
+accounting. The entry test explicitly forbids reaching staged-corpus compilation
+so that a later rejection cannot masquerade as source traversal protection.
+
+A single operation-local traversal budget now spans initial listings and package
+discovery across all source roots. Listings use pinned directory descriptors,
+count entries before sorting and abort at the first excess entry. Empty roots
+consume directory budget. Six tests cover those cases and exact boundaries;
+existing precedence and canonical artifact contracts remain unchanged.
+
+Remaining scope: identity binding starts at selected-package discovery, not the
+initial listing. Installed-collection discovery is still a separate walker.
+Resource counters do not provide a filesystem snapshot or a wall-clock deadline.

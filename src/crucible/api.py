@@ -19,7 +19,10 @@ from pathlib import Path
 from typing import Any
 
 from .auditor import audit_corpus
-from .compiler import compile_corpus, compile_skill_file, _discover_corpus, _read_skill_bytes
+from .compiler import (
+    compile_corpus, compile_skill_file, _discover_corpus, _read_skill_bytes,
+    _scan_corpus_directory, _TraversalBudget,
+)
 from .ir import digest_payload
 
 _MAX_COLLECTION_DIRECTORIES = 10_000
@@ -76,6 +79,17 @@ def scan_directory(directory: str) -> dict[str, Any]:
     }
 
 
+def _installed_children(root: Path, budget: _TraversalBudget) -> list[Path]:
+    """Bound the initial listing before sorting, including non-package entries."""
+    budget.add_directory()
+    paths = []
+    with _scan_corpus_directory(root) as children:
+        for child in children:
+            budget.add_entry()
+            paths.append(root / child.name)
+    return sorted(paths)
+
+
 def scan_installed_skills() -> dict[str, Any]:
     """Scan the user's installed skills.
 
@@ -106,8 +120,9 @@ def scan_installed_skills() -> dict[str, Any]:
         count = 0
         staged_skills = 0
         staged_bytes = 0
+        traversal_budget = _TraversalBudget()
         for skill_dir in skill_dirs:
-            for skill_path in sorted(skill_dir.iterdir()):
+            for skill_path in _installed_children(skill_dir, traversal_budget):
                 if not skill_path.is_dir():
                     continue
                 skill_md = skill_path / "SKILL.md"
@@ -127,7 +142,8 @@ def scan_installed_skills() -> dict[str, Any]:
                     continue
                 identities = {}
                 paths = _discover_corpus(
-                    skill_path, _MAX_SCAN_SKILLS - staged_skills, identities=identities
+                    skill_path, _MAX_SCAN_SKILLS - staged_skills,
+                    identities=identities, budget=traversal_budget,
                 )
                 if skill_md not in paths:
                     raise ValueError('installed package entry point disappeared during discovery')

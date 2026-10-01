@@ -103,6 +103,24 @@ _ACTION_VERBS = {
 }
 
 
+class _TraversalBudget:
+    """Mutable per-operation counters, optionally shared by multiple walks."""
+
+    def __init__(self):
+        self.entries = 0
+        self.directories = 0
+
+    def add_entry(self):
+        self.entries += 1
+        if self.entries > _MAX_CORPUS_ENTRIES:
+            raise ValueError('corpus exceeds discovery entry limit')
+
+    def add_directory(self):
+        self.directories += 1
+        if self.directories > _MAX_CORPUS_DIRECTORIES:
+            raise ValueError('corpus exceeds directory limit')
+
+
 def _file_identity(info: os.stat_result) -> tuple[int, int]:
     return info.st_dev, info.st_ino
 
@@ -125,24 +143,22 @@ def _scan_corpus_directory(path: Path, *, identities: dict | None = None):
 
 
 def _discover_corpus(root: Path, max_skills: int | None,
-                     *, identities: dict | None = None) -> list[Path]:
+                     *, identities: dict | None = None,
+                     budget: _TraversalBudget | None = None) -> list[Path]:
     """Bound enumeration before sorting; propagate incomplete traversal errors."""
     if identities is None:
         identities = {}
     identities[root] = _file_identity(root.stat(follow_symlinks=False))
     pending = [root]
     paths = []
-    directories = 1
-    entries = 0
+    if budget is None:
+        budget = _TraversalBudget()
+    budget.add_directory()
     while pending:
         directory = pending.pop()
-        if directories > _MAX_CORPUS_DIRECTORIES:
-            raise ValueError('corpus exceeds directory limit')
         with _scan_corpus_directory(directory, identities=identities) as children:
             for child in children:
-                entries += 1
-                if entries > _MAX_CORPUS_ENTRIES:
-                    raise ValueError('corpus exceeds discovery entry limit')
+                budget.add_entry()
                 path = directory / child.name
                 is_directory = child.is_dir(follow_symlinks=False)
                 if child.name == 'SKILL.md' or is_directory:
@@ -155,9 +171,7 @@ def _discover_corpus(root: Path, max_skills: int | None,
                             f'exceeding the limit of {max_skills}'
                         )
                 if is_directory:
-                    directories += 1
-                    if directories > _MAX_CORPUS_DIRECTORIES:
-                        raise ValueError('corpus exceeds directory limit')
+                    budget.add_directory()
                     pending.append(path)
     return sorted(paths, key=lambda p: p.relative_to(root).as_posix())
 

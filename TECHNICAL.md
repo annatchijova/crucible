@@ -309,8 +309,14 @@ this guarantee. Legacy installed staging now discovers each selected package wit
 the corpus walker and copies only bounded, identity-checked SKILL.md bytes into
 the private temporary tree. Nested paths and package precedence are preserved;
 the 500-file and 20 MB budgets are shared across staged packages. Non-skill
-attachments are not copied. Initial package enumeration remains unbounded, and
-per-package discovery budgets are not a global source traversal budget.
+attachments are not copied. One traversal budget spans initial root listings
+and selected-package discovery: 100,000 entries and 10,000 directories across
+all source roots. Root listing streams through a pinned descriptor, charges
+each entry before sorting, and counts roots even when empty. Duplicate and
+non-package entries consume listing budget; skipped package interiors are not
+traversed. The staged corpus is subsequently compiled with its own budget.
+These counters do not bind package identity back to initial root selection;
+the cross-stage identity checks begin at selected-package discovery.
 Limits bound counts and input, not filesystem latency or all parser
 and downstream analysis costs.
 

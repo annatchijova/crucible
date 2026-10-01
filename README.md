@@ -154,8 +154,10 @@ The legacy `--scan-installed` retains name precedence and exposes omissions via
 `--include-coverage` and stderr warnings.
 It stages only `SKILL.md` inputs, preserving nested paths, through bounded reads
 with source identity checks. Staging admits at most 500 skill files and 20 MB
-total, with 1 MB per file; unrelated attachments are not copied. Initial package
-listing is still unbounded, and discovery budgets apply separately per package.
+total, with 1 MB per file; unrelated attachments are not copied. Initial listings
+and package discovery share a 100,000-entry/10,000-directory source budget across
+all roots. Entries are counted before sorting, including unrelated files and
+duplicate candidates; empty roots also consume the directory budget.
 
 Limits: 500 recorded entries, 10,000 visited directories, 1 MB per skill, and
 20 MB cumulative admitted input. On supported POSIX platforms, collection reads
