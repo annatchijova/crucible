@@ -38,7 +38,7 @@ def oracle_identity():
             'implementation_digest': digest_payload(manifest)}
 
 
-def capture_behavioral_bundle(executor, task=None, variants=None):
+def capture_behavioral_bundle(executor, task=None, variants=None, *, journal=None):
     """Capture a fresh experiment with frozen inputs and no implicit fallback.
 
     This function can call the provider. Storage validation/loading never does.
@@ -83,8 +83,12 @@ def capture_behavioral_bundle(executor, task=None, variants=None):
               'oracle': oracle, 'runs': []}
     if len(canonical_bytes(bundle)) + 100 > replay.MAX_BUNDLE_BYTES:
         raise ValueError('experiment inputs exceed bundle byte limit')
+    if journal is not None:
+        journal.start(deepcopy(bundle))
     for variant in prepared:
         capture = executor.capture_exchange(variant['skill_text'], task['task_prompt'])
+        if journal is not None:
+            journal.record_capture(variant['variant_id'], deepcopy(capture))
         _, response = capture_projection(capture)
         if capture['guidance'] != {'system_prompt': variant['skill_text'], 'user_prompt': task['task_prompt']}:
             raise ValueError('capture task/variant mismatch')
@@ -94,6 +98,8 @@ def capture_behavioral_bundle(executor, task=None, variants=None):
                             for obs in behavioral.run_property_oracle(response['output'], task['properties'])]
         bundle['runs'].append({'variant_id': variant['variant_id'], 'capture': capture,
                                'observations': observations})
+        if journal is not None:
+            journal.record_observations(variant['variant_id'], deepcopy(observations))
         # Bound accumulation before another provider call; preserve the last capture
         # in the exception rather than discard it or pretend a partial bundle passed.
         if len(canonical_bytes(bundle)) + 100 > replay.MAX_BUNDLE_BYTES:
@@ -101,4 +107,7 @@ def capture_behavioral_bundle(executor, task=None, variants=None):
     if oracle_identity() != oracle:
         raise CaptureAssemblyError('oracle changed during capture', bundle)
     bundle['bundle_digest'] = digest_payload(bundle)
-    return validate_bundle(bundle)
+    bundle = validate_bundle(bundle)
+    if journal is not None:
+        journal.finish(bundle)
+    return bundle

@@ -1,7 +1,8 @@
 # R2 — replay evidence storage contract
 
 Status: v1 storage validation and v2 capture-backed acquisition are implemented.
-Durable CLI export and interrupted-run recovery remain pending. R2 is not closed.
+Optional local journaling retains committed partial work. CLI acquisition/export
+and end-to-end recovery UX remain pending. R2 is not closed.
 R3 offline oracle execution and repair acceptance are not implemented here.
 
 `src/crucible/replay.py` exposes `validate_bundle`, `dump_bundle`, `load_bundle`
@@ -62,8 +63,8 @@ round-trip preservation, network prohibition, resealed internal inconsistencies,
 unknown schema, truncation/error states, missing observations, duplicate JSON,
 credential fields and the input size limit.
 
-Next R2 increment: export through the CLI with durable retention of partial
-experiments, including failures and aggregate-limit stops. Only then close R2
+Next R2 increment: expose journal-backed acquisition and offline inspection/export
+through the CLI, including partial experiments and explicit exit codes. Only then close R2
 and proceed to R3 replay. Do not
 change historical artifacts or invoke remote generation merely to validate one.
 
@@ -135,7 +136,7 @@ Raw response bytes remain preserved even when projection fails. Missing or parti
 usage stays unknown rather than becoming zero. Unknown provider fields remain in
 raw evidence; they cannot specify the local oracle or change the request contract.
 
-`capture_bundle.capture_behavioral_bundle(executor, task=None, variants=None)`
+`capture_bundle.capture_behavioral_bundle(executor, task=None, variants=None, journal=None)`
 acquires a **new experiment**. Inputs are copied before execution. Defaults are
 the current four-way behavioral fixtures, not an importer for historical runs.
 It calls `capture_exchange` once per variant, computes observations from the
@@ -159,10 +160,62 @@ The 8 MB bundle limit includes base64 expansion and all embedded captures. Input
 size is checked before acquisition; accumulated size is checked after each run,
 before another provider call. On an aggregate-limit stop or detected oracle drift,
 `CaptureAssemblyError.partial_evidence` retains the collected experiment in memory
-without a bundle version/seal. It is not a valid replay bundle. This is not durable
-storage: process crashes and other acquisition exceptions can still lose evidence.
-Persisting partial work and exporting through the CLI are the remaining R2 gate,
-not an implicit guarantee of this Python acquisition API.
+without a bundle version/seal. It is not a valid replay bundle. Without an explicit
+journal, this remains in-memory storage: process crashes and other acquisition
+exceptions can lose evidence. The optional journal below checkpoints partial work;
+exporting it through the CLI is still part of the remaining R2 gate.
 
 Run `PYTHONPATH=src python3 -m pytest tests/test_capture_bundle.py tests/test_replay_bundle_contract.py -q`.
 Transport is mocked in these tests; no live provider evidence is claimed.
+
+## Incremental local journal
+
+`CaptureJournal(new_directory)` creates a private POSIX directory (0700) and
+`evidence.sqlite3` (0600). Existing destinations, including symlinks, are never
+reused or overwritten. Parent directories and SQLite files must be trusted local
+storage; this is not a sandbox or an importer for hostile SQLite databases.
+
+Pass it explicitly as the keyword-only `journal` argument to
+`capture_behavioral_bundle`. The lifecycle is:
+
+1. Commit the frozen experiment metadata before any provider call.
+2. Commit each returned, validated raw capture before projection/oracle execution.
+3. Commit observations separately; null means they were not recorded, not that
+   an empty observation list was produced.
+4. After validation, commit the complete bundle only if it matches every saved
+   capture, observation and input. No artifact content is rewritten during recovery.
+
+Transactions use `BEGIN IMMEDIATE`, a five-second busy timeout, WAL and
+`synchronous=FULL`. This adapts the atomic-state-mutation transaction pattern with
+the stronger synchronization setting for retained evidence. Schema initialization
+is transactional; directory entries are synchronized at initialization. Payload
+storage is bounded to 500 captures and 24,000,000 combined JSON bytes, including
+the final bundle. This is not a bound on total SQLite/WAL filesystem allocation.
+Failed writes roll back and abort acquisition before the next provider call.
+
+`read_journal(directory)` opens SQLite read-only and reads one consistent snapshot,
+checks stored digests/capture links, and validates any completed bundle. It returns
+`crucible-capture-journal/v1`, status EMPTY/PARTIAL/COMPLETE, metadata, captures,
+pending variants and variants whose observations were not recorded. SQLite
+`user_version=1` identifies the persistent schema; unknown versions are rejected.
+The reader calls neither provider nor oracle. SQLite may manage WAL/shared-memory
+sidecars; preserve the directory, not just the main database file, while active.
+
+COMPLETE means acquisition and bundle storage finished, **not** evidence readiness
+or acceptance: a bundle whose responses are all BLOCKED can be stored completely.
+There is no automatic replay, retry or resume. A missing capture does not prove
+the provider was never contacted; do not reissue requests based on that inference.
+
+Committed records survive the tested abrupt process exit and transaction failures.
+This does not promise recovery of a response lost before its capture commit, an
+in-flight response, hardware/filesystem failure, or malicious deletion/resealing.
+Durability relies on the filesystem honoring SQLite synchronization. Disk-full or
+validation failure can prevent the current capture from being committed; earlier
+commits remain the recovery boundary. An incomplete initialization fails visibly
+rather than fabricating an empty valid experiment. Failed directories are retained
+for inspection and not cleaned up automatically.
+
+Run `PYTHONPATH=src python3 -m pytest tests/test_capture_journal.py -q`.
+Tests include a subprocess exiting with `os._exit` without closing SQLite, injected
+write/commit-path failures, refusal to overwrite/reuse, and read-after-interruption.
+Provider calls are blocked or mocked; no real-provider durability run is claimed.

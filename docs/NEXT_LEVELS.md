@@ -47,7 +47,10 @@ is covered by `tests/test_runtime_capture.py`, retaining original guidance and
 actual wire bodies separately. The v2 capture-backed bundle now links these to
 task/variant digests and an oracle source/runtime fingerprint; tests in
 `tests/test_capture_bundle.py` cover cross-links, offline loading and continued
-v1 support. Durable CLI export and interrupted-run recovery remain pending, so
+v1 support. Optional SQLite journaling now retains committed captures across
+process interruption, with explicit partial-state inspection and no automatic
+provider retries (`tests/test_capture_journal.py`). CLI acquisition/export and
+end-to-end recovery UX remain pending, so
 R2 is not closed. R3/R4 remain pending; no real
 repair run or historical-artifact conversion is claimed.
 

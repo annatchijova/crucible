@@ -381,7 +381,10 @@ lexical oracle's source/runtime fingerprint. The v1 reader is unchanged in scope
 no historical evidence is silently migrated. Request/response projections are
 derived from raw bytes on load; missing provider metadata is not synthesized.
 See [v2 acquisition and compatibility](docs/REPLAY_BUNDLE.md#capture-backed-bundle-v2).
-R2 remains open for durable CLI export and interrupted-run recovery. R3 offline
+An optional [private capture journal](docs/REPLAY_BUNDLE.md#incremental-local-journal)
+commits raw captures before projection and observations before the next variant.
+Its recovery reader distinguishes partial acquisition from a stored complete bundle.
+R2 remains open for CLI acquisition/export and end-to-end recovery UX. R3 offline
 oracle execution and R4 real repair evidence remain pending under the
 [active plan](docs/NEXT_LEVELS.md).
 

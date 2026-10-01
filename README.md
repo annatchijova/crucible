@@ -67,7 +67,8 @@ See the [comparison scope](docs/COMPETITIVE_BOUNDARY.md) and
 - The [offline replay storage contract](docs/REPLAY_BUNDLE.md) is implemented.
   The v2 bundle binds captured request/response bytes to the task, skill variants
   and recorded oracle identity under [local tests](tests/test_capture_bundle.py),
-  while preserving v1 support. Durable CLI export, offline oracle execution and
+  while preserving v1 support. An optional private journal retains committed
+  captures across tested process interruptions. CLI export, offline oracle execution and
   real repair evidence remain pending; the
   [active execution checkpoint](docs/NEXT_LEVELS.md) governs that work.
 
