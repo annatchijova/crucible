@@ -43,9 +43,12 @@ for methodological accuracy or release readiness.
 R1 is locally verified by `tests/test_report_local_boundary.py`. R2 now has an
 [initial storage/validation contract](REPLAY_BUNDLE.md) and executable negative
 controls in `tests/test_replay_bundle_contract.py`. Opt-in executor transport capture
-is now covered by `tests/test_runtime_capture.py`, retaining original guidance and
-actual wire bodies separately. Capture-to-bundle integration, oracle/source origin
-links and CLI export remain pending, so R2 is not closed. R3/R4 remain pending; no real
+is covered by `tests/test_runtime_capture.py`, retaining original guidance and
+actual wire bodies separately. The v2 capture-backed bundle now links these to
+task/variant digests and an oracle source/runtime fingerprint; tests in
+`tests/test_capture_bundle.py` cover cross-links, offline loading and continued
+v1 support. Durable CLI export and interrupted-run recovery remain pending, so
+R2 is not closed. R3/R4 remain pending; no real
 repair run or historical-artifact conversion is claimed.
 
 ### Selection and closure discipline

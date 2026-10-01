@@ -1,16 +1,15 @@
 # R2 — replay evidence storage contract
 
-Status: initial Python storage/validation contract and opt-in executor transport
-capture implemented; their integration and CLI export are pending. R2 is not
-closed. R3 oracle execution and repair
-acceptance are not implemented by this module.
+Status: v1 storage validation and v2 capture-backed acquisition are implemented.
+Durable CLI export and interrupted-run recovery remain pending. R2 is not closed.
+R3 offline oracle execution and repair acceptance are not implemented here.
 
 `src/crucible/replay.py` exposes `validate_bundle`, `dump_bundle`, `load_bundle`
 and `replay_readiness`. All are offline and side-effect-free. JSON is limited
 to 8,000,000 UTF-8 bytes, 500 variants and 100 task properties. Unknown versions,
 unknown fields, duplicate JSON keys and nonfinite JSON constants are rejected.
 
-## Versioned envelope
+## Versioned envelope v1
 
 `crucible-replay-bundle/v1` contains:
 
@@ -63,9 +62,9 @@ round-trip preservation, network prohibition, resealed internal inconsistencies,
 unknown schema, truncation/error states, missing observations, duplicate JSON,
 credential fields and the input size limit.
 
-Next R2 increment: bind captured exchanges to task/variant/oracle identity with
-explicit source links and an explicit prompt-transformation contract, then export
-through the CLI. Only then close R2 and proceed to R3 replay. Do not
+Next R2 increment: export through the CLI with durable retention of partial
+experiments, including failures and aggregate-limit stops. Only then close R2
+and proceed to R3 replay. Do not
 change historical artifacts or invoke remote generation merely to validate one.
 
 ## Executor transport capture
@@ -102,12 +101,68 @@ No content redaction is claimed. Provider identity is a configured label, not
 proof of endpoint authenticity; redirects/TLS metadata are not captured. The seal
 does not prevent a malicious author from replacing and resealing the capture.
 
-This envelope is deliberately **not accepted** by `validate_bundle`. The replay
+This standalone envelope is deliberately **not accepted** as a bundle by
+`validate_bundle`. The replay
 v1 exact-guidance invariant cannot represent the baseline prompt fallback.
 Silently changing either historical behavior or captured guidance would falsify
-provenance. The next integration must version that transformation explicitly,
-pin the oracle and link observations to the captured response. Raw bytes also
+provenance. The v2 integration below versions that transformation explicitly,
+pins the oracle and links observations to the captured response. Raw bytes also
 avoid legacy execution's zero-filled missing usage metadata; capture invents none.
 
 Run `PYTHONPATH=src python3 -m pytest tests/test_runtime_capture.py -q`.
 All transport tests replace the HTTP opener; they are not real provider evidence.
+
+## Capture-backed bundle v2
+
+`crucible-replay-bundle/v2` retains the v1 task, variant and oracle fields and adds
+`request_adapter: nebius-chat-guidance/v1`. Each run has exactly `variant_id`,
+`capture` and `observations`. The embedded capture's seal links its request and
+response bytes; the outer seal links that evidence to the task, variant and
+observations. Derived request/response projections are not duplicated in storage.
+
+The adapter permits only the existing two-message, non-streaming request shape,
+integer sampling controls, and the documented empty-system-guidance fallback.
+Original guidance must match the variant's exact text; user guidance must match
+the full task prompt. Captured wire messages must match that declared adapter.
+Unknown request fields, adapters or versions are rejected, not normalized away.
+
+`capture_contract.validate_capture` checks strict fields, status/attempt/HTTP
+consistency, canonical base64, byte limits, body digests and the capture seal.
+`capture_projection` derives response text and metadata without touching a provider.
+Duplicate JSON keys, nonfinite constants, malformed UTF-8/JSON, invalid choices,
+non-text output and invalid usage counts do not produce usable observations.
+Raw response bytes remain preserved even when projection fails. Missing or partial
+usage stays unknown rather than becoming zero. Unknown provider fields remain in
+raw evidence; they cannot specify the local oracle or change the request contract.
+
+`capture_bundle.capture_behavioral_bundle(executor, task=None, variants=None)`
+acquires a **new experiment**. Inputs are copied before execution. Defaults are
+the current four-way behavioral fixtures, not an importer for historical runs.
+It calls `capture_exchange` once per variant, computes observations from the
+captured textual output with the local lexical oracle, and validates the result.
+Blocked/error runs are retained without a local fallback. Truncated textual output
+may carry historical observations but never earns complete-evidence readiness.
+
+The oracle ID is `crucible-lexical-properties/v1`. Its implementation digest covers
+the source text of the oracle, checks and helpers, the dispatch mapping, and
+`sys.version`. Identity is checked before and after acquisition. This conservatively
+invalidates identity after source/runtime changes. Local code and source files are
+trusted; this is not runtime-code attestation or a signature. R3 must match a trusted
+installed oracle and recompute observations before any acceptance decision.
+
+`validate_bundle`, `dump_bundle`, `load_bundle` and `replay_readiness` support both
+versions. They do not execute the oracle, import code from artifacts or call a
+provider. v1 seals/fields are retained exactly; no v1→v2 migration is offered,
+because v1 does not retain capture bytes. Unknown versions fail visibly.
+
+The 8 MB bundle limit includes base64 expansion and all embedded captures. Input
+size is checked before acquisition; accumulated size is checked after each run,
+before another provider call. On an aggregate-limit stop or detected oracle drift,
+`CaptureAssemblyError.partial_evidence` retains the collected experiment in memory
+without a bundle version/seal. It is not a valid replay bundle. This is not durable
+storage: process crashes and other acquisition exceptions can still lose evidence.
+Persisting partial work and exporting through the CLI are the remaining R2 gate,
+not an implicit guarantee of this Python acquisition API.
+
+Run `PYTHONPATH=src python3 -m pytest tests/test_capture_bundle.py tests/test_replay_bundle_contract.py -q`.
+Transport is mocked in these tests; no live provider evidence is claimed.

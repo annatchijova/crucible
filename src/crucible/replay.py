@@ -11,6 +11,7 @@ import re
 from .ir import canonical_bytes, digest_bytes, digest_payload
 
 REPLAY_VERSION = 'crucible-replay-bundle/v1'
+CAPTURE_REPLAY_VERSION = 'crucible-replay-bundle/v2'
 MAX_BUNDLE_BYTES = 8_000_000
 _DIGEST = re.compile(r'sha256:[0-9a-f]{64}\Z')
 
@@ -32,9 +33,15 @@ def _digest(value, label):
 
 def validate_bundle(bundle):
     """Check schema, seals and cross-links, returning an independent copy."""
-    if type(bundle) is not dict or bundle.get('schema_version') != REPLAY_VERSION:
+    if type(bundle) is not dict or bundle.get('schema_version') not in (REPLAY_VERSION, CAPTURE_REPLAY_VERSION):
         raise ValueError('unsupported replay schema version')
-    _fields(bundle, 'schema_version task task_digest variants oracle runs bundle_digest', 'bundle')
+    captured = bundle['schema_version'] == CAPTURE_REPLAY_VERSION
+    fields = 'schema_version task task_digest variants oracle runs bundle_digest'
+    _fields(bundle, fields + (' request_adapter' if captured else ''), 'bundle')
+    if captured:
+        from .capture_contract import ADAPTER_VERSION, capture_projection
+        if bundle['request_adapter'] != ADAPTER_VERSION:
+            raise ValueError('unsupported request adapter')
     if len(canonical_bytes(bundle)) > MAX_BUNDLE_BYTES:
         raise ValueError('replay bundle exceeds byte limit')
     task = bundle['task']
@@ -73,13 +80,19 @@ def validate_bundle(bundle):
         raise ValueError('one run per variant is required')
     seen = set()
     for run in bundle['runs']:
-        _fields(run, 'variant_id request response observations', 'run')
+        _fields(run, 'variant_id capture observations' if captured else 'variant_id request response observations', 'run')
         _text(run['variant_id'], 'run variant_id')
         variant_id = run['variant_id']
         if variant_id not in by_id or variant_id in seen:
             raise ValueError('unknown or duplicate run variant')
         seen.add(variant_id)
-        request = run['request']
+        if captured:
+            request, response = capture_projection(run['capture'])
+            if run['capture']['guidance'] != {'system_prompt': by_id[variant_id]['skill_text'],
+                                              'user_prompt': task['task_prompt']}:
+                raise ValueError('capture task/variant mismatch')
+        else:
+            request, response = run['request'], run['response']
         _fields(request, 'model provider system_prompt user_prompt temperature max_tokens', 'request')
         for key in ('model', 'provider', 'user_prompt'):
             _text(request[key], key)
@@ -89,9 +102,8 @@ def validate_bundle(bundle):
                 raise ValueError(f'{key}: expected nonnegative integer')
         if request['user_prompt'] != task['task_prompt']:
             raise ValueError('request task mismatch')
-        if request['system_prompt'] != by_id[variant_id]['skill_text']:
+        if not captured and request['system_prompt'] != by_id[variant_id]['skill_text']:
             raise ValueError('request variant mismatch')
-        response = run['response']
         _fields(response, 'status output output_digest response_id finish_reason truncated usage error', 'response')
         if response['status'] not in ('COMPLETED', 'ERROR', 'BLOCKED'):
             raise ValueError('invalid response status')
@@ -110,6 +122,8 @@ def validate_bundle(bundle):
         observations = run['observations']
         if type(observations) is not list or len(observations) > len(property_ids):
             raise ValueError('invalid observations')
+        if captured and response['status'] != 'COMPLETED' and observations:
+            raise ValueError('observations require captured textual output')
         observed = set()
         for observation in observations:
             _fields(observation, 'property_id status evidence', 'observation')
@@ -132,7 +146,11 @@ def replay_readiness(bundle):
     bundle = validate_bundle(bundle)
     reasons = []
     for run in bundle['runs']:
-        response = run['response']
+        if bundle['schema_version'] == CAPTURE_REPLAY_VERSION:
+            from .capture_contract import capture_projection
+            _, response = capture_projection(run['capture'])
+        else:
+            response = run['response']
         if (response['status'] != 'COMPLETED' or response['error'] is not None
                 or response['truncated'] is not False or not response['output']
                 or response['finish_reason'] != 'stop' or not response['response_id']

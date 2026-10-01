@@ -69,9 +69,10 @@ y la [arquitectura de destino](TECHNICAL.md#2-destination-architecture).
   12 rechazos), pero no se conservó el artefacto completo. Las opiniones del modelo
   no son verdad de referencia. Ver la [revisión del runtime](docs/red-team/2026-09-30-nebius-runtime-red-team.md).
 - Está implementado el [contrato de almacenamiento para replay offline](docs/REPLAY_BUNDLE.md).
-  La captura opcional del ejecutor conserva los bytes de solicitud/respuesta bajo
-  [pruebas locales](tests/test_runtime_capture.py). Faltan integración/exportación
-  del bundle, ejecución offline de oráculos y evidencia real de reparación.
+  El bundle v2 vincula los bytes de solicitud/respuesta con la tarea, las variantes
+  y la identidad registrada del oráculo bajo [pruebas locales](tests/test_capture_bundle.py),
+  conservando el soporte de v1. Faltan exportación persistente por CLI,
+  ejecución offline de oráculos y evidencia real de reparación.
   El [checkpoint activo](docs/NEXT_LEVELS.md) organiza ese trabajo.
 
 El experimento conductual usa NVIDIA Nemotron mediante Nebius Token Factory.

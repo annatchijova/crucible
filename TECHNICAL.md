@@ -375,9 +375,15 @@ and response bodies without legacy normalization. This is transport evidence,
 not a behavioral result or replay bundle. Empty guidance still becomes the legacy
 default system prompt on the wire; both original guidance and actual request are
 retained. See the [capture contract](docs/REPLAY_BUNDLE.md#executor-transport-capture).
-R2 remains open for capture-to-bundle integration, oracle/source identity and CLI
-export. R3 offline oracle execution and R4 real repair evidence remain pending
-under the [active plan](docs/NEXT_LEVELS.md).
+The v2 bundle now embeds validated captures with explicit
+`nebius-chat-guidance/v1` prompt transformation, task/variant cross-links and the
+lexical oracle's source/runtime fingerprint. The v1 reader is unchanged in scope;
+no historical evidence is silently migrated. Request/response projections are
+derived from raw bytes on load; missing provider metadata is not synthesized.
+See [v2 acquisition and compatibility](docs/REPLAY_BUNDLE.md#capture-backed-bundle-v2).
+R2 remains open for durable CLI export and interrupted-run recovery. R3 offline
+oracle execution and R4 real repair evidence remain pending under the
+[active plan](docs/NEXT_LEVELS.md).
 
 ## 17. Runtime and API operations
 
