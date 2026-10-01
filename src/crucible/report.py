@@ -119,12 +119,14 @@ def run_full_report(
             "graph_property_count": len(graph["graph_properties"]),
         }
 
-        # L2.5: semantic redundancy confirmation layer.
-        # Uses the mock executor for determinism in the composite report.
-        # The Nebius executor is used when NEBIUS_API_KEY is available.
-        confirm_executor = NebiusConfirmExecutor()
-        if not confirm_executor.is_available():
+        # Explicit local execution applies to confirmation too: an ambient
+        # credential must not silently select an external provider.
+        if isinstance(executor, LocalExecutor):
             confirm_executor = MockConfirmExecutor()
+        else:
+            confirm_executor = NebiusConfirmExecutor()
+            if not confirm_executor.is_available():
+                confirm_executor = MockConfirmExecutor()
         confirmation = confirm_candidates(audit, ir, confirm_executor)
         report["levels"]["L2.5"] = {
             "confirmation_version": confirmation["schema_version"],

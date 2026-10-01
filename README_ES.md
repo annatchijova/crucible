@@ -1,5 +1,10 @@
 # Crucible
 
+Plan activo: [objetivos, criterios de cierre y bloque de ejecución](docs/NEXT_LEVELS.md).
+El bloque actual es evidencia de runtime y replay offline, no sumar funciones al
+scanner. `--report --local-executor` mantiene local también la confirmación aunque
+haya una API key; el bundle de replay y la evidencia real de reparación siguen pendientes.
+
 **Ingeniería de verificación para metodologías de agentes de IA — construido sobre Nebius AI Cloud con NVIDIA Nemotron.**
 
 [English](README.md) · **Español** · [Technical README](TECHNICAL.md)

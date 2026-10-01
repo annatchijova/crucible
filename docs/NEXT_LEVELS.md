@@ -4,6 +4,59 @@ This is a sequence of acceptance gates, not a declaration of completed levels.
 Existing implementations and runtime evidence must pass their gates before a
 level is called complete. Scheduling remains separate from technical readiness.
 
+## Execution checkpoint — 2026-10-01
+
+Destination remains methodology verification and engineering: evidence-backed
+findings, compositional analysis, seeded falsifiers, behavioral comparison and
+repairs admitted only through explicit deterministic gates. Filesystem hardening
+is an inherited ingestion invariant, not a new product level for every patch.
+
+The recent ingestion block (`2504836` through `175bae1`) delivered nested
+independent collection scanning, bounded enumeration/reads, source identity
+checks and explicit error coverage. This is an implementation milestone, not
+closure of the entire input-scope gate below. Do not use test counts as a proxy
+for methodological accuracy or release readiness.
+
+| Product outcome | Evidence now | Remaining exit evidence | Work state |
+|---|---|---|---|
+| Audit one skill, a repository or installed packages with honest scope | Local APIs/CLI, sealed independent collection, ingestion regression cases | Shared cross-mode coverage contract, explicit roots, missing-context reporting, equivalence fixtures | Implemented in part; gate open |
+| Inspect and replay a bounded model experiment without recontacting the provider | Saved real L5 four-way run; runtime metadata; deterministic local harness | Offline replay bundle with oracle identity, full observations, negative controls and source links | **Active construction block** |
+| Justify findings and repair decisions independently | Seeded mutations, external-corpus fixtures, local repair loop | Held-out adjudication, class-level denominators, repeated pinned experiments, real repair evidence | Gate open; not benchmarked |
+| Use and publish the complete workflow | CLI, API and read-only viewer | End-to-end user tasks, accessibility, deployment/privacy review and release evidence | Gate open; not release-ready |
+
+### Active block: runtime evidence and replay
+
+1. **R1 — explicit local execution:** `--report --local-executor` must keep
+   confirmation local even if a provider key exists. Evidence: regression test
+   forbidding provider selection with a dummy key, plus report/CLI contracts.
+2. **R2 — replay bundle contract:** pin task, skill/source digests, request
+   configuration, complete raw observations, runtime status and oracle identity.
+   Export/import must preserve original evidence; missing/truncated inputs must
+   not earn acceptance. No implicit remote calls during replay.
+3. **R3 — offline replay:** reproduce observations and acceptance decisions with
+   the pinned oracle, reject tampered/mismatched bundles, and distinguish replay
+   from re-evaluation under a newer oracle. Keep historical outputs untouched.
+4. **R4 — real repair evidence:** only after R2/R3, run the authorized provider
+   path and retain a full evidence bundle, including rejected/failed outcomes.
+   A favorable single run does not close independent evaluation.
+
+R1 is locally verified by `tests/test_report_local_boundary.py`; R2–R4 remain
+pending. This turn does not establish a replay bundle or a real repair run.
+
+### Selection and closure discipline
+
+- Every work block names its product outcome, prerequisite, executable exit
+  evidence and preserved invariants before implementation.
+- One active construction block at a time. Ingestion regressions can interrupt
+  it only with a reproduced safety/correctness failure; otherwise track them
+  against their open gate instead of extending hardening indefinitely.
+- Per-block red team checks new claims and inherited invariants; local contract
+  checks support each change. Integrated review/verification precedes release.
+- Handoffs report which exit criterion moved, what evidence was produced and
+  what remains open, not merely commits or number of passing tests.
+- Calendar estimates are not readiness evidence. Revalidate event dates/rules
+  before release planning; do not assume an old “50 days remaining” is current.
+
 ## Current closure: confirmation evidence
 
 Both confirmation entry points now preserve runtime metadata in each sealed
@@ -27,8 +80,11 @@ Implemented increment: installed scans now also search `~/.codex/skills` for
 direct child packages. Successful API results include source paths, discovered,
 analyzed and skipped counts, and PARTIAL coverage when duplicate package names
 are omitted. Existing root precedence is retained. This coverage is API envelope
-metadata, not part of the sealed audit. Nested system/plugin collections, custom
-Codex homes and empty/error coverage envelopes remain pending. The CLI preserves
+metadata, not part of the sealed audit. The independent collection mode now
+discovers nested packages (including `.system`), retains homonyms and seals
+COMPLETE/PARTIAL/EMPTY coverage; bounds and identity checks are documented in
+the READMEs. External plugin caches/custom roots, custom Codex homes and a common
+cross-mode coverage envelope remain pending. The CLI preserves
 its audit-only JSON by default and warns on stderr when coverage is PARTIAL.
 `--scan-installed --include-coverage` emits an envelope with `audit` and `coverage`;
 coverage remains outside the audit seal.

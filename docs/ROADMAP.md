@@ -2,6 +2,13 @@
 
 **Status: in progress.** This is the public English roadmap. It describes coherent product levels, not a list of disconnected demo features.
 
+**Current execution checkpoint:** [NEXT_LEVELS.md](NEXT_LEVELS.md) governs active
+work, open acceptance gates and evidence as of 2026-10-01. The level descriptions
+below retain historical implementation observations; old counts, BLOCKED labels
+and “complete” labels are not current release certification. In particular, real
+L5 evidence is saved, confirmation was run without retaining its full artifact,
+and independent evaluation plus real end-to-end repair evidence remain open.
+
 The external boundary is explicit: NVIDIA already supplies security scanning, validation, semantic overlap, live evaluation, signatures, and publication governance. CRUCIBLE's roadmap therefore prioritizes methodology IR, typed conditional composition, explicit requirement-to-oracle coverage, mutation testing, and bounded behavioral evidence. The current claim matrix is in [COMPETITIVE_BOUNDARY.md](COMPETITIVE_BOUNDARY.md).
 
 ## Destination

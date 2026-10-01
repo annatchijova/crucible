@@ -8,6 +8,11 @@
 
 > **Status: In progress — architecture and evaluation contract first.**
 
+Active construction plan: [product gates and execution checkpoint](docs/NEXT_LEVELS.md).
+The current block is runtime evidence and offline replay, not additional scanner
+features. Explicit `--report --local-executor` keeps confirmation local even when
+a provider API key is present; the replay bundle and real repair evidence remain pending.
+
 Agent skills are executable methodology: they change what a capable coding agent notices, prioritizes, verifies, and does. Existing tools can validate their shape, scan them for malicious behavior, and evaluate whether an agent performs better with them. That still leaves a harder question:
 
 > **Is this methodology coherent, verifiable, composable, and worth adding to the corpus?**
