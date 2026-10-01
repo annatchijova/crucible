@@ -304,8 +304,14 @@ Detected replacements fail closed without retaining a descriptor per entry.
 Identity metadata is runtime-only and does not enter canonical artifacts.
 This does not detect inode reuse or preserve content as it existed at discovery;
 same-inode edits before opening are not a snapshot violation detected by this check.
-Root resolution, mount changes, installed-collection discovery and legacy staging
-copies remain outside this guarantee. Limits bound counts and input, not filesystem latency or all parser
+Root resolution, mount changes and installed-collection discovery remain outside
+this guarantee. Legacy installed staging now discovers each selected package with
+the corpus walker and copies only bounded, identity-checked SKILL.md bytes into
+the private temporary tree. Nested paths and package precedence are preserved;
+the 500-file and 20 MB budgets are shared across staged packages. Non-skill
+attachments are not copied. Initial package enumeration remains unbounded, and
+per-package discovery budgets are not a global source traversal budget.
+Limits bound counts and input, not filesystem latency or all parser
 and downstream analysis costs.
 
 - Natural-language contradiction and entailment are not fully decidable from Markdown.

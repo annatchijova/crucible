@@ -14,13 +14,12 @@ The API is stateless: no input is retained after the response is sent.
 from __future__ import annotations
 
 import os
-import shutil
 import tempfile
 from pathlib import Path
 from typing import Any
 
 from .auditor import audit_corpus
-from .compiler import compile_corpus, compile_skill_file
+from .compiler import compile_corpus, compile_skill_file, _discover_corpus, _read_skill_bytes
 from .ir import digest_payload
 
 _MAX_COLLECTION_DIRECTORIES = 10_000
@@ -99,13 +98,14 @@ def scan_installed_skills() -> dict[str, Any]:
                 str(p) for p in _standard_skill_dirs()
             ],
         }
-    # Merge all found skill directories into a single temp directory.
-    # symlinks=True preserves symlinks so the compiler's symlink check
-    # can catch symlinked SKILL.md files (RT-02 fix).
+    # Stage only compiler inputs, with source identity and byte checks before
+    # writing. Preserve nested SKILL.md paths and historical package precedence.
     skipped_duplicates: list[dict[str, str]] = []
     coverage_items: list[dict[str, str]] = []
     with tempfile.TemporaryDirectory(prefix="crucible-installed-") as tmpdir:
         count = 0
+        staged_skills = 0
+        staged_bytes = 0
         for skill_dir in skill_dirs:
             for skill_path in sorted(skill_dir.iterdir()):
                 if not skill_path.is_dir():
@@ -125,7 +125,24 @@ def scan_installed_skills() -> dict[str, Any]:
                         "skipped_from": str(skill_dir),
                     })
                     continue
-                shutil.copytree(skill_path, dest, symlinks=True)
+                identities = {}
+                paths = _discover_corpus(
+                    skill_path, _MAX_SCAN_SKILLS - staged_skills, identities=identities
+                )
+                if skill_md not in paths:
+                    raise ValueError('installed package entry point disappeared during discovery')
+                for source in paths:
+                    if source.is_symlink():
+                        raise ValueError('symlinked SKILL.md is not allowed')
+                    raw = _read_skill_bytes(
+                        source, min(1_000_000, _MAX_COLLECTION_BYTES - staged_bytes),
+                        identities=identities,
+                    )
+                    target = dest / source.relative_to(skill_path)
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(raw)
+                    staged_bytes += len(raw)
+                    staged_skills += 1
                 coverage_items.append({
                     'source_path': str(skill_md),
                     'skill_name': skill_path.name,

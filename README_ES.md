@@ -91,6 +91,13 @@ sellado; no evalúa composición entre paquetes. Cobertura parcial o vacía devu
 código de salida 1. Las rutas personalizadas y cachés externas de plugins todavía
 no se descubren automáticamente.
 
+El modo antiguo `--scan-installed` conserva la prioridad por nombre y copia
+temporalmente solo los `SKILL.md`, manteniendo rutas anidadas y verificando la
+identidad de origen. Admite hasta 500 archivos de skills, 20 MB acumulados y
+1 MB por archivo; no copia adjuntos ajenos al análisis. La enumeración inicial
+de paquetes todavía no está acotada y los presupuestos de descubrimiento se
+aplican por separado a cada paquete.
+
 Límites: 500 entradas registradas, 10.000 directorios visitados, 1 MB por skill y
 20 MB acumulados de entrada admitida. En plataformas POSIX compatibles, el modo
 colección fija descriptores de directorio y rechaza symlinks en cada componente

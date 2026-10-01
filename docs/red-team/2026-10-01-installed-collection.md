@@ -115,3 +115,22 @@ The contract is rejection of detected identity changes, not an atomic snapshot.
 Inode reuse, same-inode content edits before opening, root resolution and mount
 semantics remain limitations. Installed-collection discovery and legacy staging
 are separate paths and have not acquired these cross-stage checks.
+
+## Follow-up: bounded legacy installed staging
+
+The legacy scanner copied entire package trees before compiler limits applied.
+Three tests failed before the fix: no recursive tree copying, staging byte-limit
+enforcement before compilation, and skill-count enforcement before compilation.
+A compatibility test confirmed nested skill paths were already part of the output.
+
+Staging now discovers selected packages through the corpus walker, checks source
+identities during bounded reads, and writes only SKILL.md inputs. The 500-file
+and 20,000,000-byte allowances are shared across packages, with a 1 MB file cap.
+Eight tests cover those contracts, exact/shared byte budgets, source FIFO rejection,
+post-discovery replacement, and ignoring an unrelated FIFO. Existing duplicate
+precedence, symlink rejection and deterministic artifact tests remain applicable.
+
+Remaining scope: the initial sorted package listing is unbounded; discovery
+budgets apply per selected package rather than globally across source roots.
+The installed-collection walker is unchanged. Filesystem snapshot and inode
+limitations from the corpus reader still apply.

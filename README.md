@@ -152,6 +152,10 @@ independently, retaining source paths and errors in a sealed report. It does not
 evaluate cross-package composition. Partial or empty coverage exits with code 1.
 The legacy `--scan-installed` retains name precedence and exposes omissions via
 `--include-coverage` and stderr warnings.
+It stages only `SKILL.md` inputs, preserving nested paths, through bounded reads
+with source identity checks. Staging admits at most 500 skill files and 20 MB
+total, with 1 MB per file; unrelated attachments are not copied. Initial package
+listing is still unbounded, and discovery budgets apply separately per package.
 
 Limits: 500 recorded entries, 10,000 visited directories, 1 MB per skill, and
 20 MB cumulative admitted input. On supported POSIX platforms, collection reads
