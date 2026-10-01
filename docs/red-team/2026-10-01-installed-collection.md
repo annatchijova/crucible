@@ -96,7 +96,22 @@ descriptor use and closure, injected enumeration errors, queued-child symlink
 replacement, and cleanup after budget failure. Existing permission-error tests
 now target inode identity so the same assertions apply to descriptor enumeration.
 
-Remaining scope: pending directories and discovered files are still represented
+Remaining scope at that stage: pending directories and discovered files are still represented
 by paths. Reopening rejects symlinks but does not pin identity across all stages;
 ordinary-directory replacement, root resolution, mount changes and snapshots are
 not covered. Installed-collection discovery and legacy staging remain unchanged.
+
+## Follow-up: identity checks across corpus stages
+
+Five failing tests demonstrated replacement of a root, parent directory or skill
+after discovery, replacement of a queued directory, and replacement of a file
+at its final open. Recorded device/inode pairs are now checked against directory
+and file descriptors before enumeration or reading. Additional tests verify
+parent rejection even when its skill is a hard link to the original inode,
+descriptor cleanup on rejection, and identical artifacts across distinct inodes.
+Identity records are not serialized into deterministic artifacts.
+
+The contract is rejection of detected identity changes, not an atomic snapshot.
+Inode reuse, same-inode content edits before opening, root resolution and mount
+semantics remain limitations. Installed-collection discovery and legacy staging
+are separate paths and have not acquired these cross-stage checks.

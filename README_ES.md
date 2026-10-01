@@ -99,9 +99,12 @@ observados de tamaño o timestamps. El compilador de repositorios ahora comparte
 esta lectura acotada (1 MB por archivo), conservando rutas de origen relativas.
 Todavía resuelve la raíz antes de descubrir archivos: admite aliases symlink de
 esa raíz. El descubrimiento del repositorio enumera descriptores de directorio
-fijados, abiertos sin seguir symlinks. Las rutas pendientes se reabren de forma
-segura, pero no se conserva la identidad de todo el árbol entre recorrido y
-lectura. El descubrimiento de la colección instalada sigue basado en rutas.
+fijados, abiertos sin seguir symlinks. Registra dispositivo/inode de la raíz,
+directorios descubiertos y archivos de skills; los contrasta con los descriptores
+antes de enumerar o leer y aborta ante reemplazos detectados. No es una instantánea:
+la reutilización de inodes y los cambios de contenido sobre el mismo inode entre
+descubrimiento y apertura quedan fuera de esa comprobación.
+El descubrimiento de la colección instalada sigue basado en rutas.
 El compilador de repositorios
 limita la entrada acumulada a 20 MB, los directorios a 10.000 (incluida la raíz)
 y las entradas descubiertas a 100.000 (incluidos archivos ajenos a las skills).

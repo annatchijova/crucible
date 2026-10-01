@@ -297,8 +297,13 @@ instead of producing a partial corpus. A shared 20,000,000-byte allowance is
 enforced by the byte reader, independently of the optional skill-count cap.
 Corpus enumeration uses `scandir(fd)` on pinned directories opened component by
 component with `O_DIRECTORY | O_NOFOLLOW`. Descriptors close on success and errors.
-Pending directories are still stored as paths and reopened with that same policy;
-replacement by ordinary directories across stages is not an identity guarantee.
+Pending paths carry recorded `(st_dev, st_ino)` identities for the root,
+discovered directories and skills. Reopened directory descriptors are checked
+component by component, and the final file descriptor is checked before reading.
+Detected replacements fail closed without retaining a descriptor per entry.
+Identity metadata is runtime-only and does not enter canonical artifacts.
+This does not detect inode reuse or preserve content as it existed at discovery;
+same-inode edits before opening are not a snapshot violation detected by this check.
 Root resolution, mount changes, installed-collection discovery and legacy staging
 copies remain outside this guarantee. Limits bound counts and input, not filesystem latency or all parser
 and downstream analysis costs.

@@ -74,11 +74,11 @@ def test_queued_child_replaced_with_symlink_is_rejected(tmp_path, monkeypatch):
     (external / 'SKILL.md').touch()
     original = compiler._scan_corpus_directory
 
-    def swap(path):
+    def swap(path, **kwargs):
         if path == child:
             child.rename(tmp_path / 'saved-child')
             child.symlink_to(external, target_is_directory=True)
-        return original(path)
+        return original(path, **kwargs)
 
     monkeypatch.setattr(compiler, '_scan_corpus_directory', swap)
     with pytest.raises(OSError):

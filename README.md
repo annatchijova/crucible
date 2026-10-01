@@ -161,8 +161,11 @@ reject the read. The repository compiler now shares this bounded reader (1 MB
 per file), preserving relative source paths. Its root is still resolved before
 discovery; symlink aliases of that root are not rejected. Repository discovery
 enumerates pinned directory descriptors opened without following symlinks.
-Pending paths are reopened safely, but directory identity is not preserved across
-the whole traversal and later reads. Installed-collection discovery still uses
+Recorded device/inode identities for the root, discovered directories and skill
+files are checked on opened descriptors before enumeration or reading; detected
+replacements abort. This is not a snapshot: inode reuse and in-place content
+changes between discovery and opening remain outside this check.
+Installed-collection discovery still uses
 path-based traversal. The repository compiler caps cumulative input at 20 MB, directories
 at 10,000 (including the root), and discovered entries at 100,000 (including
 unrelated files). Enumeration errors abort compilation; these limits also apply

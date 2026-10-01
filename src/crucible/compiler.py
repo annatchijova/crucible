@@ -103,10 +103,20 @@ _ACTION_VERBS = {
 }
 
 
+def _file_identity(info: os.stat_result) -> tuple[int, int]:
+    return info.st_dev, info.st_ino
+
+
+def _check_identity(fd: int, path: Path, identities: dict | None) -> None:
+    if identities is not None and path in identities:
+        if _file_identity(os.fstat(fd)) != identities[path]:
+            raise ValueError(f'corpus identity changed: {path}')
+
+
 @contextmanager
-def _scan_corpus_directory(path: Path):
+def _scan_corpus_directory(path: Path, *, identities: dict | None = None):
     """Enumerate a pinned directory, never reopening its pathname for scandir."""
-    fd = _open_path_descriptor(path, directory=True)
+    fd = _open_path_descriptor(path, directory=True, identities=identities)
     try:
         with os.scandir(fd) as children:
             yield children
@@ -114,8 +124,12 @@ def _scan_corpus_directory(path: Path):
         os.close(fd)
 
 
-def _discover_corpus(root: Path, max_skills: int | None) -> list[Path]:
+def _discover_corpus(root: Path, max_skills: int | None,
+                     *, identities: dict | None = None) -> list[Path]:
     """Bound enumeration before sorting; propagate incomplete traversal errors."""
+    if identities is None:
+        identities = {}
+    identities[root] = _file_identity(root.stat(follow_symlinks=False))
     pending = [root]
     paths = []
     directories = 1
@@ -124,12 +138,15 @@ def _discover_corpus(root: Path, max_skills: int | None) -> list[Path]:
         directory = pending.pop()
         if directories > _MAX_CORPUS_DIRECTORIES:
             raise ValueError('corpus exceeds directory limit')
-        with _scan_corpus_directory(directory) as children:
+        with _scan_corpus_directory(directory, identities=identities) as children:
             for child in children:
                 entries += 1
                 if entries > _MAX_CORPUS_ENTRIES:
                     raise ValueError('corpus exceeds discovery entry limit')
                 path = directory / child.name
+                is_directory = child.is_dir(follow_symlinks=False)
+                if child.name == 'SKILL.md' or is_directory:
+                    identities[path] = _file_identity(child.stat(follow_symlinks=False))
                 if child.name == 'SKILL.md':
                     paths.append(path)
                     if max_skills is not None and len(paths) > max_skills:
@@ -137,7 +154,7 @@ def _discover_corpus(root: Path, max_skills: int | None) -> list[Path]:
                             f'corpus contains at least {len(paths)} SKILL.md files, '
                             f'exceeding the limit of {max_skills}'
                         )
-                if child.is_dir(follow_symlinks=False):
+                if is_directory:
                     directories += 1
                     if directories > _MAX_CORPUS_DIRECTORIES:
                         raise ValueError('corpus exceeds directory limit')
@@ -157,7 +174,8 @@ def compile_corpus(root: Path | str, max_skills: int | None = None) -> dict[str,
     if not corpus_root.is_dir():
         raise ValueError(f"corpus root is not a directory: {root}")
 
-    paths = _discover_corpus(corpus_root, max_skills)
+    identities: dict[Path, tuple[int, int]] = {}
+    paths = _discover_corpus(corpus_root, max_skills, identities=identities)
     if not paths:
         raise ValueError(f"corpus contains no SKILL.md files: {root}")
 
@@ -166,7 +184,9 @@ def compile_corpus(root: Path | str, max_skills: int | None = None) -> dict[str,
     for path in paths:
         if path.is_symlink():
             raise ValueError(f'{path.relative_to(corpus_root)}: symlinked SKILL.md is not allowed')
-        raw_bytes = _read_skill_bytes(path, min(1_000_000, _MAX_CORPUS_BYTES - bytes_seen))
+        raw_bytes = _read_skill_bytes(
+            path, min(1_000_000, _MAX_CORPUS_BYTES - bytes_seen), identities=identities
+        )
         bytes_seen += len(raw_bytes)
         skills.append(_compile_skill(path, corpus_root, raw_bytes=raw_bytes))
     names = [skill["identity"]["name"] for skill in skills]
@@ -182,7 +202,8 @@ def compile_corpus(root: Path | str, max_skills: int | None = None) -> dict[str,
     return payload
 
 
-def _open_path_descriptor(path: Path, *, directory: bool = False) -> int:
+def _open_path_descriptor(path: Path, *, directory: bool = False,
+                          identities: dict | None = None) -> int:
     """Pin each directory before opening the next component, refusing links."""
     import os
     if not all(hasattr(os, flag) for flag in ('O_NOFOLLOW', 'O_DIRECTORY', 'O_NONBLOCK')):
@@ -193,11 +214,15 @@ def _open_path_descriptor(path: Path, *, directory: bool = False) -> int:
     flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_DIRECTORY
     directory_fd = os.open(absolute.anchor, flags)
     try:
+        current = Path(absolute.anchor)
+        _check_identity(directory_fd, current, identities)
         components = absolute.parts[1:] if directory else absolute.parts[1:-1]
         for component in components:
             next_fd = os.open(component, flags, dir_fd=directory_fd)
             os.close(directory_fd)
             directory_fd = next_fd
+            current = current / component
+            _check_identity(directory_fd, current, identities)
         if directory:
             return os.dup(directory_fd)
         return os.open(absolute.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
@@ -216,12 +241,14 @@ def compile_skill_file(path: Path | str, max_bytes: int = 1_000_000) -> dict[str
     return payload
 
 
-def _read_skill_bytes(path: Path, max_bytes: int = 1_000_000) -> bytes:
+def _read_skill_bytes(path: Path, max_bytes: int = 1_000_000,
+                      *, identities: dict | None = None) -> bytes:
     """Capture bounded bytes from one regular file without reopening its path."""
     import os
     import stat
-    fd = _open_path_descriptor(path)
+    fd = _open_path_descriptor(path, identities=identities)
     try:
+        _check_identity(fd, path, identities)
         before = os.fstat(fd)
         if not stat.S_ISREG(before.st_mode):
             raise ValueError('SKILL.md must be a regular file')
