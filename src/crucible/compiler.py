@@ -133,7 +133,7 @@ def compile_corpus(root: Path | str, max_skills: int | None = None) -> dict[str,
 
 
 def compile_skill_file(path: Path | str) -> dict[str, Any]:
-    """Compile exactly one package entry point, retaining local references."""
+    """Compile exactly one entry point using the existing extraction rules."""
     path = Path(path)
     skill = _compile_skill(path, path.parent)
     payload = {'schema_version': SCHEMA_VERSION, 'skills': [skill]}

@@ -134,6 +134,10 @@ PYTHONPATH=src python3 -m crucible.cli --scan-installed > installed-audit.json
 # Include coverage and source paths (partial scans also warn on stderr)
 PYTHONPATH=src python3 -m crucible.cli --scan-installed --include-coverage > installed-scan.json
 
+# Audit nested installed packages independently, retaining homonymous skills
+# Exit 1 means partial or empty coverage; cross-package composition is not evaluated.
+PYTHONPATH=src python3 -m crucible.cli --scan-installed-collection > collection.json
+
 # Start the HTTP API server
 PYTHONPATH=src python3 -m crucible.cli --serve 127.0.0.1:8000
 

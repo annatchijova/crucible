@@ -22,6 +22,8 @@ from typing import Any
 from .auditor import audit_corpus
 from .compiler import compile_corpus, compile_skill_file
 from .ir import digest_payload
+
+_MAX_COLLECTION_DIRECTORIES = 10_000
 from .graph import build_composition_graph
 
 
@@ -160,6 +162,7 @@ def scan_installed_collection() -> dict[str, Any]:
     remain in coverage; this mode makes no cross-package composition claim.
     """
     entries = []
+    directories_seen = 0
     for root in _standard_skill_dirs():
         if not root.exists():
             continue
@@ -171,6 +174,9 @@ def scan_installed_collection() -> dict[str, Any]:
             entries.append({'source_path': str(error.filename), 'status': 'ERROR',
                             'error': 'directory could not be read'})
         for directory, dirs, files in os.walk(root, followlinks=False, onerror=walk_error):
+            directories_seen += 1
+            if directories_seen > _MAX_COLLECTION_DIRECTORIES:
+                raise ValueError('installed collection exceeds directory limit')
             dirs.sort()
             for name in list(dirs):
                 child = Path(directory) / name
@@ -185,6 +191,8 @@ def scan_installed_collection() -> dict[str, Any]:
             path = Path(directory) / 'SKILL.md'
             entry = {'source_path': str(path)}
             try:
+                if path.is_symlink() or not path.is_file():
+                    raise ValueError('SKILL.md must be a regular non-symlink file')
                 if path.stat().st_size > 1_000_000:
                     raise ValueError('SKILL.md exceeds 1MB')
                 ir = compile_skill_file(path)
