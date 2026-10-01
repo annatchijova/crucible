@@ -131,6 +131,9 @@ cat SKILL.md | PYTHONPATH=src python3 -m crucible.cli --scan-skill > audit.json
 # Scan your installed skills
 PYTHONPATH=src python3 -m crucible.cli --scan-installed > installed-audit.json
 
+# Include coverage and source paths (partial scans also warn on stderr)
+PYTHONPATH=src python3 -m crucible.cli --scan-installed --include-coverage > installed-scan.json
+
 # Start the HTTP API server
 PYTHONPATH=src python3 -m crucible.cli --serve 127.0.0.1:8000
 

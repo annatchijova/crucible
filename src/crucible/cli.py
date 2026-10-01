@@ -109,7 +109,13 @@ def main() -> int:
         const="127.0.0.1:8000",
         help="start the HTTP API server (L11)",
     )
+    parser.add_argument(
+        '--include-coverage', action='store_true',
+        help='include installed-scan coverage alongside the sealed audit',
+    )
     args = parser.parse_args()
+    if args.include_coverage and not args.scan_installed:
+        parser.error('--include-coverage requires --scan-installed')
 
     if args.view:
         with open(args.view, encoding="utf-8") as f:
@@ -139,12 +145,23 @@ def main() -> int:
         return 0
 
     if args.scan_installed:
+        import sys
         from .api import scan_installed_skills
         result = scan_installed_skills()
         if result.get("error"):
             print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
             return 1
-        print(json.dumps(result["audit"], ensure_ascii=False, indent=2, sort_keys=True))
+        coverage = result.get('coverage')
+        if coverage and coverage['status'] == 'PARTIAL':
+            print(
+                f"PARTIAL installed scan: {coverage['analyzed']} analyzed; "
+                f"{coverage['skipped']} duplicate packages skipped.",
+                file=sys.stderr,
+            )
+        output = result['audit']
+        if args.include_coverage:
+            output = {'audit': result['audit'], 'coverage': coverage}
+        print(json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
 
     if args.mutate:

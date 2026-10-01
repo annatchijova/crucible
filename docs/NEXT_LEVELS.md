@@ -28,8 +28,10 @@ direct child packages. Successful API results include source paths, discovered,
 analyzed and skipped counts, and PARTIAL coverage when duplicate package names
 are omitted. Existing root precedence is retained. This coverage is API envelope
 metadata, not part of the sealed audit. Nested system/plugin collections, custom
-Codex homes, empty/error coverage envelopes, and CLI display of coverage remain
-pending; the legacy CLI currently projects only the audit.
+Codex homes and empty/error coverage envelopes remain pending. The CLI preserves
+its audit-only JSON by default and warns on stderr when coverage is PARTIAL.
+`--scan-installed --include-coverage` emits an envelope with `audit` and `coverage`;
+coverage remains outside the audit seal.
 
 - Report requested scope, discovered skills, analyzed skills, exclusions, and
   failures. Never equate an empty or partial scan with a clean corpus.
