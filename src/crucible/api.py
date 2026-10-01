@@ -20,7 +20,8 @@ from pathlib import Path
 from typing import Any
 
 from .auditor import audit_corpus
-from .compiler import compile_corpus
+from .compiler import compile_corpus, compile_skill_file
+from .ir import digest_payload
 from .graph import build_composition_graph
 
 
@@ -150,6 +151,61 @@ def scan_installed_skills() -> dict[str, Any]:
                 'searched': [str(p) for p in _standard_skill_dirs()],
             },
         }
+
+
+def scan_installed_collection() -> dict[str, Any]:
+    """Audit nested packages independently; names need not be globally unique.
+
+    Directory symlinks are recorded but never followed. Per-package errors
+    remain in coverage; this mode makes no cross-package composition claim.
+    """
+    entries = []
+    for root in _standard_skill_dirs():
+        if not root.exists():
+            continue
+        if root.is_symlink():
+            entries.append({'source_path': str(root), 'status': 'ERROR',
+                            'error': 'symlinked collection root is not allowed'})
+            continue
+        def walk_error(error):
+            entries.append({'source_path': str(error.filename), 'status': 'ERROR',
+                            'error': 'directory could not be read'})
+        for directory, dirs, files in os.walk(root, followlinks=False, onerror=walk_error):
+            dirs.sort()
+            for name in list(dirs):
+                child = Path(directory) / name
+                if child.is_symlink():
+                    dirs.remove(name)
+                    entries.append({'source_path': str(child), 'status': 'ERROR',
+                                    'error': 'symlinked directory is not allowed'})
+            if 'SKILL.md' not in files:
+                continue
+            if len(entries) >= _MAX_SCAN_SKILLS:
+                raise ValueError('installed collection exceeds scan entry limit')
+            path = Path(directory) / 'SKILL.md'
+            entry = {'source_path': str(path)}
+            try:
+                if path.stat().st_size > 1_000_000:
+                    raise ValueError('SKILL.md exceeds 1MB')
+                ir = compile_skill_file(path)
+                entry.update(status='ANALYZED',
+                             skill_name=ir['skills'][0]['identity']['name'],
+                             audit=audit_corpus(ir), ir=_redact_ir(ir))
+            except (ValueError, OSError, UnicodeError) as exc:
+                entry.update(status='ERROR', error=str(exc))
+            entries.append(entry)
+    analyzed = sum(e['status'] == 'ANALYZED' for e in entries)
+    payload = {
+        'schema_version': 'crucible-installed-collection/v1',
+        'scope': 'independent-packages',
+        'status': 'EMPTY' if not entries else ('COMPLETE' if analyzed == len(entries) else 'PARTIAL'),
+        'entries': entries,
+        'coverage': {'discovered': len(entries), 'analyzed': analyzed,
+                     'errors': len(entries) - analyzed},
+        'limitations': ['Cross-package composition is not evaluated.'],
+    }
+    payload['collection_digest'] = digest_payload(payload)
+    return payload
 
 
 def _standard_skill_dirs() -> list[Path]:

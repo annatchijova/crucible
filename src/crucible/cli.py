@@ -113,9 +113,17 @@ def main() -> int:
         '--include-coverage', action='store_true',
         help='include installed-scan coverage alongside the sealed audit',
     )
+    parser.add_argument('--scan-installed-collection', action='store_true',
+                        help='audit nested installed packages independently, including homonyms')
     args = parser.parse_args()
     if args.include_coverage and not args.scan_installed:
         parser.error('--include-coverage requires --scan-installed')
+
+    if args.scan_installed_collection:
+        from .api import scan_installed_collection
+        result = scan_installed_collection()
+        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0 if result['status'] == 'COMPLETE' else 1
 
     if args.view:
         with open(args.view, encoding="utf-8") as f:

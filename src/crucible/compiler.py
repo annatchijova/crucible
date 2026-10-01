@@ -132,6 +132,15 @@ def compile_corpus(root: Path | str, max_skills: int | None = None) -> dict[str,
     return payload
 
 
+def compile_skill_file(path: Path | str) -> dict[str, Any]:
+    """Compile exactly one package entry point, retaining local references."""
+    path = Path(path)
+    skill = _compile_skill(path, path.parent)
+    payload = {'schema_version': SCHEMA_VERSION, 'skills': [skill]}
+    payload['artifact_digest'] = digest_payload(payload)
+    return payload
+
+
 def _compile_skill(path: Path, root: Path) -> dict[str, Any]:
     relative_path = path.relative_to(root).as_posix()
     if path.is_symlink():
