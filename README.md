@@ -65,8 +65,10 @@ See the [comparison scope](docs/COMPETITIVE_BOUNDARY.md) and
   but its full artifact was not retained. Model opinions are not ground truth.
   See the [runtime review](docs/red-team/2026-09-30-nebius-runtime-red-team.md).
 - The [offline replay storage contract](docs/REPLAY_BUNDLE.md) is implemented.
-  Runtime capture/export, offline oracle execution and real repair evidence remain
-  pending; the [active execution checkpoint](docs/NEXT_LEVELS.md) governs that work.
+  An opt-in executor transport capture now preserves request/response bytes under
+  [local tests](tests/test_runtime_capture.py). Bundle integration/export, offline
+  oracle execution and real repair evidence remain pending; the
+  [active execution checkpoint](docs/NEXT_LEVELS.md) governs that work.
 
 The behavioral experiment uses NVIDIA Nemotron through Nebius Token Factory.
 Model observations remain separate from deterministic audit authority; the

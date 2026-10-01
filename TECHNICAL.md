@@ -370,8 +370,14 @@ executes an oracle nor authenticates a provider. Historical behavioral artifacts
 are not automatically convertible: missing historical prompts cannot be inferred
 from today's fixtures. See the [full contract and verification command](docs/REPLAY_BUNDLE.md).
 
-R2 remains open for runtime capture and CLI export. R3 offline oracle execution and
-R4 real repair evidence remain pending under the [active plan](docs/NEXT_LEVELS.md).
+R2 now includes opt-in `NebiusExecutor.capture_exchange`, preserving actual request
+and response bodies without legacy normalization. This is transport evidence,
+not a behavioral result or replay bundle. Empty guidance still becomes the legacy
+default system prompt on the wire; both original guidance and actual request are
+retained. See the [capture contract](docs/REPLAY_BUNDLE.md#executor-transport-capture).
+R2 remains open for capture-to-bundle integration, oracle/source identity and CLI
+export. R3 offline oracle execution and R4 real repair evidence remain pending
+under the [active plan](docs/NEXT_LEVELS.md).
 
 ## 17. Runtime and API operations
 

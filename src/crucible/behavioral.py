@@ -200,6 +200,27 @@ class NebiusExecutor:
             raise MissingCredentialError(
                 "NEBIUS_API_KEY is not set; cannot call Nebius Token Factory"
             )
+        request = self._prepare_request(system_prompt, user_prompt)
+        return self._execute_request(request)
+
+    def capture_exchange(self, system_prompt: str, user_prompt: str) -> dict[str, Any]:
+        """Make one bounded transport capture, not a behavioral/replay verdict.
+
+        This is an explicit alternative to execute, not a second call after it.
+        Capture content may contain private prompts and provider-echoed secrets.
+        """
+        from .runtime_capture import capture_exchange
+
+        if type(system_prompt) is not str or type(user_prompt) is not str:
+            raise ValueError('capture prompts must be strings')
+        request = self._prepare_request(system_prompt, user_prompt)
+        return capture_exchange(
+            request, system_prompt=system_prompt, user_prompt=user_prompt,
+            available=self.is_available(), open_request=urllib.request.urlopen,
+        )
+
+    def _prepare_request(self, system_prompt: str, user_prompt: str) -> urllib.request.Request:
+        """Shared wire payload; capture must observe the same prompt fallback."""
         payload = {
             "model": self.model,
             "messages": [
@@ -211,7 +232,7 @@ class NebiusExecutor:
             "stream": False,
         }
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        request = urllib.request.Request(
+        return urllib.request.Request(
             self.base_url + "chat/completions",
             data=body,
             headers={
@@ -221,6 +242,8 @@ class NebiusExecutor:
             },
             method="POST",
         )
+
+    def _execute_request(self, request: urllib.request.Request) -> dict[str, Any]:
         try:
             with urllib.request.urlopen(request, timeout=60) as response:
                 result = json.loads(response.read().decode("utf-8"))
