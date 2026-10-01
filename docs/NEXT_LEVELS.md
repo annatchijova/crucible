@@ -20,7 +20,7 @@ for methodological accuracy or release readiness.
 | Product outcome | Evidence now | Remaining exit evidence | Work state |
 |---|---|---|---|
 | Audit one skill, a repository or installed packages with honest scope | Local APIs/CLI, sealed independent collection, ingestion regression cases | Shared cross-mode coverage contract, explicit roots, missing-context reporting, equivalence fixtures | Implemented in part; gate open |
-| Inspect and replay a bounded model experiment without recontacting the provider | Saved real L5 four-way run; runtime metadata; deterministic local harness | Offline replay bundle with oracle identity, full observations, negative controls and source links | **Active construction block** |
+| Inspect and replay a bounded model experiment without recontacting the provider | Saved real L5 run; v2 bundles with source/oracle links; journal and offline CLI export | R3 trusted-oracle matching, observation recomputation and decision replay | **Active construction block** |
 | Justify findings and repair decisions independently | Seeded mutations, external-corpus fixtures, local repair loop | Held-out adjudication, class-level denominators, repeated pinned experiments, real repair evidence | Gate open; not benchmarked |
 | Use and publish the complete workflow | CLI, API and read-only viewer | End-to-end user tasks, accessibility, deployment/privacy review and release evidence | Gate open; not release-ready |
 
@@ -49,10 +49,14 @@ task/variant digests and an oracle source/runtime fingerprint; tests in
 `tests/test_capture_bundle.py` cover cross-links, offline loading and continued
 v1 support. Optional SQLite journaling now retains committed captures across
 process interruption, with explicit partial-state inspection and no automatic
-provider retries (`tests/test_capture_journal.py`). CLI acquisition/export and
-end-to-end recovery UX remain pending, so
-R2 is not closed. R3/R4 remain pending; no real
-repair run or historical-artifact conversion is claimed.
+provider retries (`tests/test_capture_journal.py`). The CLI now exposes separate
+`--capture-replay`, `--inspect-replay` and `--export-replay` modes with explicit
+exit codes, no implicit retries and no provider calls on read/export. Evidence:
+`tests/test_replay_cli.py` and the [scoped review](red-team/2026-10-01-replay-cli.md).
+R2's bounded storage/acquisition/export gate is locally verified for the current
+four-way Nebius adapter. This is not a live-provider rerun, global recovery
+guarantee, oracle replay or repair acceptance. **R3 is the next active increment**;
+R4 remains pending. No historical-artifact conversion is claimed.
 
 ### Selection and closure discipline
 

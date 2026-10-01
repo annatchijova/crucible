@@ -68,8 +68,9 @@ See the [comparison scope](docs/COMPETITIVE_BOUNDARY.md) and
   The v2 bundle binds captured request/response bytes to the task, skill variants
   and recorded oracle identity under [local tests](tests/test_capture_bundle.py),
   while preserving v1 support. An optional private journal retains committed
-  captures across tested process interruptions. CLI export, offline oracle execution and
-  real repair evidence remain pending; the
+  captures across tested process interruptions. The CLI can acquire, inspect and
+  export these journals under [local contract tests](tests/test_replay_cli.py).
+  Offline oracle execution and real repair evidence remain pending; the
   [active execution checkpoint](docs/NEXT_LEVELS.md) governs that work.
 
 The behavioral experiment uses NVIDIA Nemotron through Nebius Token Factory.

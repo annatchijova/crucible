@@ -1,8 +1,10 @@
 # R2 — replay evidence storage contract
 
 Status: v1 storage validation and v2 capture-backed acquisition are implemented.
-Optional local journaling retains committed partial work. CLI acquisition/export
-and end-to-end recovery UX remain pending. R2 is not closed.
+Optional local journaling retains committed partial work. CLI acquisition,
+inspection and export are locally verified for the current four-way adapter,
+closing R2's bounded storage/acquisition/export gate. No new live-provider run
+is claimed; R3 is next.
 R3 offline oracle execution and repair acceptance are not implemented here.
 
 `src/crucible/replay.py` exposes `validate_bundle`, `dump_bundle`, `load_bundle`
@@ -63,9 +65,8 @@ round-trip preservation, network prohibition, resealed internal inconsistencies,
 unknown schema, truncation/error states, missing observations, duplicate JSON,
 credential fields and the input size limit.
 
-Next R2 increment: expose journal-backed acquisition and offline inspection/export
-through the CLI, including partial experiments and explicit exit codes. Only then close R2
-and proceed to R3 replay. Do not
+Next increment: R3 trusted-oracle matching and offline observation/decision replay.
+Inspection and export below do not perform replay. Do not
 change historical artifacts or invoke remote generation merely to validate one.
 
 ## Executor transport capture
@@ -163,7 +164,7 @@ before another provider call. On an aggregate-limit stop or detected oracle drif
 without a bundle version/seal. It is not a valid replay bundle. Without an explicit
 journal, this remains in-memory storage: process crashes and other acquisition
 exceptions can lose evidence. The optional journal below checkpoints partial work;
-exporting it through the CLI is still part of the remaining R2 gate.
+the CLI below exposes acquisition, inspection and export of stored complete bundles.
 
 Run `PYTHONPATH=src python3 -m pytest tests/test_capture_bundle.py tests/test_replay_bundle_contract.py -q`.
 Transport is mocked in these tests; no live provider evidence is claimed.
@@ -219,3 +220,59 @@ Run `PYTHONPATH=src python3 -m pytest tests/test_capture_journal.py -q`.
 Tests include a subprocess exiting with `os._exit` without closing SQLite, injected
 write/commit-path failures, refusal to overwrite/reuse, and read-after-interruption.
 Provider calls are blocked or mocked; no real-provider durability run is claimed.
+
+## Journal CLI
+
+These modes are mutually exclusive and cannot be combined with a corpus path or
+other CLI options. Existing modes retain their previous behavior. The acquisition
+mode uses the built-in four-way task and Nebius adapter; it does not support custom
+tasks or `--local-executor`. Missing credentials produce retained BLOCKED evidence,
+not a simulated successful provider run.
+
+| Command | Authority and output |
+|---|---|
+| `--capture-replay NEW_DIRECTORY` | May issue four provider requests; creates an exclusive private journal; prints summary only |
+| `--inspect-replay JOURNAL_DIRECTORY` | Offline; prints status/counts and pending/unobserved/incomplete variant IDs, not bodies |
+| `--export-replay JOURNAL_DIRECTORY` | Offline; validates and prints the stored complete bundle, including private bodies, to stdout |
+
+The summary is versioned `crucible-replay-cli/v1`. `status` is persistence status,
+`evidence_complete` is the existing readiness check, not oracle correctness or an
+acceptance verdict. `incomplete_variants: null` means no complete bundle exists;
+use `pending_variants` and `unobserved_variants` to inspect that partial state.
+
+| Exit code | Meaning |
+|---|---|
+| 0 | Stored complete bundle with complete evidence metadata; **not acceptance** |
+| 1 | Valid journal/evidence is incomplete, blocked, truncated, empty or partial |
+| 2 | Usage error, invalid/unreadable journal, conflicting options or operational failure |
+| 130 | Interrupted command; inspect any retained journal before deciding what to do |
+
+Export emits valid complete bundles even when evidence is incomplete (exit 1),
+so failed/blocked outcomes remain archivable. It emits no JSON for EMPTY/PARTIAL
+journals (exit 1) or invalid journals (exit 2); it never manufactures missing runs.
+Retain the original private journal directory for partial evidence. An export
+interrupted while writing stdout may leave a partial destination file: verify it
+with `load_bundle`, or export again from the unchanged journal. Export is not an
+atomic destination-file replacement operation.
+
+Example (choose a trusted existing parent outside the repository; do not publish
+private evidence). Acquisition can incur provider usage; the other two commands
+never contact the provider even if credentials are configured:
+
+```bash
+PYTHONPATH=src python3 -m crucible.cli --capture-replay /trusted/evidence/new-experiment
+PYTHONPATH=src python3 -m crucible.cli --inspect-replay /trusted/evidence/new-experiment
+# Protect a new export file from broad permissions and accidental overwrite:
+umask 077
+set -o noclobber
+PYTHONPATH=src python3 -m crucible.cli --export-replay /trusted/evidence/new-experiment > replay-bundle.json
+```
+
+Do not put keys on the command line. Existing `NEBIUS_API_KEY` configuration is
+used only for acquisition. Diagnostics suppress arbitrary exception text because
+it may contain private data. A failed capture command leaves committed records
+for inspection; it does not automatically resume or retry a provider request.
+SQLite recovery constraints and pre-commit loss windows remain as documented above.
+
+Reproduce the local CLI boundary checks with
+`PYTHONPATH=src python3 -m pytest tests/test_replay_cli.py -q`.

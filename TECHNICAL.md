@@ -384,8 +384,11 @@ See [v2 acquisition and compatibility](docs/REPLAY_BUNDLE.md#capture-backed-bund
 An optional [private capture journal](docs/REPLAY_BUNDLE.md#incremental-local-journal)
 commits raw captures before projection and observations before the next variant.
 Its recovery reader distinguishes partial acquisition from a stored complete bundle.
-R2 remains open for CLI acquisition/export and end-to-end recovery UX. R3 offline
-oracle execution and R4 real repair evidence remain pending under the
+The [journal CLI](docs/REPLAY_BUNDLE.md#journal-cli) now separates acquisition,
+offline summary inspection and explicit private-bundle export. R2's bounded
+storage/acquisition/export gate is locally verified for the current four-way
+Nebius adapter; no new live-provider evidence is claimed. R3 offline oracle
+execution is next; R4 real repair evidence remains pending under the
 [active plan](docs/NEXT_LEVELS.md).
 
 ## 17. Runtime and API operations

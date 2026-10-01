@@ -115,7 +115,22 @@ def main() -> int:
     )
     parser.add_argument('--scan-installed-collection', action='store_true',
                         help='audit nested installed packages independently, including homonyms')
+    replay_modes = parser.add_mutually_exclusive_group()
+    replay_modes.add_argument('--capture-replay', metavar='NEW_DIRECTORY',
+                              help='make a new four-variant Nebius experiment in a private journal (may call provider)')
+    replay_modes.add_argument('--inspect-replay', metavar='JOURNAL_DIRECTORY',
+                              help='inspect a local journal offline without printing prompt/response bodies')
+    replay_modes.add_argument('--export-replay', metavar='JOURNAL_DIRECTORY',
+                              help='export a stored complete bundle to stdout offline (private evidence)')
     args = parser.parse_args()
+    replay_names = ('capture_replay', 'inspect_replay', 'export_replay')
+    selected = [name for name in replay_names if getattr(args, name) is not None]
+    if selected:
+        if any(value is not None and value is not False for name, value in vars(args).items()
+               if name not in replay_names):
+            parser.error('replay journal modes cannot be combined with other options or a corpus path')
+        from .replay_cli import run_replay_command
+        return run_replay_command(selected[0], getattr(args, selected[0]))
     if args.include_coverage and not args.scan_installed:
         parser.error('--include-coverage requires --scan-installed')
 

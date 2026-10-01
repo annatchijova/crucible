@@ -72,8 +72,9 @@ y la [arquitectura de destino](TECHNICAL.md#2-destination-architecture).
   El bundle v2 vincula los bytes de solicitud/respuesta con la tarea, las variantes
   y la identidad registrada del oráculo bajo [pruebas locales](tests/test_capture_bundle.py),
   conservando el soporte de v1. Un journal privado opcional conserva las capturas
-  confirmadas en disco ante las interrupciones de proceso probadas. Faltan exportación por CLI,
-  ejecución offline de oráculos y evidencia real de reparación.
+  confirmadas en disco ante las interrupciones de proceso probadas. La CLI permite
+  adquirir, inspeccionar y exportar estos journals bajo [pruebas locales](tests/test_replay_cli.py).
+  Faltan ejecución offline de oráculos y evidencia real de reparación.
   El [checkpoint activo](docs/NEXT_LEVELS.md) organiza ese trabajo.
 
 El experimento conductual usa NVIDIA Nemotron mediante Nebius Token Factory.
