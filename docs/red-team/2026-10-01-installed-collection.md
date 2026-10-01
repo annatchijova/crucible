@@ -46,6 +46,24 @@ replacing the parent just before the final open redirected the read. Opening eac
 directory relative to a pinned descriptor with O_DIRECTORY|O_NOFOLLOW closes
 both tested paths. The replacement test now reads the original pinned directory.
 
-Remaining scope: discovery still uses path-based traversal; legacy corpus reads,
+Remaining scope at this stage: discovery still uses path-based traversal;
 mount changes, hard-link policies and atomic snapshots are not covered by this
 reader guarantee. Per-directory enumeration memory remains a separate concern.
+
+## Follow-up: repository compiler shares the bounded reader
+
+The legacy corpus parser used `Path.read_bytes()` without a byte or file-type
+boundary. Regression tests intercepted oversized and FIFO reads before actual
+I/O; both reached that unsafe call. A third contract test required growth during
+descriptor reads to be rejected. All three failed before the shared-reader fix.
+
+Both compiler entry points now use the same bounded byte capture. Six corpus
+tests cover oversized input, FIFO, growth, symlink replacement after the precheck,
+the exact 1,000,000-byte boundary, and preservation of relative paths and parsed
+content. Existing parsing and artifact contracts remain unchanged for admitted
+files; oversized files are newly rejected.
+
+Remaining scope: root resolution still accepts symlink aliases before corpus
+discovery, traversal is path-based and materializes matches, and the corpus has
+no aggregate byte/traversal budget. Legacy installed-skill staging copies are
+not protected by the new reader. No atomic filesystem snapshot is claimed.

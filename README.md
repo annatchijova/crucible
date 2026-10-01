@@ -157,8 +157,11 @@ Limits: 500 recorded entries, 10,000 visited directories, 1 MB per skill, and
 20 MB cumulative admitted input. On supported POSIX platforms, collection reads
 use pinned directory descriptors to reject symlinks in every path component and
 a nonblocking file descriptor with bounded reads. Observed size/timestamp changes
-reject the read. Discovery and the legacy repository reader remain outside this
-descriptor guarantee; this is not a whole filesystem snapshot.
+reject the read. The repository compiler now shares this bounded reader (1 MB
+per file), preserving relative source paths. Its root is still resolved before
+discovery; symlink aliases of that root are not rejected. Discovery remains
+path-based, and corpus-wide byte/traversal budgets are not yet enforced by the
+repository compiler. This is not a whole filesystem snapshot.
 Custom roots and external plugin caches are not discovered
 automatically. See [next levels](docs/NEXT_LEVELS.md).
 

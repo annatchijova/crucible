@@ -95,9 +95,12 @@ Límites: 500 entradas registradas, 10.000 directorios visitados, 1 MB por skill
 20 MB acumulados de entrada admitida. En plataformas POSIX compatibles, el modo
 colección fija descriptores de directorio y rechaza symlinks en cada componente
 de la ruta. Lee sin bloquearse en FIFO y con límite de bytes; rechaza cambios
-observados de tamaño o timestamps. No representa una instantánea del filesystem:
-el descubrimiento y el lector tradicional de repositorios quedan fuera de esta
-garantía basada en descriptores.
+observados de tamaño o timestamps. El compilador de repositorios ahora comparte
+esta lectura acotada (1 MB por archivo), conservando rutas de origen relativas.
+Todavía resuelve la raíz antes de descubrir archivos: admite aliases symlink de
+esa raíz. El descubrimiento sigue basado en rutas y el compilador de repositorios
+aún no impone presupuestos globales de bytes o recorrido. No representa una
+instantánea del filesystem.
 
 Hay un diferencial conductual real guardado, con el mutante distinguible del
 original y la reparación. Otra ejecución real de confirmación devolvió 2 apoyos

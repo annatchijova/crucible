@@ -288,7 +288,11 @@ replacement, FIFO and growth cases. Each ancestor is opened with O_DIRECTORY and
 O_NOFOLLOW relative to the previous descriptor; replacing an already opened
 parent with a symlink cannot redirect the final open. Unsupported platforms fail
 visibly. This does not provide an atomic filesystem snapshot or descriptor-based
-discovery; the legacy `compile_corpus` reader has not adopted this contract.
+discovery. `compile_corpus` now uses the same byte reader with a 1,000,000-byte
+per-file cap and preserves corpus-relative source paths. It still resolves its
+root (accepting symlink aliases), gathers paths with `rglob`, and has no aggregate
+byte or traversal budget. The legacy installed-skill staging copy also remains
+outside this descriptor guarantee.
 
 - Natural-language contradiction and entailment are not fully decidable from Markdown.
 - Trigger overlap may require a conservative candidate classification before behavioral confirmation.

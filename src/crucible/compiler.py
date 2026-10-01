@@ -156,6 +156,15 @@ def _open_skill_descriptor(path: Path) -> int:
 def compile_skill_file(path: Path | str, max_bytes: int = 1_000_000) -> dict[str, Any]:
     """Compile exactly one entry point using the existing extraction rules."""
     path = Path(path)
+    raw_bytes = _read_skill_bytes(path, max_bytes)
+    skill = _compile_skill(path, path.parent, raw_bytes=raw_bytes)
+    payload = {'schema_version': SCHEMA_VERSION, 'skills': [skill]}
+    payload['artifact_digest'] = digest_payload(payload)
+    return payload
+
+
+def _read_skill_bytes(path: Path, max_bytes: int = 1_000_000) -> bytes:
+    """Capture bounded bytes from one regular file without reopening its path."""
     import os
     import stat
     fd = _open_skill_descriptor(path)
@@ -181,10 +190,7 @@ def compile_skill_file(path: Path | str, max_bytes: int = 1_000_000) -> dict[str
         raw_bytes = b''.join(chunks)
     finally:
         os.close(fd)
-    skill = _compile_skill(path, path.parent, raw_bytes=raw_bytes)
-    payload = {'schema_version': SCHEMA_VERSION, 'skills': [skill]}
-    payload['artifact_digest'] = digest_payload(payload)
-    return payload
+    return raw_bytes
 
 
 def _compile_skill(path: Path, root: Path, raw_bytes: bytes | None = None) -> dict[str, Any]:
@@ -192,7 +198,7 @@ def _compile_skill(path: Path, root: Path, raw_bytes: bytes | None = None) -> di
     if raw_bytes is None:
         if path.is_symlink():
             raise ValueError(f"{relative_path}: symlinked SKILL.md is not allowed")
-        raw_bytes = path.read_bytes()
+        raw_bytes = _read_skill_bytes(path)
     raw = raw_bytes.decode("utf-8")
     lines = raw.splitlines()
     frontmatter, body_start = _parse_frontmatter(lines, relative_path)
