@@ -132,20 +132,67 @@ def compile_corpus(root: Path | str, max_skills: int | None = None) -> dict[str,
     return payload
 
 
-def compile_skill_file(path: Path | str) -> dict[str, Any]:
+def _open_skill_descriptor(path: Path) -> int:
+    """Pin each directory before opening the next component, refusing links."""
+    import os
+    if not all(hasattr(os, flag) for flag in ('O_NOFOLLOW', 'O_DIRECTORY', 'O_NONBLOCK')):
+        raise ValueError('safe single-file reading is unsupported on this platform')
+    absolute = path.absolute()
+    if '..' in absolute.parts:
+        raise ValueError('parent traversal is not allowed in single-file paths')
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_DIRECTORY
+    directory_fd = os.open(absolute.anchor, flags)
+    try:
+        for component in absolute.parts[1:-1]:
+            next_fd = os.open(component, flags, dir_fd=directory_fd)
+            os.close(directory_fd)
+            directory_fd = next_fd
+        return os.open(absolute.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
+                       dir_fd=directory_fd)
+    finally:
+        os.close(directory_fd)
+
+
+def compile_skill_file(path: Path | str, max_bytes: int = 1_000_000) -> dict[str, Any]:
     """Compile exactly one entry point using the existing extraction rules."""
     path = Path(path)
-    skill = _compile_skill(path, path.parent)
+    import os
+    import stat
+    fd = _open_skill_descriptor(path)
+    try:
+        before = os.fstat(fd)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError('SKILL.md must be a regular file')
+        if before.st_size > max_bytes:
+            raise ValueError('SKILL.md exceeds read byte limit')
+        chunks = []
+        remaining = before.st_size
+        while remaining:
+            chunk = os.read(fd, min(remaining, 65536))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        after = os.fstat(fd)
+        if remaining or (before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (
+            after.st_size, after.st_mtime_ns, after.st_ctime_ns
+        ):
+            raise ValueError('SKILL.md changed during reading')
+        raw_bytes = b''.join(chunks)
+    finally:
+        os.close(fd)
+    skill = _compile_skill(path, path.parent, raw_bytes=raw_bytes)
     payload = {'schema_version': SCHEMA_VERSION, 'skills': [skill]}
     payload['artifact_digest'] = digest_payload(payload)
     return payload
 
 
-def _compile_skill(path: Path, root: Path) -> dict[str, Any]:
+def _compile_skill(path: Path, root: Path, raw_bytes: bytes | None = None) -> dict[str, Any]:
     relative_path = path.relative_to(root).as_posix()
-    if path.is_symlink():
-        raise ValueError(f"{relative_path}: symlinked SKILL.md is not allowed")
-    raw_bytes = path.read_bytes()
+    if raw_bytes is None:
+        if path.is_symlink():
+            raise ValueError(f"{relative_path}: symlinked SKILL.md is not allowed")
+        raw_bytes = path.read_bytes()
     raw = raw_bytes.decode("utf-8")
     lines = raw.splitlines()
     frontmatter, body_start = _parse_frontmatter(lines, relative_path)

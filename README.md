@@ -89,7 +89,7 @@ no skill → original skill → deliberate mutant → candidate repair
 
 The model generates the agent behavior that the oracle observes. Crucible records the model/runtime metadata and keeps deterministic findings separate from behavioral observations. The integration contract is in [`docs/NVIDIA_INTEGRATION.md`](docs/NVIDIA_INTEGRATION.md).
 
-**Current status:** the L5 behavioral integration has been executed successfully against Nebius/Nemotron. The sealed four-way run completed without truncation and distinguished the polarity mutant from the original and repair. Real confirmation and LLM-proposal runs remain pending; no simulated result is presented as external evidence. See the [runtime red-team report](docs/red-team/2026-09-30-nebius-runtime-red-team.md).
+**Current status:** the saved L5 four-way run completed against Nebius/Nemotron without truncation and distinguished the polarity mutant from original and repair. A subsequent real confirmation run returned 2 confirmations and 12 rejections, all complete; its full artifact was not saved. Model opinions are not ground truth. Real LLM-proposal/repair-loop evidence remains pending. See the [runtime red-team report](docs/red-team/2026-09-30-nebius-runtime-red-team.md).
 
 ## Verification layers
 
@@ -110,7 +110,7 @@ The model generates the agent behavior that the oracle observes. Crucible record
 # Install
 pip install -e ".[test]"
 
-# Run the test suite (420 tests)
+# Run the contract test suite
 PYTHONPATH=src python3 -m pytest -q
 
 # Full L1-L7 report (local deterministic, no API key needed)
@@ -145,6 +145,23 @@ PYTHONPATH=src python3 -m crucible.cli --serve 127.0.0.1:8000
 docker build -t crucible . && docker run -p 8000:8000 crucible
 ```
 
+## Collection coverage and limits
+
+`--scan-installed-collection` audits nested packages and homonymous skills
+independently, retaining source paths and errors in a sealed report. It does not
+evaluate cross-package composition. Partial or empty coverage exits with code 1.
+The legacy `--scan-installed` retains name precedence and exposes omissions via
+`--include-coverage` and stderr warnings.
+
+Limits: 500 recorded entries, 10,000 visited directories, 1 MB per skill, and
+20 MB cumulative admitted input. On supported POSIX platforms, collection reads
+use pinned directory descriptors to reject symlinks in every path component and
+a nonblocking file descriptor with bounded reads. Observed size/timestamp changes
+reject the read. Discovery and the legacy repository reader remain outside this
+descriptor guarantee; this is not a whole filesystem snapshot.
+Custom roots and external plugin caches are not discovered
+automatically. See [next levels](docs/NEXT_LEVELS.md).
+
 ## Repository map
 
 ```text
@@ -173,7 +190,7 @@ crucible/
 │   ├── viewer.py          # L8: read-only HTML artifact viewer
 │   └── cli.py             # CLI entry point
 └── tests/
-    └── (420 falsifiable contract tests)
+    └── (falsifiable contract tests)
 ```
 
 ## Why "Crucible"

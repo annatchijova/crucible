@@ -210,7 +210,7 @@ def scan_installed_collection() -> dict[str, Any]:
                 if bytes_seen + size > _MAX_COLLECTION_BYTES:
                     raise _CollectionLimitError('installed collection exceeds byte limit')
                 bytes_seen += size
-                ir = compile_skill_file(path)
+                ir = compile_skill_file(path, max_bytes=size)
                 entry.update(status='ANALYZED',
                              skill_name=ir['skills'][0]['identity']['name'],
                              audit=audit_corpus(ir), ir=_redact_ir(ir))

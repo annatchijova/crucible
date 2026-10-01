@@ -1,6 +1,6 @@
 # Crucible — Technical README
 
-**Status: implementation complete through L14; the L5 behavioral path is verified against real Nebius/Nemotron.** Real confirmation and LLM-proposal evidence remain pending. This document is the technical contract and records the implemented boundaries and known limitations.
+**Status: L5 has saved real Nebius/Nemotron evidence.** A real confirmation run completed 14 responses (2 confirmed, 12 rejected), but its full artifact was not retained. Real LLM proposal/repair-loop evidence remains pending. Implementation labels below do not establish cross-run stability.
 
 ![Crucible logo](visual/logo.png)
 
@@ -88,14 +88,14 @@ The levels are coherent product states, not technical departments. Security, det
 | L2.5 | Semantic confirmation layer | **Implemented:** `confirm.py` takes all CANDIDATE findings and asks an executor (Nemotron via Nebius, or deterministic mock) whether each is a true defect or false positive. The confirmation is a separate `crucible-confirmation/v1` artifact; the L2 audit is never modified. Without `NEBIUS_API_KEY`, execution is BLOCKED, not simulated. |
 | L3 | Typed composition graph | **Implemented:** the graph extracts typed relation edges from L1 section headings and description text (sibling of, pairs with, composes with, member of the family, companion to), classifies them into composition/reinforcement/delegation, and detects hubs, broken edges, disconnected components, and isolated skills. The real corpus produces 83 edges, 12 hubs, 4 components. Three semantic checks are abstained (conditional contradiction, semantic redundancy, producer/consumer typing). |
 | L4 | Mutation laboratory | **Implemented:** the lab seeds 8 defect classes (polarity inversion, exception removal, reference break, check removal, trigger widening, edge removal, cycle introduction, capability duplication) against a known-good base fixture, runs the full pipeline, and classifies results as KILLED / SURVIVED / ABSTAINED. Current result: 6/6 killed in scope, 2 abstained as OUT_OF_SCOPE, 0 survived. |
-| L5 | Behavioral differential harness | **Implemented (local executor):** the harness runs 4 skill variants (no-skill, original, mutant, repair) against a pinned task, observes 4 explicit properties with a deterministic oracle, and seals the report. The local executor shows the expected differential (mutant fails P3). Nebius/Nemotron execution is BLOCKED (no API key); the executor is real code using the Token Factory API. |
-| L6 | Bob engineering workflow | **Implemented:** Bob receives findings, proposes a repair (rule-based or LLM via Nebius), and Crucible deterministically re-audits and accepts/rejects. Acceptance: finding gone + no new findings + compiles. Rule-based proposer verified; LLM proposer BLOCKED (no API key). |
-| L7 | Closed repair loop | **Implemented:** the loop integrates L6 (Bob workflow) and L5 (behavioral differential). Bob proposes a repair; Crucible re-audits deterministically (L6 set-difference novelty check); if the deterministic gate passes, the loop runs a behavioral replay (L5 property oracle) comparing the repaired skill against the original. A repair that passes deterministic but fails behavioral is REJECTED with `BEHAVIORAL_REGRESSION`. Rule-based proposer + LocalExecutor verified; LLM proposer + Nebius BLOCKED (no API key). |
+| L5 | Behavioral differential harness | **Executed locally and on Nebius:** four skill variants and four lexical properties; the saved real run distinguishes the mutant on P3 with no truncation. Single-run evidence does not establish generalization. |
+| L6 | Bob engineering workflow | **Implemented:** proposal, compilation and deterministic re-audit gate. Rule-based path verified; real LLM proposal evidence pending. |
+| L7 | Closed repair loop | **Implemented:** deterministic re-audit followed by behavioral replay; regressions reject the repair. Rule-based/local path verified; real LLM end-to-end evidence pending. |
 | L8 | Repository/CI integration and read-only viewer | **Implemented:** a composite report generator runs the full L1-L7 pipeline and seals a `crucible-report/v1` artifact with all level digests. A read-only HTML viewer renders any sealed artifact JSON as a self-contained page (no `<script>`, no computation, only `html`/`json`/`typing` imports). A GitHub Actions CI workflow runs tests, generates the report, renders HTML, and uploads both as artifacts. No consumer has independent decision logic. |
 | L9 | Style-agnostic extraction | **Implemented:** extraction accepts equivalent methodology expressed through varied Markdown styles while preserving source evidence and deterministic IR output. |
 | L10 | Engineering defect taxonomy | **Implemented:** eight engineering checks cover secrets, silent failures, credentials, resource bounds, input validation, timeouts, floating-point decision paths, and dependency pinning. |
 | L11 | Public API and demo surface | **Implemented:** the CLI exposes single-skill, directory, and installed-skill scan modes plus a FastAPI-compatible serving path and read-only report viewer. |
-| L12 | Nemotron confirmation | **Implemented (mock; external run blocked):** confirmation supports the expanded finding taxonomy while preserving deterministic audit authority and separate artifact provenance. |
+| L12 | Nemotron confirmation | **Executed with mock and real provider:** 14 real responses completed; the full artifact was not retained. Confirmation remains a separate observation and does not modify audit authority. |
 | L13 | Corpus-agnostic validation | **Implemented:** validation runs against 10 skills from 7 sources, with deterministic contracts and provenance-preserving fixtures. |
 | L14 | Real-runtime boundary and activation integrity | **Implemented for L5:** real Nebius execution is non-blocked; provider envelopes are validated; truncation is recorded; the task explicitly activates the methodology; and the sealed four-way run distinguishes the polarity mutant from original and repair. |
 
@@ -273,7 +273,22 @@ Red-team work is intentionally deferred until the first integrated implementatio
 
 The project is released under Apache-2.0. See [`LICENSE`](LICENSE).
 
-## 15. Known limitations while in progress
+## 15. Collection reader and known limitations
+
+The independent installed-collection mode discovers nested packages and retains
+homonyms by source path. Its sealed envelope records per-package audits and
+coverage. It does not infer cross-package composition. Limits are 500 entries,
+10,000 visited directories, 1 MB per file and 20 MB admitted input per scan.
+
+`compile_skill_file` opens with `O_NOFOLLOW | O_NONBLOCK`, verifies the descriptor
+is regular, reads at most its initial size within the caller's byte allowance,
+then compares size/mtime/ctime on that same descriptor. Parsing consumes those
+captured bytes without reopening the path. This rejects tested final-symlink
+replacement, FIFO and growth cases. Each ancestor is opened with O_DIRECTORY and
+O_NOFOLLOW relative to the previous descriptor; replacing an already opened
+parent with a symlink cannot redirect the final open. Unsupported platforms fail
+visibly. This does not provide an atomic filesystem snapshot or descriptor-based
+discovery; the legacy `compile_corpus` reader has not adopted this contract.
 
 - Natural-language contradiction and entailment are not fully decidable from Markdown.
 - Trigger overlap may require a conservative candidate classification before behavioral confirmation.

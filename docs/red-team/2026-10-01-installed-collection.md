@@ -2,7 +2,8 @@
 
 Base: `2504836`. Scope: the new independent-package collection mode.
 Threat model: a local collection author controls package layout and file types;
-concurrent filesystem modification during the scan is outside these tests.
+the initial tests excluded concurrent filesystem modification. The descriptor
+follow-up below adds controlled replacement and growth cases.
 
 Executed tests in `tests/test_installed_collection.py` demonstrate:
 
@@ -16,9 +17,10 @@ Executed tests in `tests/test_installed_collection.py` demonstrate:
 - Nested homonyms: four distinct source paths, including parent and child skills,
   all produce independent audits and a deterministic collection digest.
 
-Limits: this is not a complete filesystem security audit. Concurrent replacement
-between stat and read, ancestor symlinks, per-directory enumeration memory,
-downstream reference resolution need further review.
+Initial review limits: concurrent replacement between stat and read and ancestor
+symlinks were left for the descriptor follow-up below. Per-directory enumeration
+memory and downstream reference resolution still need further review.
+This is not a complete filesystem security audit.
 The entry, byte and directory limits do not bound all traversal costs.
 Composition across independent packages is deliberately not evaluated.
 
@@ -31,5 +33,19 @@ fails. Equality at the byte boundary is accepted. Files above the individual
 1MB limit are rejected without compilation. Whole-scan budget failures propagate
 to a CLI JSON ERROR with exit code 1 rather than a traceback.
 
-Byte accounting uses filesystem sizes before compilation. It assumes files are
-not concurrently replaced or grown; it is not an atomic bounded-read guarantee.
+## Follow-up: descriptor-bound reads
+
+The collection reader now passes its admitted size as an enforced read allowance.
+The file is opened nonblocking with O_NOFOLLOW, checked with fstat, and read only
+up to its initial size. Size/mtime/ctime changes reject the captured bytes. Parsing
+does not reopen the path. Tests cover the exact byte boundary, growth, FIFO and
+final-symlink replacement.
+
+Two additional tests initially failed: an ancestor symlink was followed and
+replacing the parent just before the final open redirected the read. Opening each
+directory relative to a pinned descriptor with O_DIRECTORY|O_NOFOLLOW closes
+both tested paths. The replacement test now reads the original pinned directory.
+
+Remaining scope: discovery still uses path-based traversal; legacy corpus reads,
+mount changes, hard-link policies and atomic snapshots are not covered by this
+reader guarantee. Per-directory enumeration memory remains a separate concern.

@@ -67,6 +67,44 @@ Ya existen 14 niveles coherentes. L1 transforma un corpus real en una Skill IR v
 
 La capa de confirmación L2.5 toma todos los CANDIDATEs del audit L2 y pregunta a un executor (Nemotron vía Nebius, o mock determinista) si cada uno es un defecto real o un falso positivo. La confirmación es un artifact separado (`crucible-confirmation/v1`) con su propio digest SHA-256; el audit L2 nunca se modifica. Si `NEBIUS_API_KEY` no está configurada, la ejecución se reporta como BLOCKED, no simulada.
 
+## Ejecución y cobertura actual
+
+```bash
+pip install -e ".[test]"
+PYTHONPATH=src python3 -m pytest -q
+# Una skill desde stdin
+PYTHONPATH=src python3 -m crucible.cli --scan-skill < SKILL.md
+# Un repositorio local: auditoría conjunta y grafo
+PYTHONPATH=src python3 -m crucible.cli ruta/al/repositorio
+# Instaladas con prioridad histórica por nombre y cobertura explícita
+PYTHONPATH=src python3 -m crucible.cli --scan-installed --include-coverage
+# Paquetes anidados y homónimos auditados independientemente
+PYTHONPATH=src python3 -m crucible.cli --scan-installed-collection
+# Reporte local y visualización
+PYTHONPATH=src python3 -m crucible.cli --report --local-executor > report.json
+PYTHONPATH=src python3 -m crucible.cli --view report.json > report.html
+```
+
+La colección busca en los directorios estándar configurados de Claude, Devin y
+`~/.codex/skills`. Conserva rutas de origen y errores por paquete en un reporte
+sellado; no evalúa composición entre paquetes. Cobertura parcial o vacía devuelve
+código de salida 1. Las rutas personalizadas y cachés externas de plugins todavía
+no se descubren automáticamente.
+
+Límites: 500 entradas registradas, 10.000 directorios visitados, 1 MB por skill y
+20 MB acumulados de entrada admitida. En plataformas POSIX compatibles, el modo
+colección fija descriptores de directorio y rechaza symlinks en cada componente
+de la ruta. Lee sin bloquearse en FIFO y con límite de bytes; rechaza cambios
+observados de tamaño o timestamps. No representa una instantánea del filesystem:
+el descubrimiento y el lector tradicional de repositorios quedan fuera de esta
+garantía basada en descriptores.
+
+Hay un diferencial conductual real guardado, con el mutante distinguible del
+original y la reparación. Otra ejecución real de confirmación devolvió 2 apoyos
+y 12 rechazos, sin truncación; su artefacto completo no se guardó. Esas opiniones
+del modelo no son etiquetas verdaderas. Falta evidencia real del loop de reparación
+con proponente LLM. Ver [próximos niveles](docs/NEXT_LEVELS.md).
+
 ## Principio de construcción
 
 El destino es un sistema completo de verificación de metodología. El tiempo decide hasta qué nivel coherente llegamos; no convierte los niveles no alcanzados en prototipos descartables. Cada nivel debe ser útil, compatible con el siguiente y conservar los invariantes anteriores.
