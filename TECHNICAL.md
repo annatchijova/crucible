@@ -287,17 +287,20 @@ captured bytes without reopening the path. This rejects tested final-symlink
 replacement, FIFO and growth cases. Each ancestor is opened with O_DIRECTORY and
 O_NOFOLLOW relative to the previous descriptor; replacing an already opened
 parent with a symlink cannot redirect the final open. Unsupported platforms fail
-visibly. This does not provide an atomic filesystem snapshot or descriptor-based
-discovery. `compile_corpus` now uses the same byte reader with a 1,000,000-byte
+visibly. This does not provide an atomic filesystem snapshot; installed-collection
+discovery remains path-based. `compile_corpus` uses the same byte reader with a 1,000,000-byte
 per-file cap and preserves corpus-relative source paths. It still resolves its
 root (accepting symlink aliases). Iterative `scandir` discovery bounds directories
 at 10,000 including the root and entries at 100,000 including unrelated files;
 only admitted paths are sorted for canonical output. Enumeration errors propagate
 instead of producing a partial corpus. A shared 20,000,000-byte allowance is
 enforced by the byte reader, independently of the optional skill-count cap.
-Discovery remains path-based and vulnerable to concurrent directory replacement;
-the legacy installed-skill staging copy also remains outside the descriptor
-guarantee. Limits bound counts and input, not filesystem latency or all parser
+Corpus enumeration uses `scandir(fd)` on pinned directories opened component by
+component with `O_DIRECTORY | O_NOFOLLOW`. Descriptors close on success and errors.
+Pending directories are still stored as paths and reopened with that same policy;
+replacement by ordinary directories across stages is not an identity guarantee.
+Root resolution, mount changes, installed-collection discovery and legacy staging
+copies remain outside this guarantee. Limits bound counts and input, not filesystem latency or all parser
 and downstream analysis costs.
 
 - Natural-language contradiction and entailment are not fully decidable from Markdown.

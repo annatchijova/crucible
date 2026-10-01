@@ -159,8 +159,11 @@ use pinned directory descriptors to reject symlinks in every path component and
 a nonblocking file descriptor with bounded reads. Observed size/timestamp changes
 reject the read. The repository compiler now shares this bounded reader (1 MB
 per file), preserving relative source paths. Its root is still resolved before
-discovery; symlink aliases of that root are not rejected. Discovery remains
-path-based. The repository compiler caps cumulative input at 20 MB, directories
+discovery; symlink aliases of that root are not rejected. Repository discovery
+enumerates pinned directory descriptors opened without following symlinks.
+Pending paths are reopened safely, but directory identity is not preserved across
+the whole traversal and later reads. Installed-collection discovery still uses
+path-based traversal. The repository compiler caps cumulative input at 20 MB, directories
 at 10,000 (including the root), and discovered entries at 100,000 (including
 unrelated files). Enumeration errors abort compilation; these limits also apply
 when no skill-count cap is supplied. This is not a whole filesystem snapshot.

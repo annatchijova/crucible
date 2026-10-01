@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import re
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -102,6 +103,17 @@ _ACTION_VERBS = {
 }
 
 
+@contextmanager
+def _scan_corpus_directory(path: Path):
+    """Enumerate a pinned directory, never reopening its pathname for scandir."""
+    fd = _open_path_descriptor(path, directory=True)
+    try:
+        with os.scandir(fd) as children:
+            yield children
+    finally:
+        os.close(fd)
+
+
 def _discover_corpus(root: Path, max_skills: int | None) -> list[Path]:
     """Bound enumeration before sorting; propagate incomplete traversal errors."""
     pending = [root]
@@ -112,12 +124,12 @@ def _discover_corpus(root: Path, max_skills: int | None) -> list[Path]:
         directory = pending.pop()
         if directories > _MAX_CORPUS_DIRECTORIES:
             raise ValueError('corpus exceeds directory limit')
-        with os.scandir(directory) as children:
+        with _scan_corpus_directory(directory) as children:
             for child in children:
                 entries += 1
                 if entries > _MAX_CORPUS_ENTRIES:
                     raise ValueError('corpus exceeds discovery entry limit')
-                path = Path(child.path)
+                path = directory / child.name
                 if child.name == 'SKILL.md':
                     paths.append(path)
                     if max_skills is not None and len(paths) > max_skills:
@@ -170,7 +182,7 @@ def compile_corpus(root: Path | str, max_skills: int | None = None) -> dict[str,
     return payload
 
 
-def _open_skill_descriptor(path: Path) -> int:
+def _open_path_descriptor(path: Path, *, directory: bool = False) -> int:
     """Pin each directory before opening the next component, refusing links."""
     import os
     if not all(hasattr(os, flag) for flag in ('O_NOFOLLOW', 'O_DIRECTORY', 'O_NONBLOCK')):
@@ -181,10 +193,13 @@ def _open_skill_descriptor(path: Path) -> int:
     flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_DIRECTORY
     directory_fd = os.open(absolute.anchor, flags)
     try:
-        for component in absolute.parts[1:-1]:
+        components = absolute.parts[1:] if directory else absolute.parts[1:-1]
+        for component in components:
             next_fd = os.open(component, flags, dir_fd=directory_fd)
             os.close(directory_fd)
             directory_fd = next_fd
+        if directory:
+            return os.dup(directory_fd)
         return os.open(absolute.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
                        dir_fd=directory_fd)
     finally:
@@ -205,7 +220,7 @@ def _read_skill_bytes(path: Path, max_bytes: int = 1_000_000) -> bytes:
     """Capture bounded bytes from one regular file without reopening its path."""
     import os
     import stat
-    fd = _open_skill_descriptor(path)
+    fd = _open_path_descriptor(path)
     try:
         before = os.fstat(fd)
         if not stat.S_ISREG(before.st_mode):

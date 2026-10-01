@@ -82,6 +82,21 @@ Errors abort rather than seal a partial corpus. Additional tests prove early
 iterator termination, exact discovery boundaries and failure on an unreadable
 subtree even when a readable skill exists.
 
-Remaining scope: path-based discovery can still race directory replacement;
+Remaining scope at that stage: path-based discovery can still race directory replacement;
 root aliases and legacy staging copies retain the limitations above. Count and
 byte limits do not bound filesystem latency or all downstream analysis costs.
+
+## Follow-up: pinned corpus enumeration
+
+A controlled replacement of the corpus root by a symlink immediately before
+`scandir` caused discovery to list an external SKILL.md before the fix. Corpus
+enumeration now opens each directory without following symlinks in any component
+and calls `scandir(fd)` on the pinned descriptor. Five tests cover the replacement,
+descriptor use and closure, injected enumeration errors, queued-child symlink
+replacement, and cleanup after budget failure. Existing permission-error tests
+now target inode identity so the same assertions apply to descriptor enumeration.
+
+Remaining scope: pending directories and discovered files are still represented
+by paths. Reopening rejects symlinks but does not pin identity across all stages;
+ordinary-directory replacement, root resolution, mount changes and snapshots are
+not covered. Installed-collection discovery and legacy staging remain unchanged.

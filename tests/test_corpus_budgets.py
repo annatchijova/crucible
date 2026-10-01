@@ -46,9 +46,11 @@ def test_corpus_discovery_permission_errors_are_not_silenced(tmp_path, monkeypat
 
     (tmp_path / 'SKILL.md').write_bytes(TEXT)
     original = os.scandir
+    root_stat = tmp_path.stat()
 
     def denied(path):
-        if str(path) == str(tmp_path):
+        observed = os.fstat(path) if isinstance(path, int) else os.stat(path)
+        if (observed.st_dev, observed.st_ino) == (root_stat.st_dev, root_stat.st_ino):
             raise PermissionError('denied for test')
         return original(path)
 
@@ -107,9 +109,11 @@ def test_child_permission_error_does_not_publish_partial_corpus(tmp_path, monkey
     hidden = tmp_path / 'unreadable'
     hidden.mkdir()
     original = os.scandir
+    hidden_stat = hidden.stat()
 
     def denied(path):
-        if path == hidden:
+        observed = os.fstat(path) if isinstance(path, int) else os.stat(path)
+        if (observed.st_dev, observed.st_ino) == (hidden_stat.st_dev, hidden_stat.st_ino):
             raise PermissionError('subtree denied')
         return original(path)
 
