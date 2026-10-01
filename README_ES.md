@@ -1,149 +1,133 @@
+[English](README.md) · [Español](README_ES.md) · **[Technical README](TECHNICAL.md)**
+
 # Crucible
-
-Plan activo: [objetivos, criterios de cierre y bloque de ejecución](docs/NEXT_LEVELS.md).
-El bloque actual es evidencia de runtime y replay offline, no sumar funciones al
-scanner. `--report --local-executor` mantiene local también la confirmación aunque
-haya una API key. El [contrato de almacenamiento del bundle](docs/REPLAY_BUNDLE.md)
-está implementado; siguen pendientes la captura del runtime, la ejecución del
-replay offline y la evidencia real de reparación.
-
-**Ingeniería de verificación para metodologías de agentes de IA — construido sobre Nebius AI Cloud con NVIDIA Nemotron.**
-
-[English](README.md) · **Español** · [Technical README](TECHNICAL.md)
 
 ![Logo de Crucible](visual/logo.png)
 
-> **Estado: en progreso — primero el contrato arquitectónico y de evaluación.**
+Una skill puede ser benigna y aun así enseñar a un agente a construir mal:
+reintentar para siempre, exigir algo sin verificarlo o prometer más de lo que
+sus instrucciones permiten cumplir.
 
-Las skills de agentes son metodología ejecutable: cambian qué detecta, prioriza, verifica y hace un agente de coding. Ya existen herramientas para validar su forma, buscar comportamiento malicioso y medir si un agente rinde mejor con ellas. Falta una pregunta más difícil:
+Crucible audita metodologías de agentes y pone a prueba su propio detector con
+defectos deliberados. Produce hallazgos inspeccionables con evidencia de origen,
+no un puntaje opaco. Un hallazgo candidato invita a investigar; no prueba un defecto.
 
-> **¿La metodología es coherente, verificable, componible y realmente vale la pena agregarla al corpus?**
+## Un ejemplo que podés ejecutar
 
-Crucible busca responderla con evidencia estructurada, no con un puntaje opaco.
+Esta [skill de ejemplo](tests/fixtures/readme-demo/SKILL.md) exige reintentar sin límite:
 
-## Construido con
+```markdown
+---
+name: retry-example
+description: Retry failed operations.
+---
+Retries MUST continue until success.
+```
 
-| Herramienta | Rol |
+La auditoría devuelve tres hallazgos `CANDIDATE`: `UNBOUNDED_RETRY`,
+`REQUIREMENT_WITHOUT_CHECK` y `METHODOLOGICAL_VACUITY`.
+La obligación declarada no tiene un límite de reintentos ni una verificación.
+El [test del ejemplo](tests/test_readme_contract.py) comprueba esas salidas.
+
+## Del hallazgo a la evidencia
+
+Crucible compila el texto de las skills en registros con referencias al origen,
+los audita y construye un grafo de composición. El laboratorio de mutaciones rompe
+fixtures deliberadamente para comprobar si el auditor lo detecta. Después, el
+experimento conductual compara:
+
+```text
+misma tarea → sin skill / skill original / mutante deliberado / reparación candidata
+```
+
+El modelo genera comportamiento; los oráculos deterministas observan sus
+propiedades. Una propuesta de reparación debe superar la reauditoría y el criterio
+conductual configurado. Existen circuitos locales de reparación; sigue pendiente
+la evidencia de un circuito completo con propuestas reales de un LLM.
+
+| Pregunta | Evidencia que expone Crucible |
 |---|---|
-| **Nebius AI Cloud** | Ejecución del modelo para el harness diferencial conductual (L5) y la confirmación semántica (L2.5) |
-| **Nebius Token Factory** | Autenticación y gestión de tokens para inferencia |
-| **NVIDIA Nemotron** (`nvidia/nemotron-3-super-120b-a12b`) | Genera el comportamiento observado por oráculos deterministas y confirma findings de auditoría |
+| ¿Qué instrucción generó la sospecha? | Estado del hallazgo y evidencia de origen |
+| ¿El detector encuentra un defecto sembrado? | Resultado de mutación y hallazgo esperado |
+| ¿La skill cambió el comportamiento observado? | Observaciones por propiedad y variante |
+| ¿Se aceptó una reparación propuesta? | Resultados de reauditoría y evaluación conductual |
 
-El modelo es **causal para el experimento**, no un narrador. Genera el comportamiento que observan los oráculos deterministas; el LLM nunca decide findings, sellos ni veredictos.
+Complementa el análisis de seguridad y la evaluación del rendimiento de agentes.
+Se concentra en la metodología y la evidencia de cada afirmación, no en declarar
+skills universalmente seguras. Ver la [frontera comparativa](docs/COMPETITIVE_BOUNDARY.md)
+y la [arquitectura de destino](TECHNICAL.md#2-destination-architecture).
 
-## Por qué existe ahora
+## Qué evidencia tenemos
 
-Las Agent Skills se están convirtiendo en infraestructura. NVIDIA ya está construyendo infraestructura seria alrededor de ellas: SkillSpector cubre riesgos de seguridad y supply chain; SkillEvaluator cubre validación, overlap semántico, datasets sintéticos y evaluación live de agentes; y el catálogo NVIDIA agrega Skill Cards, firmas, benchmarks y gates de publicación. Queremos esos controles. CRUCIBLE no existe porque sean insuficientes o irrelevantes, sino porque no agotan la pregunta metodológica.
+- El fixture local de mutaciones tiene ocho casos: seis detectados dentro del
+  alcance y dos abstenciones fuera de alcance. Eso mide esos fixtures, no la
+  detección de todos los defectos posibles.
+- Una [ejecución guardada con Nebius/Nemotron](artifacts/nebius/2026-09-30-behavioral-real.json)
+  completó las cuatro variantes sin truncamiento y distinguió el mutante de
+  polaridad en la propiedad P3. Una ejecución no demuestra generalización.
+- Una ejecución real de confirmación completó 14 respuestas (2 confirmaciones y
+  12 rechazos), pero no se conservó el artefacto completo. Las opiniones del modelo
+  no son verdad de referencia. Ver la [revisión del runtime](docs/red-team/2026-09-30-nebius-runtime-red-team.md).
+- Está implementado el [contrato de almacenamiento para replay offline](docs/REPLAY_BUNDLE.md).
+  Faltan captura/exportación del runtime, ejecución offline de oráculos y evidencia
+  real de reparación. El [checkpoint activo](docs/NEXT_LEVELS.md) organiza ese trabajo.
 
-> **Una skill no necesita ser maliciosa para ser una mala metodología. Puede ser perfectamente benigna y aun así enseñar a un agente a construir mal.**
+El experimento conductual usa NVIDIA Nemotron mediante Nebius Token Factory.
+Las observaciones del modelo están separadas de la autoridad del auditor
+determinista; el [contrato de integración](docs/NVIDIA_INTEGRATION.md) documenta ese
+papel. El [cuadro técnico de niveles](TECHNICAL.md#3-construction-levels) detalla el estado.
 
-Ejemplo:
+## Probalo
 
-```text
-Skill A: reintentar operaciones fallidas hasta tener éxito.
-Skill B: las acciones irreversibles deben ser acotadas y revisables.
-
-Ninguna es necesariamente maliciosa por separado.
-La composición falla cuando el objetivo del retry es irreversible y no idempotente.
-```
-
-CRUCIBLE intenta hacer ese tipo de afirmación inspeccionable, condicional y falsable. Es una capa complementaria de verificación metodológica, no un reemplazo de un security scanner ni de un evaluator conductual. Ver la [frontera competitiva](docs/COMPETITIVE_BOUNDARY.md).
-
-## La idea en un ejemplo
-
-Dos skills pueden parecer razonables por separado y producir una composición incorrecta:
-
-```text
-Skill A: reintentar operaciones críticas hasta que tengan éxito.
-Skill B: las operaciones irreversibles deben tener efectos acotados y revisables.
-
-Plausibles por separado → composición insegura cuando el retry duplica un efecto irreversible.
-```
-
-Crucible extrae reglas declaradas, scopes, triggers, checks, referencias y aristas de composición; después audita contradicciones, verificaciones ausentes, redundancia, provenance rota y resistencia a mutaciones.
-
-## Estado del documento
-
-Esta versión es una adaptación de trabajo en español. La especificación pública y el roadmap canónico están en inglés; el plan operativo en español se mantiene local e ignorado por Git para poder iterarlo durante el hackathon.
-
-Ver el detalle completo en el [Technical README](TECHNICAL.md) y el mapa de construcción en [ROADMAP.md](docs/ROADMAP.md).
-
-## Estado de implementación
-
-Ya existen 14 niveles coherentes. L1 transforma un corpus real en una Skill IR versionada, con source spans y digest SHA-256 determinista; L2 implementa 28 checks de metodología e ingeniería; L3 modela composición tipada; L4 prueba el auditor con 8 mutaciones (6/6 KILLED en alcance, 2 ABSTAINED fuera de alcance); L5–L7 cubren diferencial conductual, reparación y replay; L8 integra CI, reportes sellados y viewer HTML; L9–L13 agregan extracción style-agnostic, taxonomía de defectos de ingeniería, API pública, confirmación Nemotron y validación corpus-agnóstica; L14 verifica la frontera real de Nebius, la activación causal y la completitud de respuestas.
-
-La capa de confirmación L2.5 toma todos los CANDIDATEs del audit L2 y pregunta a un executor (Nemotron vía Nebius, o mock determinista) si cada uno es un defecto real o un falso positivo. La confirmación es un artifact separado (`crucible-confirmation/v1`) con su propio digest SHA-256; el audit L2 nunca se modifica. Si `NEBIUS_API_KEY` no está configurada, la ejecución se reporta como BLOCKED, no simulada.
-
-## Ejecución y cobertura actual
+Necesitás Python 3.11 o posterior.
 
 ```bash
 pip install -e ".[test]"
-PYTHONPATH=src python3 -m pytest -q
-# Una skill desde stdin
-PYTHONPATH=src python3 -m crucible.cli --scan-skill < SKILL.md
-# Un repositorio local: auditoría conjunta y grafo
-PYTHONPATH=src python3 -m crucible.cli ruta/al/repositorio
-# Instaladas con prioridad histórica por nombre y cobertura explícita
+PYTHONPATH=src python3 -m crucible.cli tests/fixtures/readme-demo --no-graph
+PYTHONPATH=src python3 -m crucible.cli --scan-skill < tests/fixtures/readme-demo/SKILL.md
+PYTHONPATH=src python3 -m crucible.cli --report --local-executor > crucible-report.json
+PYTHONPATH=src python3 -m crucible.cli --view crucible-report.json > crucible-report.html
 PYTHONPATH=src python3 -m crucible.cli --scan-installed --include-coverage
-# Paquetes anidados y homónimos auditados independientemente
 PYTHONPATH=src python3 -m crucible.cli --scan-installed-collection
-# Reporte local y visualización
-PYTHONPATH=src python3 -m crucible.cli --report --local-executor > report.json
-PYTHONPATH=src python3 -m crucible.cli --view report.json > report.html
+PYTHONPATH=src python3 -m pytest -q
 ```
 
-La colección busca en los directorios estándar configurados de Claude, Devin y
-`~/.codex/skills`. Conserva rutas de origen y errores por paquete en un reporte
-sellado; no evalúa composición entre paquetes. Cobertura parcial o vacía devuelve
-código de salida 1. Las rutas personalizadas y cachés externas de plugins todavía
-no se descubren automáticamente.
+El primer comando después de instalar audita el corpus de ejemplo; el siguiente
+lee la misma skill por stdin. Sin ruta de corpus, `--report` ejecuta fixtures
+locales L4–L7; agregá una ruta para incluir L1–L3. `--local-executor` mantiene local
+también la confirmación aunque exista una API key del proveedor.
 
-El modo antiguo `--scan-installed` conserva la prioridad por nombre y copia
-temporalmente solo los `SKILL.md`, manteniendo rutas anidadas y verificando la
-identidad de origen. Las identidades de raíz y directorios registradas al listar
-se conservan al abrir los paquetes seleccionados; los reemplazos detectados
-abortan. Admite hasta 500 archivos de skills, 20 MB acumulados y
-1 MB por archivo; no copia adjuntos ajenos al análisis. La enumeración inicial y
-el descubrimiento de paquetes comparten un presupuesto de origen de 100.000
-entradas y 10.000 directorios entre todas las raíces. Las entradas se cuentan
-antes de ordenar, incluidos archivos ajenos y candidatos duplicados; las raíces
-vacías también consumen presupuesto de directorios.
+El escaneo de colecciones instaladas audita cada paquete por separado y conserva
+skills homónimas; no evalúa composición entre paquetes. La cobertura parcial o
+vacía devuelve código 1. Los límites de lectura y la precedencia histórica por
+nombre están en el [contrato técnico](TECHNICAL.md#15-collection-reader-and-known-limitations).
 
-Límites de la colección: 500 entradas de reporte, 100.000 entradas descubiertas
-(incluidos archivos ajenos), 10.000 directorios admitidos, 1 MB por skill y
-20 MB acumulados de entrada, compartidos entre raíces. En plataformas POSIX compatibles, el modo
-colección fija descriptores de directorio y rechaza symlinks en cada componente
-de la ruta. Lee sin bloquearse en FIFO y con límite de bytes; rechaza cambios
-observados de tamaño o timestamps. El compilador de repositorios ahora comparte
-esta lectura acotada (1 MB por archivo), conservando rutas de origen relativas.
-Todavía resuelve la raíz antes de descubrir archivos: admite aliases symlink de
-esa raíz. El descubrimiento del repositorio enumera descriptores de directorio
-fijados, abiertos sin seguir symlinks. Registra dispositivo/inode de la raíz,
-directorios descubiertos y archivos de skills; los contrasta con los descriptores
-antes de enumerar o leer y aborta ante reemplazos detectados. No es una instantánea:
-la reutilización de inodes y los cambios de contenido sobre el mismo inode entre
-descubrimiento y apertura quedan fuera de esa comprobación.
-La colección instalada también enumera descriptores fijados y verifica las
-identidades registradas antes de leer. Los symlinks y puntos de entrada inválidos
-se reportan como errores; los errores por directorio conservan cobertura parcial
-y vecinos válidos. El reporte se ordena por ruta de origen.
-El compilador de repositorios
-limita la entrada acumulada a 20 MB, los directorios a 10.000 (incluida la raíz)
-y las entradas descubiertas a 100.000 (incluidos archivos ajenos a las skills).
-Los errores de enumeración abortan la compilación; estos presupuestos rigen
-incluso sin límite explícito de cantidad de skills. No representa una instantánea
-del filesystem.
+Para la interfaz HTTP local, instalá las dependencias opcionales:
 
-Hay un diferencial conductual real guardado, con el mutante distinguible del
-original y la reparación. Otra ejecución real de confirmación devolvió 2 apoyos
-y 12 rechazos, sin truncación; su artefacto completo no se guardó. Esas opiniones
-del modelo no son etiquetas verdaderas. Falta evidencia real del loop de reparación
-con proponente LLM. Ver [próximos niveles](docs/NEXT_LEVELS.md).
+```bash
+pip install -e ".[api]"
+PYTHONPATH=src python3 -m crucible.cli --serve 127.0.0.1:8000
+```
 
-## Principio de construcción
+Es una interfaz de desarrollo local, no un servicio público endurecido.
+Ver [operación de la API y límites de despliegue](TECHNICAL.md#17-runtime-and-api-operations).
 
-El destino es un sistema completo de verificación de metodología. El tiempo decide hasta qué nivel coherente llegamos; no convierte los niveles no alcanzados en prototipos descartables. Cada nivel debe ser útil, compatible con el siguiente y conservar los invariantes anteriores.
+## Mapa del repositorio
+
+```text
+crucible/
+├── src/crucible/    # compilador, auditor, experimentos, reparación e interfaces
+├── tests/          # contratos, defectos sembrados y fixtures de regresión
+├── artifacts/      # evidencia experimental conservada
+├── docs/           # plan, evaluación, decisiones y revisiones adversariales
+├── README.md       # presentación y ejemplo ejecutable en inglés
+├── README_ES.md    # adaptación en español con igual alcance y comandos
+└── TECHNICAL.md    # contratos, algoritmos, autoridad y operación en inglés
+```
+
+Para extender o auditar el sistema, seguí por el **[Technical README](TECHNICAL.md)**
+y el [plan de evaluación](docs/EVALUATION_PLAN.md).
 
 ## Licencia
 
-Apache-2.0. Ver [`LICENSE`](LICENSE).
+Apache-2.0. Ver [LICENSE](LICENSE).

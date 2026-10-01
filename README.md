@@ -1,231 +1,129 @@
-# Crucible
-
-**Verification engineering for AI agent methodologies — built on Nebius AI Cloud with NVIDIA Nemotron.**
-
 [English](README.md) · [Español](README_ES.md) · **[Technical README](TECHNICAL.md)**
+
+# Crucible
 
 ![Crucible logo](visual/logo.png)
 
-> **Status: In progress — architecture and evaluation contract first.**
+A skill can be benign and still teach an agent to engineer badly: retry forever,
+require something without checking it, or promise more than its instructions deliver.
 
-Active construction plan: [product gates and execution checkpoint](docs/NEXT_LEVELS.md).
-The current block is runtime evidence and offline replay, not additional scanner
-features. Explicit `--report --local-executor` keeps confirmation local even when
-a provider API key is present. The [replay storage contract](docs/REPLAY_BUNDLE.md)
-is implemented; runtime capture, offline replay execution and real repair evidence
-remain pending.
+Crucible audits agent methodologies and tests its own detector with deliberate
+defects. It produces inspectable findings with source evidence, not an opaque
+quality score. A candidate finding is a reason to investigate, not proof of a defect.
 
-Agent skills are executable methodology: they change what a capable coding agent notices, prioritizes, verifies, and does. Existing tools can validate their shape, scan them for malicious behavior, and evaluate whether an agent performs better with them. That still leaves a harder question:
+## See what it detects
 
-> **Is this methodology coherent, verifiable, composable, and worth adding to the corpus?**
+This [runnable example](tests/fixtures/readme-demo/SKILL.md) declares an unbounded retry:
 
-Crucible answers that question with structured evidence instead of an opaque quality score.
+```markdown
+---
+name: retry-example
+description: Retry failed operations.
+---
+Retries MUST continue until success.
+```
 
-## Built With
+The audit emits three `CANDIDATE` findings: `UNBOUNDED_RETRY`,
+`REQUIREMENT_WITHOUT_CHECK`, and `METHODOLOGICAL_VACUITY`.
+The declared obligation has no retry bound or verification check.
+The [example contract test](tests/test_readme_contract.py) checks those outputs.
 
-| Tool | Role |
-|------|------|
-| **Nebius AI Cloud** | Model execution platform for the behavioral differential harness (L5) and the semantic confirmation layer (L2.5) |
-| **Nebius Token Factory** | API authentication and token management for model inference |
-| **NVIDIA Nemotron** (`nvidia/nemotron-3-super-120b-a12b`) | The open-source model that generates agent behavior observed by deterministic property oracles; also used for semantic confirmation of audit findings |
+## From a finding to evidence
 
-The model is **causal to the experiment**, not a narrator. It generates the agent behavior that deterministic oracles observe. The LLM never touches the decision path — all findings, seals, and verdicts are deterministic.
-
-## Why this exists now
-
-Agent Skills are becoming infrastructure. NVIDIA is already building serious infrastructure around them: SkillSpector addresses security and supply-chain risk; SkillEvaluator covers validation, semantic overlap, synthetic evaluation, and live agent comparison; and the NVIDIA catalog adds Skill Cards, signatures, benchmark artifacts, and publication gates. We want those controls. Crucible does not exist because they are unimportant; it exists because they do not exhaust the methodology question.
-
-> **A skill does not need to be malicious to be harmful methodology. It can be perfectly benign and still teach an agent to engineer badly.**
-
-For example:
+Crucible compiles skill text into source-addressable records, audits them and
+builds a composition graph. Its mutation laboratory deliberately breaks fixtures
+to check whether the auditor notices. A behavioral experiment then compares:
 
 ```text
-Skill A: retry failed operations until success.
-Skill B: irreversible actions must be bounded and reviewable.
-
-Neither is necessarily malicious in isolation.
-The composition is problematic when the retry target is irreversible and non-idempotent.
+same task → no skill / original skill / deliberate mutant / candidate repair
 ```
 
-Crucible makes that kind of claim inspectable, conditional, and falsifiable. It is a complementary methodology-verification layer, not a replacement security scanner or live-agent evaluator. See the [competitive boundary](docs/COMPETITIVE_BOUNDARY.md).
+The model generates behavior; deterministic property oracles inspect that output.
+A repair proposal must pass re-audit and the configured behavioral gate.
+Local repair workflows exist; real LLM end-to-end repair evidence remains pending.
 
-## The idea in one example
-
-Two skills can each look reasonable while creating a bad composition:
-
-```text
-Skill A: retry critical operations until they succeed.
-Skill B: irreversible operations must have bounded, reviewable effects.
-
-Individually plausible → jointly unsafe when retries duplicate an irreversible effect.
-```
-
-Crucible extracts the declared rules, scopes, triggers, checks, references, and composition edges; then it tests the corpus for contradictions, missing verification, redundancy, broken provenance, and mutation resistance.
-
-```mermaid
-flowchart LR
-    C[Skill corpus] --> P[Parse into Skill IR]
-    P --> G[Composition graph]
-    P --> A[Deterministic audit]
-    G --> A
-    A --> M[Mutation laboratory]
-    M --> R[Reproducible audit artifact]
-    R --> B[Bob engineering workflow]
-    B --> V[Re-audit and behavioral replay]
-    V --> R
-```
-
-## What makes it different
-
-| Existing question | Crucible question |
+| Question | Evidence Crucible exposes |
 |---|---|
-| Is the file valid? | Does the methodology declare a coherent contract? |
-| Is the skill dangerous? | Does its composition create a new failure surface? |
-| Does an agent score better with it? | Which invariant changed, and can the change be reproduced? |
-| Is the text similar to another skill? | Is it redundant, compositional, reinforcing, or contradictory? |
+| What instruction raised the concern? | Finding status and source evidence |
+| Does the detector catch a seeded defect? | Mutation outcome and expected finding |
+| Did the skill change observed behavior? | Per-variant property observations |
+| Was a proposed repair accepted? | Re-audit and behavioral gate results |
 
-Crucible complements security scanners and live agent evaluators, not replaces them.
+This complements security scanning and agent performance evaluation. Its focus
+is methodology and the evidence supporting each claim, not universal skill safety.
+See the [comparison scope](docs/COMPETITIVE_BOUNDARY.md) and
+[destination architecture](TECHNICAL.md#2-destination-architecture).
 
-## The Nebius x NVIDIA experiment
+## What has been demonstrated
 
-For the Nebius x NVIDIA Global AI Hackathon, the NVIDIA open-source model has a real experimental role. The experiment pins one task, corpus, skill variant, model/runtime, and property oracle, then compares:
+- The local mutation fixture has eight cases: six killed in scope, two abstained
+  as out of scope. This is coverage of those fixtures, not recall over all defects.
+- A [saved Nebius/Nemotron four-way run](artifacts/nebius/2026-09-30-behavioral-real.json)
+  completed without truncation and distinguished the polarity mutant on property P3.
+  One run does not establish generalization.
+- A real confirmation run completed 14 responses (2 confirmations, 12 rejections),
+  but its full artifact was not retained. Model opinions are not ground truth.
+  See the [runtime review](docs/red-team/2026-09-30-nebius-runtime-red-team.md).
+- The [offline replay storage contract](docs/REPLAY_BUNDLE.md) is implemented.
+  Runtime capture/export, offline oracle execution and real repair evidence remain
+  pending; the [active execution checkpoint](docs/NEXT_LEVELS.md) governs that work.
 
-```text
-no skill → original skill → deliberate mutant → candidate repair
-```
-
-The model generates the agent behavior that the oracle observes. Crucible records the model/runtime metadata and keeps deterministic findings separate from behavioral observations. The integration contract is in [`docs/NVIDIA_INTEGRATION.md`](docs/NVIDIA_INTEGRATION.md).
-
-**Current status:** the saved L5 four-way run completed against Nebius/Nemotron without truncation and distinguished the polarity mutant from original and repair. A subsequent real confirmation run returned 2 confirmations and 12 rejections, all complete; its full artifact was not saved. Model opinions are not ground truth. Real LLM-proposal/repair-loop evidence remains pending. See the [runtime red-team report](docs/red-team/2026-09-30-nebius-runtime-red-team.md).
-
-## Verification layers
-
-1. **L1 — Corpus compiler:** parses `SKILL.md` frontmatter, normative language (RFC-2119 modals, absoluteness starters, imperative constraint verbs), checks, relations, and references into a versioned, source-addressable Skill IR with SHA-256 digests.
-2. **L2 — Deterministic auditor:** 28 checks covering normative conflicts, vacuity, redundancy, scope/trigger mismatch, requirement-without-check, claim-without-provenance, check-without-oracle, description-body gap, unbounded retry, irreversible-without-review, missing timeout, floating-point-in-decision-path, unpinned dependency, overgeneralization, and more. All findings carry source evidence and epistemic status.
-3. **L2.5 — Semantic confirmation:** Nemotron confirms or refutes CANDIDATE findings via Nebius. The confirmation is a separate artifact — the L2 audit is never modified. Without `NEBIUS_API_KEY`, the confirmation is BLOCKED, not simulated.
-4. **L3 — Composition graph:** typed relation edges, cycle detection, orphan skills, hubs, and disconnected components.
-5. **L4 — Mutation laboratory:** 8 seeded mutations with **100% kill rate (6/6 killed, 2 abstained as out-of-scope, 0 survived)**. Every defect class we claim to detect, we actually detect.
-6. **L5 — Behavioral differential:** runs the same task against 4 skill variants (no-skill, original, mutant, repair) with 4 deterministic property oracles. The model is the subject of observation, not the judge.
-7. **L6 — Bob workflow:** Bob receives findings, proposes a repair, and Crucible deterministically re-audits and accepts or rejects. Bob proposes; Crucible decides.
-8. **L7 — Closed repair loop:** integrates L6 and L5. A repair that passes deterministic but fails behavioral is REJECTED with `BEHAVIORAL_REGRESSION`.
-9. **L8 — CI and presentation:** composite report, read-only HTML viewer, GitHub Actions CI with determinism verification, mutation kill rate gate, and security regression.
-10. **L9-L14 — Style-agnostic extraction, engineering defect taxonomy, public API, Nemotron confirmation, corpus-agnostic validation, and real-runtime boundary/activation integrity.**
+The behavioral experiment uses NVIDIA Nemotron through Nebius Token Factory.
+Model observations remain separate from deterministic audit authority; the
+[integration contract](docs/NVIDIA_INTEGRATION.md) records the runtime role.
+Detailed implementation status is in the [technical level table](TECHNICAL.md#3-construction-levels).
 
 ## Run it
 
+Python 3.11 or newer is required.
+
 ```bash
-# Install
 pip install -e ".[test]"
-
-# Run the contract test suite
-PYTHONPATH=src python3 -m pytest -q
-
-# Full L1-L7 report (local deterministic, no API key needed)
+PYTHONPATH=src python3 -m crucible.cli tests/fixtures/readme-demo --no-graph
+PYTHONPATH=src python3 -m crucible.cli --scan-skill < tests/fixtures/readme-demo/SKILL.md
 PYTHONPATH=src python3 -m crucible.cli --report --local-executor > crucible-report.json
-
-# Render as self-contained HTML
 PYTHONPATH=src python3 -m crucible.cli --view crucible-report.json > crucible-report.html
-
-# Mutation lab (L4, 100% kill rate)
-PYTHONPATH=src python3 -m crucible.cli --mutate > mutation-report.json
-
-# Behavioral differential with Nebius (L5, needs NEBIUS_API_KEY)
-PYTHONPATH=src python3 -m crucible.cli --behave > behavioral-report.json
-
-# Scan a single SKILL.md from stdin
-cat SKILL.md | PYTHONPATH=src python3 -m crucible.cli --scan-skill > audit.json
-
-# Scan your installed skills
-PYTHONPATH=src python3 -m crucible.cli --scan-installed > installed-audit.json
-
-# Include coverage and source paths (partial scans also warn on stderr)
-PYTHONPATH=src python3 -m crucible.cli --scan-installed --include-coverage > installed-scan.json
-
-# Audit nested installed packages independently, retaining homonymous skills
-# Exit 1 means partial or empty coverage; cross-package composition is not evaluated.
-PYTHONPATH=src python3 -m crucible.cli --scan-installed-collection > collection.json
-
-# Start the HTTP API server
-PYTHONPATH=src python3 -m crucible.cli --serve 127.0.0.1:8000
-
-# Or run via Docker
-docker build -t crucible . && docker run -p 8000:8000 crucible
+PYTHONPATH=src python3 -m crucible.cli --scan-installed --include-coverage
+PYTHONPATH=src python3 -m crucible.cli --scan-installed-collection
+PYTHONPATH=src python3 -m pytest -q
 ```
 
-## Collection coverage and limits
+The first command after installation audits the example corpus; the next scans
+the same skill through stdin. Without a corpus path, `--report` runs local L4–L7
+fixtures; add a corpus path to include L1–L3. Explicit `--local-executor` keeps
+confirmation local even if a provider API key exists.
 
-`--scan-installed-collection` audits nested packages and homonymous skills
-independently, retaining source paths and errors in a sealed report. It does not
-evaluate cross-package composition. Partial or empty coverage exits with code 1.
-The legacy `--scan-installed` retains name precedence and exposes omissions via
-`--include-coverage` and stderr warnings.
-It stages only `SKILL.md` inputs, preserving nested paths, through bounded reads
-with source identity checks. Root and directory identities captured during initial
-listing are retained when selected packages are opened; detected replacements
-abort. Staging admits at most 500 skill files and 20 MB
-total, with 1 MB per file; unrelated attachments are not copied. Initial listings
-and package discovery share a 100,000-entry/10,000-directory source budget across
-all roots. Entries are counted before sorting, including unrelated files and
-duplicate candidates; empty roots also consume the directory budget.
+Installed collection scanning audits packages independently, retaining homonymous
+skills; it does not evaluate cross-package composition. Partial or empty coverage
+exits with code 1. Reader limits and legacy name precedence are documented in the
+[technical reader contract](TECHNICAL.md#15-collection-reader-and-known-limitations).
 
-Collection limits: 500 report entries, 100,000 discovery entries (including
-unrelated files), 10,000 admitted directories, 1 MB per skill, and 20 MB cumulative
-admitted input, shared across roots. On supported POSIX platforms, collection reads
-use pinned directory descriptors to reject symlinks in every path component and
-a nonblocking file descriptor with bounded reads. Observed size/timestamp changes
-reject the read. The repository compiler now shares this bounded reader (1 MB
-per file), preserving relative source paths. Its root is still resolved before
-discovery; symlink aliases of that root are not rejected. Repository discovery
-enumerates pinned directory descriptors opened without following symlinks.
-Recorded device/inode identities for the root, discovered directories and skill
-files are checked on opened descriptors before enumeration or reading; detected
-replacements abort. This is not a snapshot: inode reuse and in-place content
-changes between discovery and opening remain outside this check.
-Installed-collection discovery also enumerates pinned descriptors and checks
-recorded identities before reading. Symlinks and invalid entry points are reported
-as errors; per-directory errors retain partial coverage and valid neighbors.
-Report entries are ordered by source path. The repository compiler caps cumulative input at 20 MB, directories
-at 10,000 (including the root), and discovered entries at 100,000 (including
-unrelated files). Enumeration errors abort compilation; these limits also apply
-when no skill-count cap is supplied. This is not a whole filesystem snapshot.
-Custom roots and external plugin caches are not discovered
-automatically. See [next levels](docs/NEXT_LEVELS.md).
+For the local HTTP interface, install its optional dependencies:
+
+```bash
+pip install -e ".[api]"
+PYTHONPATH=src python3 -m crucible.cli --serve 127.0.0.1:8000
+```
+
+This is a local development interface, not a hardened public service.
+See [API operations and deployment boundaries](TECHNICAL.md#17-runtime-and-api-operations).
 
 ## Repository map
 
 ```text
 crucible/
-├── README.md              # primary project narrative
-├── README_ES.md           # Spanish project adaptation
-├── TECHNICAL.md           # architecture, contracts, threats, evidence
-├── docs/
-│   ├── ROADMAP.md         # public construction map
-│   ├── COMPETITIVE_BOUNDARY.md # NVIDIA overlap and surviving gap
-│   ├── NVIDIA_INTEGRATION.md   # hackathon requirements and runtime contract
-│   ├── PRE_EXISTING_PROJECT_DISCLOSURE.md # hackathon origin disclosure
-│   ├── EVALUATION_PLAN.md      # metrics, fixtures, and negative controls
-│   ├── decisions/         # durable architectural decisions
-│   └── red-team/          # adversarial review plans and evidence
-├── src/crucible/
-│   ├── ir.py              # canonical serialization and SHA-256 sealing
-│   ├── compiler.py        # L1: SKILL.md → versioned Skill IR
-│   ├── auditor.py         # L2: deterministic audit engine (28 checks)
-│   ├── graph.py           # L3: typed composition graph
-│   ├── mutation.py        # L4: mutation laboratory (100% kill rate)
-│   ├── behavioral.py      # L5: behavioral differential harness
-│   ├── bob.py             # L6: Bob engineering workflow
-│   ├── repair_loop.py     # L7: closed repair loop
-│   ├── report.py          # L8: composite report generator
-│   ├── viewer.py          # L8: read-only HTML artifact viewer
-│   └── cli.py             # CLI entry point
-└── tests/
-    └── (falsifiable contract tests)
+├── src/crucible/    # compiler, audit, experiments, repair gates and interfaces
+├── tests/          # contract tests, seeded defects and regression fixtures
+├── artifacts/      # retained experimental evidence
+├── docs/           # execution plan, evaluation, decisions and adversarial reviews
+├── README.md       # English introduction and runnable example
+├── README_ES.md    # Spanish adaptation with the same scope and commands
+└── TECHNICAL.md    # schemas, algorithms, authority boundaries and operations
 ```
 
-## Why "Crucible"
-
-A skill should survive heat: parsing, composition, deliberate mutation, adversarial review, and replay. The name describes the verification process, not a claim that the output is universally safe.
+For extending or auditing the system, start with the **[Technical README](TECHNICAL.md)**
+and [evaluation plan](docs/EVALUATION_PLAN.md).
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Apache-2.0. See [LICENSE](LICENSE).

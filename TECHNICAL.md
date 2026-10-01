@@ -1,3 +1,5 @@
+[English](README.md) · [Español](README_ES.md) · **[Technical README](TECHNICAL.md)**
+
 # Crucible — Technical README
 
 **Status: L5 has saved real Nebius/Nemotron evidence.** A real confirmation run completed 14 responses (2 confirmed, 12 rejected), but its full artifact was not retained. Real LLM proposal/repair-loop evidence remains pending. Implementation labels below do not establish cross-run stability.
@@ -85,8 +87,8 @@ The levels are coherent product states, not technical departments. Security, det
 |---|---|---|
 | L1 | Corpus compiler and versioned Skill IR | **Implemented:** a real corpus compiles with stable identities, source spans, nested/block frontmatter support within the declared subset, and a deterministic artifact digest. |
 | L2 | Deterministic single-corpus auditor | **Implemented:** the auditor consumes the L1 IR, emits evidence-bearing findings with epistemic status (CONFIRMED / CANDIDATE / OBSERVATION), seals an AuditArtifact (`crucible-audit/v1`), and emits 28 deterministic checks across methodology and engineering defects. Cross-process digest verified identical. |
-| L2.5 | Semantic confirmation layer | **Implemented:** `confirm.py` takes all CANDIDATE findings and asks an executor (Nemotron via Nebius, or deterministic mock) whether each is a true defect or false positive. The confirmation is a separate `crucible-confirmation/v1` artifact; the L2 audit is never modified. Without `NEBIUS_API_KEY`, execution is BLOCKED, not simulated. |
-| L3 | Typed composition graph | **Implemented:** the graph extracts typed relation edges from L1 section headings and description text (sibling of, pairs with, composes with, member of the family, companion to), classifies them into composition/reinforcement/delegation, and detects hubs, broken edges, disconnected components, and isolated skills. The real corpus produces 83 edges, 12 hubs, 4 components. Three semantic checks are abstained (conditional contradiction, semantic redundancy, producer/consumer typing). |
+| L2.5 | Semantic confirmation layer | **Implemented:** `confirm.py` takes all CANDIDATE findings and asks an executor (Nemotron via Nebius, or deterministic mock) whether each is a true defect or false positive. The confirmation is a separate `crucible-confirmation/v1` artifact; the L2 audit is never modified. An explicitly selected remote executor without `NEBIUS_API_KEY` is BLOCKED, not simulated. Explicit local/mock execution is supported. |
+| L3 | Typed composition graph | **Implemented:** the graph extracts typed relation edges from L1 section headings and description text (sibling of, pairs with, composes with, member of the family, companion to), classifies them into composition/reinforcement/delegation, and detects hubs, broken edges, disconnected components, and isolated skills. A historical corpus run produced 83 edges, 12 hubs and 4 components; these counts are not a current corpus guarantee. Three semantic checks are abstained (conditional contradiction, semantic redundancy, producer/consumer typing). |
 | L4 | Mutation laboratory | **Implemented:** the lab seeds 8 defect classes (polarity inversion, exception removal, reference break, check removal, trigger widening, edge removal, cycle introduction, capability duplication) against a known-good base fixture, runs the full pipeline, and classifies results as KILLED / SURVIVED / ABSTAINED. Current result: 6/6 killed in scope, 2 abstained as OUT_OF_SCOPE, 0 survived. |
 | L5 | Behavioral differential harness | **Executed locally and on Nebius:** four skill variants and four lexical properties; the saved real run distinguishes the mutant on P3 with no truncation. Single-run evidence does not establish generalization. |
 | L6 | Bob engineering workflow | **Implemented:** proposal, compilation and deterministic re-audit gate. Rule-based path verified; real LLM proposal evidence pending. |
@@ -101,9 +103,24 @@ The levels are coherent product states, not technical departments. Security, det
 
 The project may stop at any last fully closed level. It must not claim later levels merely because their interfaces exist.
 
-## 4. Skill IR draft
+## 4. Skill IR contract and destination schema
 
-The IR is intentionally typed and source-addressable. Exact serialization is pending implementation, but the following fields are load-bearing:
+The implemented envelope is `skill-ir/v1`: `schema_version`, `skills`, and
+`artifact_digest`. Each skill retains `identity`, `metadata`, `trigger`,
+`body_text`, `rules`, `checks`, `procedural_steps`, `relations`, and `references`.
+See [compiler.py](src/crucible/compiler.py) for the nested extraction fields.
+`identity` contains name, source path and exact source-byte digest. Relations
+contain composition/delegation targets; URL references are a separate field.
+
+[ir.py](src/crucible/ir.py) serializes canonical JSON using sorted keys,
+compact separators, unescaped Unicode and UTF-8 encoding. Payload digests use
+SHA-256 with a `sha256:` prefix; the artifact seal excludes its own digest field.
+Reproducibility covers identical input/configuration and implementation, not
+repeatable remote model generation or authenticity of a resealed artifact.
+
+The following is a **destination design**, not the current serialized API.
+Normalized subjects/predicates, per-rule oracle links and general scope semantics
+must not be inferred from its presence here:
 
 ```yaml
 SkillIR:
@@ -166,7 +183,9 @@ Findings must carry source spans, rule IDs, relation IDs, the violated invariant
 
 ## 6. Composition semantics
 
-Similarity is not a verdict. Relations are classified by the decision each skill changes:
+Similarity is not a verdict. The table describes intended semantic distinctions;
+the current graph extracts lexical relation candidates, not a general typed
+producer/consumer proof. Relations should be classified by the decision each skill changes:
 
 | Relation | Meaning | Typical evidence |
 |---|---|---|
@@ -179,7 +198,9 @@ The first implementation may emit candidates when semantic adjudication is not d
 
 ## 7. Mutation laboratory
 
-Mutations model realistic methodology degradation, not random text noise:
+The design inventory below models methodology degradation, not random text noise.
+It is broader than the eight implemented cases listed in section 3; it is not a
+claim that every row has an executed fixture:
 
 | Mutation | Expected pressure |
 |---|---|
@@ -267,7 +288,7 @@ Durable decisions live in [`docs/decisions/`](docs/decisions/). The first archit
 
 ## 13. Red-team posture
 
-Red-team work is intentionally deferred until the first integrated implementation exists, but the charter is already defined in [`docs/red-team/`](docs/red-team/). The final review must attack parser boundaries, normalization collisions, graph semantics, mutation coverage, artifact authority, Bob repair loops, and UI projection integrity.
+Adversarial reviews have been executed and recorded in [`docs/red-team/`](docs/red-team/), including the [real-runtime review](docs/red-team/2026-09-30-nebius-runtime-red-team.md). They are scoped evidence, not certification of the whole system. Further reviews must attack parser boundaries, normalization collisions, graph semantics, mutation coverage, artifact authority, Bob repair loops, and UI projection integrity.
 
 ## 14. License
 
@@ -332,3 +353,88 @@ and downstream analysis costs.
 - “Marginal utility” needs an explicit capability model; it must not become a magic score.
 - Runtime composition requires traces with enough provenance to distinguish declared and observed activation.
 - The final hackathon submission must document which levels are actually complete.
+
+## 16. Offline replay evidence contract
+
+[replay.py](src/crucible/replay.py) implements offline `validate_bundle`,
+`dump_bundle`, `load_bundle` and `replay_readiness` for
+`crucible-replay-bundle/v1`. The envelope retains the full task and property
+definitions, exact variant guidance, pinned oracle identity, requests, responses,
+historical observations and digests. Limits are 8,000,000 UTF-8 bytes, 500 variants
+and 100 properties. Unknown fields/versions, duplicate JSON keys and nonfinite
+constants are rejected.
+
+Integrity is not acceptance. Valid bundles may retain blocked, failed or truncated
+runs. Readiness requires complete response metadata and observations; it neither
+executes an oracle nor authenticates a provider. Historical behavioral artifacts
+are not automatically convertible: missing historical prompts cannot be inferred
+from today's fixtures. See the [full contract and verification command](docs/REPLAY_BUNDLE.md).
+
+R2 remains open for runtime capture and CLI export. R3 offline oracle execution and
+R4 real repair evidence remain pending under the [active plan](docs/NEXT_LEVELS.md).
+
+## 17. Runtime and API operations
+
+Python >=3.11 is required. Core dependencies are empty; install `.[test]` for
+pytest and `.[api]` for FastAPI/Uvicorn. The CLI defaults to graph output for a
+positional corpus; use `--no-graph` for the audit. Without a corpus path,
+`--report` runs fixture L4–L7, not a corpus audit. Explicit `--local-executor`
+uses local behavior and mock confirmation even when a provider key exists.
+
+| HTTP route | Input and behavior |
+|---|---|
+| `GET /health` | Health status |
+| `POST /scan/skill` | JSON `skill_text`, optional `skill_name` (default `uploaded`); returns IR, audit and graph |
+| `POST /scan/directory` | JSON `directory`; scans a path on the server filesystem |
+| `GET /scan/installed` | Legacy combined installed-skill scan |
+| `GET /` | Interactive local demo |
+
+There is no independent-collection HTTP route. POST handlers translate
+`ValueError` into HTTP 400; other filesystem failures are not uniformly
+normalized. The API has no public-service authorization boundary. Directory and
+installed scans access the server's files: keep it on loopback and do not publish
+it without a separately designed access-control and resource-isolation layer.
+The HTML artifact viewer is distinct from the interactive demo.
+
+```bash
+pip install -e ".[api]"
+PYTHONPATH=src python3 -m crucible.cli --serve 127.0.0.1:8000
+# Alternative local container deployment:
+docker build -t crucible .
+docker run -p 127.0.0.1:8000:8000 crucible
+```
+
+Custom roots and external plugin caches are not automatically discovered.
+Legacy installed scans retain name precedence; `--include-coverage` exposes
+omissions and partial scans warn on stderr. Independent collection scans retain
+homonyms by path and exit 1 for partial or empty coverage.
+
+## 18. Algorithms and verification entry points
+
+The auditor's lexical redundancy base uses exact rational Jaccard similarity:
+`|A intersection B| / |A union B|`, with both empty sets scoring 1 and only one
+empty scoring 0. Its threshold is `Fraction(2, 3)`; this is lexical evidence,
+not a semantic equivalence proof. See [auditor.py](src/crucible/auditor.py) and
+[ADR-0011](docs/decisions/0011-semantic-redundancy-deterministic-base.md).
+
+The key authority decisions are [conservative parsing](docs/decisions/0002-conservative-frontmatter-parser.md),
+[honest audit scope](docs/decisions/0003-l2-honest-audit-scope.md),
+[Bob proposes, Crucible decides](docs/decisions/0007-l6-bob-proposes-crucible-decides.md),
+[behavioral repair gating](docs/decisions/0008-l7-behavioral-replay-in-repair-loop.md),
+[no consumer decision logic](docs/decisions/0009-l8-no-consumer-decision-logic.md)
+and [separate confirmation](docs/decisions/0018-general-confirmation-layer.md).
+These records retain the rationale and alternatives.
+
+```bash
+pip install -e ".[test]"
+PYTHONPATH=src python3 -m pytest -q
+PYTHONPATH=src python3 -m crucible.cli --mutate
+PYTHONPATH=src python3 -m crucible.cli --report --local-executor
+```
+
+The mutation result is six killed in-scope fixtures and two out-of-scope
+abstentions, not a universal detection guarantee. The
+[evaluation plan](docs/EVALUATION_PLAN.md) defines the experimental method;
+the [saved behavioral artifact](artifacts/nebius/2026-09-30-behavioral-real.json)
+retains single-run remote evidence. Re-running local tests does not reproduce
+that provider run.
