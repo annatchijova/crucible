@@ -151,11 +151,23 @@ class NebiusConfirmExecutor:
                     "provider": "nebius-token-factory",
                     "blocked": False,
                 }
-        output = ""
-        if result.get("choices"):
-            output = result["choices"][0].get("message", {}).get("content", "")
+        choices = result.get("choices")
+        if not isinstance(choices, list) or not choices:
+            return {
+                "output": "",
+                "error": "provider response has no choices",
+                "model": self.model,
+                "provider": "nebius-token-factory",
+                "blocked": False,
+                "finish_reason": None,
+                "truncated": False,
+            }
+        choice = choices[0]
+        message = choice.get("message", {})
+        output = message.get("content") if isinstance(message, dict) else None
+        finish_reason = choice.get("finish_reason")
         usage = result.get("usage", {})
-        return {
+        response = {
             "output": output,
             "error": None,
             "model": self.model,
@@ -169,7 +181,16 @@ class NebiusConfirmExecutor:
             },
             "response_id": result.get("id", ""),
             "blocked": False,
+            "finish_reason": finish_reason,
+            "truncated": finish_reason == "length",
         }
+        if not isinstance(output, str):
+            response["output"] = ""
+            response["error"] = (
+                "provider returned non-text content: "
+                f"{type(output).__name__}"
+            )
+        return response
 
 
 # ---------------------------------------------------------------------------
@@ -721,6 +742,28 @@ def _parse_verdict(output: str) -> tuple[str, str]:
 # ---------------------------------------------------------------------------
 
 
+def _confirmation_response(response: dict[str, Any]) -> dict[str, Any]:
+    """Keep runtime evidence and prevent incomplete output becoming a verdict.
+
+    Missing metadata remains unknown for legacy/custom executors. The runtime
+    fields are additive within v1 and are covered by the confirmation digest.
+    """
+    result = dict(response)
+    result['runtime'] = {
+        key: response.get(key) for key in (
+            'response_id', 'finish_reason', 'truncated', 'usage',
+            'temperature', 'max_tokens',
+        )
+    }
+    if response.get('truncated') or response.get('finish_reason') == 'length':
+        result['error'] = result.get('error') or 'Provider response was truncated'
+    if not isinstance(response.get('output'), str):
+        result['error'] = result.get('error') or 'Provider returned non-text output'
+    if result.get('error'):
+        result['output'] = ''
+    return result
+
+
 def confirm_semantic_redundancy(
     audit: dict[str, Any],
     ir: dict[str, Any],
@@ -758,7 +801,7 @@ def confirm_semantic_redundancy(
         user_prompt = _build_user_prompt(
             skill_a, text_a, skill_b, text_b, jaccard
         )
-        response = executor.execute(_SYSTEM_PROMPT, user_prompt)
+        response = _confirmation_response(executor.execute(_SYSTEM_PROMPT, user_prompt))
         if response.get("blocked"):
             is_blocked = True
             confirmations.append({
@@ -771,9 +814,13 @@ def confirm_semantic_redundancy(
                 "rationale": response.get("error", "Executor blocked"),
                 "executor_model": response.get("model", ""),
                 "executor_provider": response.get("provider", ""),
+                "runtime": response['runtime'],
             })
             continue
-        verdict, rationale = _parse_verdict(response.get("output", ""))
+        if response.get('error'):
+            verdict, rationale = 'UNCLEAR', f"Executor error: {str(response['error'])[:200]}"
+        else:
+            verdict, rationale = _parse_verdict(response.get("output", ""))
         confirmations.append({
             "finding_id": finding.get("id", ""),
             "finding_class": "SEMANTIC_REDUNDANCY",
@@ -785,6 +832,7 @@ def confirm_semantic_redundancy(
             "executor_model": response.get("model", ""),
             "executor_provider": response.get("provider", ""),
             "executor_response_id": response.get("response_id", ""),
+            "runtime": response['runtime'],
         })
 
     # Build the confirmation artifact.
@@ -906,7 +954,8 @@ def confirm_candidates(
             # No prompt builder for this class; skip.
             continue
 
-        response = executor.execute(system_prompt, user_prompt)
+        response = _confirmation_response(executor.execute(system_prompt, user_prompt))
+        extra_fields['runtime'] = response['runtime']
         if response.get("blocked"):
             is_blocked = True
             confirmations.append({

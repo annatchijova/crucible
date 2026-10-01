@@ -507,6 +507,37 @@ style. It must find real engineering defects across all methodologies.
 validity, style-agnostic extraction, false positive fix, determinism,
 and crash safety. 393 tests pass.
 
+## L14 — Real-runtime boundary and activation integrity
+
+**Status: complete for the L5 behavioral path.**
+
+L14 replaces the assumption that the Nebius integration works with executed,
+sealed evidence. It validates external response envelopes before they reach the
+deterministic core, records completion/truncation metadata, explicitly activates
+the supplied methodology in the behavioral task, and normalizes provider
+typography before lexical property checks.
+
+The real four-way experiment now produces the intended differential:
+
+- no-skill: 4/4 properties pass;
+- original: 4/4 pass;
+- polarity mutant: P3 fails;
+- repair: 4/4 pass.
+
+All four responses completed with `finish_reason=stop`; none were truncated.
+The sealed evidence is in
+[`artifacts/nebius/2026-09-30-behavioral-real.json`](../artifacts/nebius/2026-09-30-behavioral-real.json),
+and the adversarial review is in
+[`docs/red-team/2026-09-30-nebius-runtime-red-team.md`](red-team/2026-09-30-nebius-runtime-red-team.md).
+
+**Must preserve:** malformed provider output never reaches an oracle; truncation
+is visible; task activation is part of the sealed fixture; LLM output remains an
+observation rather than decision authority.
+
+**Exit evidence:** provider-envelope regression tests across behavioral,
+confirmation, and proposal adapters; real non-blocked Nebius run; explicit
+activation discrimination; zero-truncation artifact.
+
 ## Cross-level invariants
 
 Every level must retain:

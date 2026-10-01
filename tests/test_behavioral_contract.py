@@ -8,11 +8,14 @@ when the API key is absent.
 
 from __future__ import annotations
 
+import json
+
 from crucible.behavioral import (
     BEHAVIORAL_VERSION,
     LocalExecutor,
     MissingCredentialError,
     NebiusExecutor,
+    NEBIUS_DEFAULT_MAX_TOKENS,
     TASK_FIXTURE,
     ALL_VARIANTS,
     run_behavioral_differential,
@@ -51,6 +54,18 @@ def test_report_contains_all_four_variants() -> None:
     assert "V2-original" in variant_ids
     assert "V3-mutant-polarity-inversion" in variant_ids
     assert "V4-repair" in variant_ids
+
+
+def test_task_explicitly_activates_supplied_methodology() -> None:
+    """Invariant: the behavioral task tells the model to apply the supplied
+    methodology, so a skill is causal rather than passive context."""
+    assert "Apply the supplied methodology exactly" in TASK_FIXTURE["task_prompt"]
+
+
+def test_nebius_budget_matches_verified_reasoning_runtime() -> None:
+    """Invariant: the real Nemotron path has the empirically verified token
+    budget needed to avoid reasoning-only/null responses on this task."""
+    assert NEBIUS_DEFAULT_MAX_TOKENS >= 4000
 
 
 def test_task_fixture_is_sealed() -> None:
@@ -274,6 +289,110 @@ def test_nebius_executor_raises_without_key(monkeypatch) -> None:
         raise AssertionError("should raise MissingCredentialError without a key")
 
 
+def test_nebius_executor_rejects_null_content_at_provider_boundary(
+    monkeypatch,
+) -> None:
+    """Invariant: a provider response with content=null becomes an explicit
+    executor error with runtime metadata, never an untyped None downstream."""
+
+    payload = {
+        "id": "response-null",
+        "choices": [{
+            "finish_reason": "length",
+            "message": {"content": None},
+        }],
+        "usage": {
+            "prompt_tokens": 77,
+            "completion_tokens": 500,
+            "total_tokens": 577,
+        },
+    }
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self) -> bytes:
+            return json.dumps(payload).encode("utf-8")
+
+    monkeypatch.setattr(
+        "crucible.behavioral.urllib.request.urlopen",
+        lambda request, timeout: FakeResponse(),
+    )
+    result = NebiusExecutor(api_key="test-key").execute("system", "user")
+    assert result["output"] == ""
+    assert result["error"] == "provider returned non-text content: NoneType"
+    assert result["finish_reason"] == "length"
+    assert result["truncated"] is True
+    assert result["usage"]["completion_tokens"] == 500
+
+
+def test_nebius_executor_records_truncated_text_response(monkeypatch) -> None:
+    """Invariant: finish_reason=length remains visible even when the provider
+    returns usable text, so truncated evidence is not mistaken for complete."""
+
+    payload = {
+        "id": "response-truncated",
+        "choices": [{
+            "finish_reason": "length",
+            "message": {"content": "bounded retries"},
+        }],
+        "usage": {
+            "prompt_tokens": 20,
+            "completion_tokens": 500,
+            "total_tokens": 520,
+        },
+    }
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self) -> bytes:
+            return json.dumps(payload).encode("utf-8")
+
+    monkeypatch.setattr(
+        "crucible.behavioral.urllib.request.urlopen",
+        lambda request, timeout: FakeResponse(),
+    )
+    result = NebiusExecutor(api_key="test-key").execute("system", "user")
+    assert result["output"] == "bounded retries"
+    assert result["error"] is None
+    assert result["finish_reason"] == "length"
+    assert result["truncated"] is True
+
+
+def test_non_text_executor_output_is_reported_as_error() -> None:
+    """Invariant: a null/non-text model output cannot crash the oracle.
+    Mutation: remove the boundary validation -> the oracle calls .lower()
+    on None and the differential run raises AttributeError."""
+
+    class NullOutputExecutor:
+        model = "test-model"
+        provider = "test-provider"
+
+        def execute(self, system_prompt: str, user_prompt: str) -> dict:
+            return {
+                "output": None,
+                "error": None,
+                "model": self.model,
+                "provider": self.provider,
+            }
+
+    report = run_behavioral_differential(executor=NullOutputExecutor())
+    assert len(report["runs"]) == 4
+    for run in report["runs"]:
+        assert run["status"] == "ERROR"
+        assert "non-text output" in run["error"]
+        assert run["observations"] == []
+
+
 # ---------------------------------------------------------------------------
 # Evidence and chain of custody
 # ---------------------------------------------------------------------------
@@ -408,3 +527,40 @@ def test_d3_p3_passes_on_genuine_positive_bound() -> None:
     )
     p3 = next(o for o in observations if o["property_id"] == "P3-no-unbounded-retry")
     assert p3["status"] == "PASS"
+
+
+# ---------------------------------------------------------------------------
+# D4 regression: real-runtime lexical normalization
+# ---------------------------------------------------------------------------
+
+def test_d4_p2_passes_on_not_to_retry_exception_heading() -> None:
+    """D4 regression: 'exceptions when NOT to retry' positively declares
+    exceptions; the negation modifies retry, not exception."""
+    observations = run_property_oracle(
+        "Critical Exceptions (When NOT to Retry)",
+        TASK_FIXTURE["properties"],
+    )
+    p2 = next(o for o in observations if o["property_id"] == "P2-respects-exception")
+    assert p2["status"] == "PASS"
+
+
+def test_d4_p2_normalizes_unicode_hyphen_in_read_only() -> None:
+    """D4 regression: provider typography such as a non-breaking hyphen
+    must not turn read-only into a false negative."""
+    observations = run_property_oracle(
+        "Read‑only operations may follow a separate retry policy.",
+        TASK_FIXTURE["properties"],
+    )
+    p2 = next(o for o in observations if o["property_id"] == "P2-respects-exception")
+    assert p2["status"] == "PASS"
+
+
+def test_d4_p4_accepts_idempotency_noun_form() -> None:
+    """D4 regression: idempotency and idempotent express the same property
+    for this lexical oracle."""
+    observations = run_property_oracle(
+        "Idempotency is required before retrying a payment.",
+        TASK_FIXTURE["properties"],
+    )
+    p4 = next(o for o in observations if o["property_id"] == "P4-mentions-idempotency")
+    assert p4["status"] == "PASS"

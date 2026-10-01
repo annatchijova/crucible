@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import tempfile
+import copy
+import pytest
 from pathlib import Path
 
 from crucible.auditor import audit_corpus
@@ -12,6 +15,7 @@ from crucible.confirm import (
     MockConfirmExecutor,
     NebiusConfirmExecutor,
     confirm_semantic_redundancy,
+    confirm_candidates,
 )
 
 
@@ -25,6 +29,36 @@ def _compile_and_audit(corpus: dict[str, str]) -> tuple[dict, dict]:
         ir = compile_corpus(root)
         audit = audit_corpus(ir)
     return ir, audit
+
+
+@pytest.mark.parametrize('runner', [confirm_candidates, confirm_semantic_redundancy])
+@pytest.mark.parametrize('finish,truncated,error,expected', [
+    ('length', False, None, 'UNCLEAR'),
+    ('stop', True, None, 'UNCLEAR'),
+    ('stop', False, 'transport failure', 'UNCLEAR'),
+    ('stop', False, None, 'CONFIRMED'),
+])
+def test_confirmation_preserves_runtime_and_rejects_incomplete_verdict(
+    runner, finish, truncated, error, expected,
+):
+    ir, audit = _compile_and_audit({'skill-a': _REUNDANT_A, 'skill-b': _REDUNDANT_B})
+    before = copy.deepcopy(audit)
+
+    class Executor:
+        model = 'fixture'
+        def execute(self, system_prompt, user_prompt):
+            return {'output': 'CONFIRMED: fixture rationale', 'error': error,
+                    'finish_reason': finish, 'truncated': truncated,
+                    'usage': {'completion_tokens': 42}, 'response_id': 'fixture-id'}
+
+    result = runner(audit, ir, Executor())
+    assert result['confirmations']
+    for entry in result['confirmations']:
+        assert entry['verdict'] == expected
+        assert entry['runtime']['finish_reason'] == finish
+        assert entry['runtime']['usage'] == {'completion_tokens': 42}
+        assert entry['runtime']['response_id'] == 'fixture-id'
+    assert audit == before
 
 
 _REUNDANT_A = (
@@ -192,6 +226,39 @@ def test_nebius_blocked_does_not_simulate() -> None:
     assert confirmation["summary"]["confirmed"] == 0
     assert confirmation["summary"]["rejected"] == 0
     assert confirmation["summary"]["blocked"] >= 1
+
+
+def test_nebius_confirm_executor_rejects_null_content(monkeypatch) -> None:
+    """Invariant: content=null is an explicit provider error, not a value
+    passed into confirmation parsing."""
+    payload = {
+        "id": "confirm-null",
+        "choices": [{
+            "finish_reason": "length",
+            "message": {"content": None},
+        }],
+        "usage": {"completion_tokens": 2000},
+    }
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self) -> bytes:
+            return json.dumps(payload).encode("utf-8")
+
+    monkeypatch.setattr(
+        "crucible.confirm.urllib.request.urlopen",
+        lambda request, timeout: FakeResponse(),
+    )
+    result = NebiusConfirmExecutor(api_key="test-key").execute("system", "user")
+    assert result["output"] == ""
+    assert result["error"] == "provider returned non-text content: NoneType"
+    assert result["finish_reason"] == "length"
+    assert result["truncated"] is True
 
 
 # ---------------------------------------------------------------------------

@@ -63,7 +63,7 @@ Ver el detalle completo en el [Technical README](TECHNICAL.md) y el mapa de cons
 
 ## Estado de implementación
 
-Ya existen 13 niveles coherentes, con 420 tests pasando. L1 transforma un corpus real en una Skill IR versionada, con source spans y digest SHA-256 determinista; L2 implementa 28 checks de metodología e ingeniería; L3 modela composición tipada; L4 prueba el auditor con 8 mutaciones (6/6 KILLED en alcance, 2 ABSTAINED fuera de alcance); L5–L7 cubren diferencial conductual, reparación y replay; L8 integra CI, reportes sellados y viewer HTML; L9–L13 agregan extracción style-agnostic, taxonomía de defectos de ingeniería, API pública, confirmación Nemotron y validación corpus-agnóstica.
+Ya existen 14 niveles coherentes. L1 transforma un corpus real en una Skill IR versionada, con source spans y digest SHA-256 determinista; L2 implementa 28 checks de metodología e ingeniería; L3 modela composición tipada; L4 prueba el auditor con 8 mutaciones (6/6 KILLED en alcance, 2 ABSTAINED fuera de alcance); L5–L7 cubren diferencial conductual, reparación y replay; L8 integra CI, reportes sellados y viewer HTML; L9–L13 agregan extracción style-agnostic, taxonomía de defectos de ingeniería, API pública, confirmación Nemotron y validación corpus-agnóstica; L14 verifica la frontera real de Nebius, la activación causal y la completitud de respuestas.
 
 La capa de confirmación L2.5 toma todos los CANDIDATEs del audit L2 y pregunta a un executor (Nemotron vía Nebius, o mock determinista) si cada uno es un defecto real o un falso positivo. La confirmación es un artifact separado (`crucible-confirmation/v1`) con su propio digest SHA-256; el audit L2 nunca se modifica. Si `NEBIUS_API_KEY` no está configurada, la ejecución se reporta como BLOCKED, no simulada.
 

@@ -159,20 +159,48 @@ def test_scan_directory_rejects_no_skills(tmp_path: Path) -> None:
 # scan_installed_skills
 # ---------------------------------------------------------------------------
 
-def test_scan_installed_returns_result() -> None:
+def test_scan_installed_returns_result(tmp_path, monkeypatch) -> None:
     """Invariant: scanning installed skills returns a result (audit or error).
     Mutation: return None -> this test goes red."""
+    monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))
     result = scan_installed_skills()
     assert "audit" in result or "error" in result
 
 
-def test_scan_installed_is_deterministic() -> None:
+def test_scan_installed_is_deterministic(tmp_path, monkeypatch) -> None:
     """Invariant: scanning installed skills twice produces the same digest.
     Mutation: introduce non-determinism -> this test goes red."""
+    monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))
+    _write_skill(tmp_path / '.claude/skills', 'sample',
+                 '---\nname: sample\ndescription: Sample.\n---\n1. Validate input.\n')
     r1 = scan_installed_skills()
     r2 = scan_installed_skills()
-    if r1.get("audit") and r2.get("audit"):
-        assert r1["audit"]["audit_digest"] == r2["audit"]["audit_digest"]
+    assert r1["audit"]["audit_digest"] == r2["audit"]["audit_digest"]
+
+
+def test_installed_codex_discovery(tmp_path, monkeypatch):
+    monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))
+    _write_skill(tmp_path / '.codex/skills', 'sample',
+                 '---\nname: sample\ndescription: Sample.\n---\n1. Validate input.\n')
+    result = scan_installed_skills()
+    assert len(result['ir']['skills']) == 1
+    assert result['coverage']['analyzed'] == 1
+    assert result['coverage']['discovered'] == 1
+
+
+def test_installed_duplicate_coverage_preserves_origins(tmp_path, monkeypatch):
+    monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))
+    for root in ('.claude/skills', '.codex/skills'):
+        _write_skill(tmp_path / root, 'sample',
+                     '---\nname: sample\ndescription: Sample.\n---\n1. Validate input.\n')
+    result = scan_installed_skills()
+    coverage = result['coverage']
+    assert coverage['discovered'] == 2
+    assert coverage['analyzed'] == 1
+    assert coverage['skipped'] == 1
+    assert coverage['status'] == 'PARTIAL'
+    assert len({item['source_path'] for item in coverage['items']}) == 2
+    assert {item['status'] for item in coverage['items']} == {'ANALYZED', 'SKIPPED_DUPLICATE'}
 
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,249 @@
+{
+  "behavioral_digest": "sha256:1e40526a4d496a8ab62d0ebc868d29e7dd857298bd3f4428303767b6987634c6",
+  "behavioral_version": "crucible-behavioral/v1",
+  "block_reason": null,
+  "differential_summary": {
+    "by_status": {
+      "COMPLETED": 4
+    },
+    "by_variant_property": {
+      "V1-no-skill": {
+        "P1-mentions-budget": "PASS",
+        "P2-respects-exception": "PASS",
+        "P3-no-unbounded-retry": "PASS",
+        "P4-mentions-idempotency": "PASS"
+      },
+      "V2-original": {
+        "P1-mentions-budget": "PASS",
+        "P2-respects-exception": "PASS",
+        "P3-no-unbounded-retry": "PASS",
+        "P4-mentions-idempotency": "PASS"
+      },
+      "V3-mutant-polarity-inversion": {
+        "P1-mentions-budget": "PASS",
+        "P2-respects-exception": "PASS",
+        "P3-no-unbounded-retry": "FAIL",
+        "P4-mentions-idempotency": "PASS"
+      },
+      "V4-repair": {
+        "P1-mentions-budget": "PASS",
+        "P2-respects-exception": "PASS",
+        "P3-no-unbounded-retry": "PASS",
+        "P4-mentions-idempotency": "PASS"
+      }
+    },
+    "variants": 4
+  },
+  "executor": {
+    "available": true,
+    "max_tokens": 4000,
+    "model": "nvidia/nemotron-3-super-120b-a12b",
+    "provider": "unknown",
+    "temperature": 0,
+    "type": "NebiusExecutor"
+  },
+  "limitations": [
+    {
+      "check_class": "SEMANTIC_QUALITY",
+      "reason": "The property oracle checks specific deterministic properties, not semantic quality. A response that mentions 'finite budget' without understanding it would PASS P1."
+    },
+    {
+      "check_class": "MODEL_STABILITY",
+      "reason": "Model outputs may vary across runs even at temperature 0. The behavioral differential records one observation per variant, not a statistical distribution."
+    },
+    {
+      "check_class": "GENERALIZATION",
+      "reason": "The observation is tied to the pinned task, model, and runtime. It does not generalize beyond this specific configuration."
+    }
+  ],
+  "local_fallback_runs": null,
+  "nebius_blocked": false,
+  "runs": [
+    {
+      "description": "No skill guidance; the agent runs without methodology constraints.",
+      "error": null,
+      "finish_reason": "stop",
+      "max_tokens": 4000,
+      "model": "nvidia/nemotron-3-super-120b-a12b",
+      "observations": [
+        {
+          "description": "The response mentions a finite or bounded retry budget.",
+          "evidence": "output checked for: The response mentions a finite or bounded retry budget.",
+          "property_id": "P1-mentions-budget",
+          "status": "PASS"
+        },
+        {
+          "description": "The response acknowledges that some operations may be exempt from the budget.",
+          "evidence": "output checked for: The response acknowledges that some operations may be exempt from the budget.",
+          "property_id": "P2-respects-exception",
+          "status": "PASS"
+        },
+        {
+          "description": "The response does not recommend retrying without any bound.",
+          "evidence": "output checked for: The response does not recommend retrying without any bound.",
+          "property_id": "P3-no-unbounded-retry",
+          "status": "PASS"
+        },
+        {
+          "description": "The response mentions idempotency or idempotent operations.",
+          "evidence": "output checked for: The response mentions idempotency or idempotent operations.",
+          "property_id": "P4-mentions-idempotency",
+          "status": "PASS"
+        }
+      ],
+      "output": "\n\n**Retry Strategy – Payment Processing System**  \n*(Designed strictly according to the supplied methodology – i.e., a bounded‑retry budget, explicit retry‑conditions, and a list of non‑retryable exceptions.)*\n\n---\n\n### 1. Retry Budget  \n\n| Parameter | Value | Rationale |\n|-----------|-------|-----------|\n| **Maximum attempts per payment request** | **3** (initial try + 2 retries) | Keeps latency bounded while giving the system a chance to recover from transient glitches. |\n| **Retry window** | **30 seconds** total elapsed time from the first attempt | Prevents long‑running retries that could block downstream services or cause duplicate charges. |\n| **Back‑off base** | **200 ms** | Short enough to avoid noticeable delay for the user, long enough to let transient issues (e.g., network blip) clear. |\n| **Back‑off factor** | **2×** (exponential) | Standard exponential back‑off reduces load on the downstream gateway after each failure. |\n| **Jitter** | **±25 %** of the calculated back‑off (full‑jitter or equal‑jitter) | Avoids thundering‑herd problems when many payments retry simultaneously. |\n| **Circuit‑breaker integration** | Open after **5 consecutive failures** in a 10‑second sliding window; half‑open after **10 seconds** | Stops retrying when the downstream service is demonstrably unhealthy, preserving the retry budget for healthier periods. |\n\n**Resulting retry schedule (example):**  \n\n| Attempt | Delay before attempt |\n|---------|----------------------|\n| 1 (initial) | 0 ms |\n| 2 | 200 ms ± jitter (≈150‑250 ms) |\n| 3 | 400 ms ± jitter (≈300‑500 ms) |\n| *Give up* | – (after 3 attempts or >30 s elapsed) |\n\nIf the circuit breaker is open, no further retries are issued; the request fails fast with a “service unavailable” error.\n\n---\n\n### 2. When to Retry  \n\nRetry **only** on errors classified as **transient** and **idempotent‑safe** (or where idempotency can be guaranteed by the payment gateway). The decision flow is:\n\n1. **Capture the error code / exception type** returned by the payment gateway or downstream acquirer.  \n2. **Classify** it using the table below.  \n3. If the error is in the **Retryable** set **and** the retry budget has not been exhausted **and** the circuit breaker is closed → **schedule a retry** using the back‑off/jitter formula.  \n4. Otherwise → **fail fast** and surface the error to the caller (or to a fallback mechanism such as an alternative payment method).\n\n#### Retryable Error Set (transient)\n\n| Category | Example error codes / messages | Reason |\n|----------|-------------------------------|--------|\n| Network / I/O | `ECONNRESET`, `ETIMEDOUT`, `502 Bad Gateway`, `503 Service Unavailable`, socket timeout | Temporary connectivity issue. |\n| Gateway overload | `429 Too Many Requests`, `504 Gateway Timeout` | Gateway throttling; back‑off helps. |\n| Internal server error (non‑deterministic) | `500 Internal Server Error` (when accompanied by a retry‑header like `Retry-After`) | May be a fleeting fault. |\n| Idempotency‑key conflict (if gateway supports it) | `409 Conflict` with idempotency‑key already in use **and** the request is guaranteed idempotent (same key, same payload) | Safe to retry; the gateway will treat it as a duplicate. |\n| Any error explicitly marked retryable by the provider (e.g., `retryable=true` in JSON payload) | Varies per provider | Trust the provider’s signal. |\n\nAll other errors are **non‑retryable** (see section 3).\n\n---\n\n### 3. Exceptions – Errors That Must **Not** Be Retried  \n\n| Category | Example error codes / messages | Why not retry |\n|----------|-------------------------------|---------------|\n| **Client‑side validation failures** | `400 Bad Request` (missing/invalid card number, expiry, CVV), `422 Unprocessable Entity` | The request is malformed; retrying will repeat the same failure. |\n| **Insufficient funds / declined** | `200 OK` with `status=declined`, `code=insufficient_funds`, `card_declined` | The outcome is deterministic; retrying will not change the balance unless external funding occurs (outside scope). |\n| **Fraud / security blocks** | `403 Forbidden`, `code=fraud_suspected`, `card_blocked` | Indicates a risk decision; retrying could be abusive or violate PCI DSS. |\n| **Duplicate transaction protection** | `409 Conflict` (when idempotency‑key mismatch or amount differs) | Signals a logical conflict; retrying could cause double‑charge. |\n| **Permanent gateway errors** | `501 Not Implemented`, `510 Not Extended` | Indicates a capability gap; retrying won’t help. |\n| **Account‑state errors** (e.g., merchant account suspended, closed) | `403 Forbidden`, `code=account_suspended` | The merchant cannot accept payments until the issue is resolved manually. |\n| **Any error with a explicit “do not retry” flag** (provided by the provider) | Varies | Respect the provider’s guidance. |\n\nWhen a non‑retryable error is encountered, the system should:\n\n* Log the error with sufficient context (request ID, payment amount, error code, timestamp).  \n* Emit a metric (`payment.retry.non_retryable`) for monitoring.  \n* Return a clear, user‑friendly failure message (or trigger an alternative payment flow) without attempting another gateway call.\n\n---\n\n### 4. Implementation Checklist (to ensure compliance with the methodology)\n\n1. **Error classification function** – maps raw gateway response → `Retryable` / `NonRetryable`.  \n2. **Retry budget tracker** – per‑payment request counter + elapsed‑time guard (≤30 s).  \n3. **Back‑off/jitter calculator** – base = 200 ms, factor = 2, jitter = ±25 %.  \n4. **Circuit‑breaker wrapper** – opens after 5 failures/10 s, half‑opens after 10 s.  \n5. **Idempotency handling** – generate a stable idempotency‑key (e.g., UUID v5 based on order‑ID + attempt‑number) and send it with every retry.  \n6. **Observability** – increment counters for `payment.retry.attempt`, `payment.retry.success`, `payment.retry.exhausted`, `payment.retry.circuit_open`.  \n7. **Testing** – unit‑test classification, integration‑test with mock gateway returning each error type, load‑test to verify back‑off/jitter distribution, chaos‑test to confirm circuit‑breaker behavior.  \n\nBy adhering strictly to the above budget, retry conditions, and exception list, the payment processing system will obtain a predictable, safe retry behavior that avoids duplicate charges, protects against abusive retries, and maintains healthy interaction with the payment gateway.",
+      "output_digest": "sha256:36532fd1b848ce281bda3edced2f5997ff803552e3d6aad7e4777ee30f9648bf",
+      "provider": "nebius-token-factory",
+      "response_id": "chatcmpl-979896dd80f82caf",
+      "status": "COMPLETED",
+      "temperature": 0,
+      "truncated": false,
+      "usage": {
+        "completion_tokens": 1956,
+        "prompt_tokens": 63,
+        "total_tokens": 2019
+      },
+      "variant_id": "V1-no-skill"
+    },
+    {
+      "description": "Original skill with bounded retries and exception clause.",
+      "error": null,
+      "finish_reason": "stop",
+      "max_tokens": 4000,
+      "model": "nvidia/nemotron-3-super-120b-a12b",
+      "observations": [
+        {
+          "description": "The response mentions a finite or bounded retry budget.",
+          "evidence": "output checked for: The response mentions a finite or bounded retry budget.",
+          "property_id": "P1-mentions-budget",
+          "status": "PASS"
+        },
+        {
+          "description": "The response acknowledges that some operations may be exempt from the budget.",
+          "evidence": "output checked for: The response acknowledges that some operations may be exempt from the budget.",
+          "property_id": "P2-respects-exception",
+          "status": "PASS"
+        },
+        {
+          "description": "The response does not recommend retrying without any bound.",
+          "evidence": "output checked for: The response does not recommend retrying without any bound.",
+          "property_id": "P3-no-unbounded-retry",
+          "status": "PASS"
+        },
+        {
+          "description": "The response mentions idempotency or idempotent operations.",
+          "evidence": "output checked for: The response mentions idempotency or idempotent operations.",
+          "property_id": "P4-mentions-idempotency",
+          "status": "PASS"
+        }
+      ],
+      "output": "\n\n**Retry Strategy – Payment Processing System (following the “Retry Pattern” methodology)**  \n\n| Element | Specification |\n|---------|----------------|\n| **Retry Budget** | • **Maximum attempt count:** 3 tries (initial attempt + 2 retries). <br>• **Total elapsed‑time budget:** ≤ 5 seconds wall‑clock time for the whole retry sequence. <br>• **Back‑off algorithm:** Exponential back‑off with full jitter: <br> `delay = random(0, min(base × 2^(attempt‑1), maxDelay))` <br> where `base = 200 ms`, `maxDelay = 2 s`. This guarantees the sum of delays stays inside the 5 s budget for the allowed attempts. |\n| **When to Retry** | Retry **only** on errors classified as *transient* (i.e., likely to succeed if retried after a short pause). The following conditions trigger a retry: <br>1. **Network‑level failures** – TCP connection reset, DNS lookup failure, socket timeout. <br>2. **HTTP‑level transient status codes** – 408 Request Timeout, 429 Too Many Requests, 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout. <br>3. **Idempotency‑key conflicts** – 409 Conflict when the server indicates the request may be safely retried (e.g., duplicate‑submission detection). <br>4. **Specific payment‑gateway transient error codes** – e.g., gateway‑internal error, temporary bank‑host unavailability, or any error flagged by the gateway as “retryable”. |\n| **When NOT to Retry** (exceptions) | Do **not** retry on errors that are *non‑transient* or indicate a permanent problem: <br>• **Client‑side validation failures** – 400 Bad Request (invalid card number, expiration, CVV, amount format, missing required fields). <br>• **Business‑rule refusals** – 402 Payment Required, 403 Forbidden (fraud block, velocity limits, card‑not‑present restrictions). <br>• **Insufficient funds / declined** – 402 Payment Declined, or gateway‑specific decline codes. <br>• **Authentication/authorization failures** – 401 Unauthorized, 403 Forbidden (invalid API key, missing scopes). <br>• **Idempotency‑key reuse with different payload** – 409 Conflict where the server explicitly states the request cannot be retried with a different body. <br>• **Any error marked non‑retryable by the gateway** (e.g., “card‑expired”, “account‑closed”). |\n| **Idempotency Requirement** | Before issuing a retry, the caller **must** supply an **idempotency key** (UUID or similar) that remains constant across all attempts for the same logical payment request. The gateway uses this key to detect duplicates and guarantee that at most one successful charge is created, satisfying the idempotency precondition of the retry pattern. |\n| **Observability & Limits** | • Emit a metric for each retry attempt (`payment.retry.attempt`). <br>• Emit a final outcome metric (`payment.retry.outcome`) labelled `success`, `transient_failure_exhausted`, `non_transient_failure`. <br>• Log the error class, back‑off delay, and idempotency key on each retry attempt. <br>• If the total elapsed time exceeds the 5 s budget before exhausting the retry count, abort and treat as a transient failure exhausted. |\n| **Fallback / Circuit‑Breaker Interaction** | The retry logic sits **inside** a circuit‑breaker wrapper. If the circuit is open, retries are skipped entirely and the call fails fast with a circuit‑open error, preventing wasted budget. |\n\n### Summary  \n- **Budget:** ≤ 3 attempts, ≤ 5 s total wall‑clock time, exponential back‑off with jitter (200 ms base, 2 s cap).  \n- **Retry only** on network faults, HTTP 408/429/5xx, gateway‑marked transient errors, and idempotency‑key conflict responses that indicate a safe retry.  \n- **Do not retry** on validation errors, business‑rule declines, insufficient funds, auth failures, or any error explicitly flagged as non‑retryable.  \n- **Idempotency key** is mandatory for each logical payment request to satisfy the retry pattern’s safety precondition.  \n\nThis design adheres strictly to the supplied retry‑pattern methodology while being tuned for the latency‑sensitive, financially critical nature of a payment processing system.",
+      "output_digest": "sha256:7bb0efaa0ae9a6abe2d5b48100008846b30128f257902fc5adabb4591e8362e8",
+      "provider": "nebius-token-factory",
+      "response_id": "chatcmpl-9325db445c61da98",
+      "status": "COMPLETED",
+      "temperature": 0,
+      "truncated": false,
+      "usage": {
+        "completion_tokens": 1320,
+        "prompt_tokens": 95,
+        "total_tokens": 1415
+      },
+      "variant_id": "V2-original"
+    },
+    {
+      "description": "Mutated skill with polarity inversion: MUST NOT have a finite budget.",
+      "error": null,
+      "finish_reason": "stop",
+      "max_tokens": 4000,
+      "model": "nvidia/nemotron-3-super-120b-a12b",
+      "observations": [
+        {
+          "description": "The response mentions a finite or bounded retry budget.",
+          "evidence": "output checked for: The response mentions a finite or bounded retry budget.",
+          "property_id": "P1-mentions-budget",
+          "status": "PASS"
+        },
+        {
+          "description": "The response acknowledges that some operations may be exempt from the budget.",
+          "evidence": "output checked for: The response acknowledges that some operations may be exempt from the budget.",
+          "property_id": "P2-respects-exception",
+          "status": "PASS"
+        },
+        {
+          "description": "The response does not recommend retrying without any bound.",
+          "evidence": "output checked for: The response does not recommend retrying without any bound.",
+          "property_id": "P3-no-unbounded-retry",
+          "status": "FAIL"
+        },
+        {
+          "description": "The response mentions idempotency or idempotent operations.",
+          "evidence": "output checked for: The response mentions idempotency or idempotent operations.",
+          "property_id": "P4-mentions-idempotency",
+          "status": "PASS"
+        }
+      ],
+      "output": "\n\n**Retry Strategy – Payment Processing System**  \n*(The following follows the “standard retry‑methodology” of *exponential back‑off with full jitter*, a bounded retry budget, and clear idempotence checks.)*\n\n---\n\n## 1. Core Methodology (as prescribed)\n\n| Element | Prescribed Value / Rule |\n|---------|--------------------------|\n| **Back‑off algorithm** | Exponential back‑off with *full jitter*: `delay = random(0, min(base·2^attempt, max))` |\n| **Base delay** | 100 ms |\n| **Maximum delay** | 2 seconds |\n| **Retry budget** | **Unbounded in time** but **bounded per request**: ≤ 5 attempts (initial try + 4 retries). The budget is *not* a rate‑limit; it is a per‑transaction ceiling. |\n| **Idempotence check** | Before each retry, verify that the operation is idempotent (e.g., using a client‑generated `paymentId` or idempotency‑key). If not idempotent, abort retry. |\n| **Circuit‑breaker guard** | Open circuit after 3 consecutive failures in a 10‑second window; half‑open after 30 s. While open, skip retries and fail fast. |\n| **Logging & metrics** | Emit a structured log entry for each attempt (`attemptNumber`, `errorCode`, `delayApplied`) and increment Prometheus counters: `payment_retry_attempts_total`, `payment_retry_success_total`, `payment_retry_failed_total`. |\n\n---\n\n## 2. Retry Budget\n\n| Metric | Value | Rationale |\n|--------|-------|-----------|\n| **Maximum attempts per payment** | **5** (1 original + 4 retries) | Guarantees termination while still allowing recovery from transient glitches. |\n| **Total elapsed time budget** | **Unbounded** (but limited by the exponential cap) | The back‑off caps at 2 s, so worst‑case latency ≈ 100 ms + 200 ms + 400 ms + 800 ms + 1600 ms ≈ **3.1 s**. |\n| **Rate‑limit** | **None** (budget is per‑request) | Prevents throttling legitimate retries; system‑wide load is controlled by the circuit‑breaker and service‑level concurrency limits. |\n\n*If a payment exceeds the 5‑attempt limit, it is moved to a **dead‑letter queue** for manual investigation.*\n\n---\n\n## 3. When to Retry\n\nRetry **only** if **all** of the following conditions hold:\n\n1. **Transient fault detected** – error belongs to the retry‑eligible set:\n   - Network‑level: `ECONNRESET`, `ETIMEDOUT`, `ENETUNREACH`, socket timeout.\n   - HTTP‑level: status codes **502**, **503**, **504**, **429** (if the service signals throttling via `Retry-After` header, honor it and treat as retryable).\n   - Idempotent API responses: any error payload containing a `\"retryable\": true` flag.\n2. **Operation is idempotent** – a unique `paymentId`/`idempotencyKey` is present and has not been used previously for a successful charge.\n3. **Circuit‑breaker is closed or half‑open** – if open, skip retry and return a fast‑fail error.\n4. **Budget not exhausted** – current attempt count < 5.\n\n*If any condition fails, the attempt is considered final and the error is propagated upstream.*\n\n---\n\n## 4. Exceptions (Non‑Retryable Errors)\n\n| Category | Example Errors | Action |\n|----------|----------------|--------|\n| **Permanent client errors** | HTTP 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 404 (Not Found), 409 (Conflict) – unless the payload explicitly marks them retryable. | Fail fast; return error to caller. |\n| **Business‑rule violations** | Insufficient funds, card expired, fraud‑block, duplicate payment detected by downstream gateway. | Fail fast; optionally enrich error with a user‑friendly message. |\n| **Idempotency violation** | Same `paymentId` observed with a different amount or currency than a prior successful charge. | Fail fast; log as potential replay attack. |\n| **System‑level overload** | Service returns 503 with `Retry-After` header indicating a period > 30 s (treated as a hard throttle). | Respect `Retry-After`; if the delay exceeds the remaining budget, abort and fail fast. |\n| **Circuit‑breaker open** | Any error while breaker is open. | Fail fast with `CircuitOpenError`. |\n\nAll non‑retryable errors are **not** counted against the retry budget; they terminate the payment flow immediately.\n\n---\n\n## 5. Pseudocode Illustration (Language‑agnostic)\n\n```python\ndef process_payment(payment):\n    attempt = 0\n    base_delay_ms = 100\n    max_delay_ms = 2000\n    max_attempts = 5          # 1 try + 4 retries\n\n    while attempt < max_attempts:\n        try:\n            result = gateway.charge(payment)   # idempotent call\n            record_success(attempt)\n            return result                       # success\n        except TransientError as e:             # matches retry‑eligible set\n            if not payment.is_idempotent():\n                raise NonRetryableError(\"Non‑idempotent operation\")\n            attempt += 1\n            if attempt >= max_attempts:\n                raise RetryExhaustedError(e)\n            # exponential back‑off with full jitter\n            exp = base_delay_ms * (2 ** (attempt - 1))\n            delay_ms = random.uniform(0, min(exp, max_delay_ms))\n            sleep(delay_ms / 1000.0)\n            continue\n        except (PermanentError, BusinessRuleError, IdempotencyViolation) as e:\n            # non‑retryable – fail fast\n            raise e\n        except CircuitOpenError:\n            raise e   # fail fast, breaker handles fallback\n```\n\n*The surrounding service layer invokes this function only after checking the circuit‑breaker state; the breaker itself increments its failure counter on any exception that is **not** a successful charge.*\n\n---\n\n## 6. Monitoring & Alerting\n\n| Metric | Threshold (example) | Action |\n|--------|----------------------|--------|\n| `payment_retry_attempts_total` per minute | > 5 % of total payments | Investigate upstream latency or gateway health. |\n| `payment_retry_failed_total` (after budget exhausted) | > 0.1 % of total payments | Trigger PagerDuty alert – possible systemic issue. |\n| Circuit‑breaker open duration | > 30 s | Auto‑escalate to on‑call engineer. |\n| Dead‑letter queue size | > 100 items | Initiate manual review workflow. |\n\n---\n\n### Summary\n\n- **Retry budget:** ≤ 5 attempts per payment (exponential back‑off with full jitter, base 100 ms, max 2 s).  \n- **Retry when:** transient network/http errors, idempotent operation, circuit‑breaker closed/half‑open, budget not exhausted.  \n- **Do **not** retry:** permanent client errors, business‑rule violations, idempotency conflicts, hard throttling beyond breaker tolerance, or when the breaker is open.  \n\nThis design satisfies the requested methodology while providing clear, observable bounds and safe‑guards for a production‑grade payment processing system.",
+      "output_digest": "sha256:be562e702f7272e6927c6f2b72c555a13454ef7410e546061b756d38e083618b",
+      "provider": "nebius-token-factory",
+      "response_id": "chatcmpl-a73b650d043f9085",
+      "status": "COMPLETED",
+      "temperature": 0,
+      "truncated": false,
+      "usage": {
+        "completion_tokens": 2028,
+        "prompt_tokens": 90,
+        "total_tokens": 2118
+      },
+      "variant_id": "V3-mutant-polarity-inversion"
+    },
+    {
+      "description": "Repaired skill: restores the finite budget with a specific number.",
+      "error": null,
+      "finish_reason": "stop",
+      "max_tokens": 4000,
+      "model": "nvidia/nemotron-3-super-120b-a12b",
+      "observations": [
+        {
+          "description": "The response mentions a finite or bounded retry budget.",
+          "evidence": "output checked for: The response mentions a finite or bounded retry budget.",
+          "property_id": "P1-mentions-budget",
+          "status": "PASS"
+        },
+        {
+          "description": "The response acknowledges that some operations may be exempt from the budget.",
+          "evidence": "output checked for: The response acknowledges that some operations may be exempt from the budget.",
+          "property_id": "P2-respects-exception",
+          "status": "PASS"
+        },
+        {
+          "description": "The response does not recommend retrying without any bound.",
+          "evidence": "output checked for: The response does not recommend retrying without any bound.",
+          "property_id": "P3-no-unbounded-retry",
+          "status": "PASS"
+        },
+        {
+          "description": "The response mentions idempotency or idempotent operations.",
+          "evidence": "output checked for: The response mentions idempotency or idempotent operations.",
+          "property_id": "P4-mentions-idempotency",
+          "status": "PASS"
+        }
+      ],
+      "output": "\n\n**Retry Strategy for a Payment Processing System (following the supplied methodology)**  \n\n| Aspect | Specification |\n|--------|----------------|\n| **Retry Budget** | • Maximum of **5 total attempts** (initial try + up to 4 retries). <br>• This limit applies because a payment request is a **write‑operation** (not read‑only). |\n| **When to Retry** | Retry **only** on errors that are classified as *transient* or *temporary* and that do **not** imply a permanent failure of the payment. Typical retry‑eligible conditions include: <br>• Network‑level timeouts or connection resets.<br>• HTTP 5xx responses (e.g., 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout) from the payment gateway.<br>• Specific gateway error codes documented as “try again later” (e.g., `processor_timeout`, `network_error`, `gateway_unavailable`).<br>• Idempotency‑key‑protected requests where the gateway returns a duplicate‑submission warning that can be safely retried. |\n| **When NOT to Retry** (exceptions within the budget) | Do **not** retry – even if attempts remain – for any error that indicates a **permanent** or **business‑rule** failure, such as: <br>• Card‑declined responses (`insufficient_funds`, `card_declined`, `expired_card`, `invalid_cvc`, `fraud_blocked`).<br>• Invalid request data (missing required fields, malformed JSON, amount ≤ 0).<br>• Authentication/authorization failures (`invalid_api_key`, `account_not_active`).<br>• Gateway responses that explicitly state the transaction is finalized (e.g., `duplicate_transaction` when idempotency key is not used).<br>• Any error that would cause a **non‑idempotent** side effect if retried without an idempotency key. |\n| **Idempotency Requirement** | Before any retry, the payment request **must** be made idempotent (e.g., by supplying a unique `Idempotency-Key` header or equivalent token). This satisfies the guideline: *“The operation SHOULD be idempotent before retrying.”* If idempotency cannot be guaranteed, **do not retry** at all. |\n| **Back‑off & Jitter** (operational detail that does not violate the methodology) | Between retries, use an exponential back‑off with full jitter (e.g., base = 200 ms, factor = 2, max ≈ 5 s). This is a common practice but does not alter the core rules (budget ≤ 5 attempts, idempotent, retry‑only‑on‑transient). |\n| **Circuit‑Breaker Interaction** (optional, still compliant) | If a circuit‑breaker is employed, treat an open circuit as a *transient* condition only after the breaker transitions to half‑open; otherwise, fail fast and do not consume retry budget. |\n\n### Summary Flow\n\n1. **Generate/Pass Idempotency Key** → ensures safe retries.  \n2. **Attempt Payment** (try #1).  \n3. If response is **success**, finish.  \n4. If response matches a **retry‑eligible transient error** and attempts < 5: wait (back‑off + jitter) → retry.  \n5. If response is a **permanent/error‑non‑retryable** condition OR attempts ≥ 5: abort, surface the error to the caller / fallback logic.  \n\nBy adhering strictly to the supplied methodology—finite budget of ≤ 5 attempts for write operations, precondition of idempotency, and retrying only on transient failures—the strategy guarantees bounded retry behavior while protecting against duplicate charges or unintended side effects.",
+      "output_digest": "sha256:1625cee5cbbc5e126f201dc6a428b853bc9644850aa8402f79d9aa4f4dd8dbde",
+      "provider": "nebius-token-factory",
+      "response_id": "chatcmpl-88196fffd8af83f9",
+      "status": "COMPLETED",
+      "temperature": 0,
+      "truncated": false,
+      "usage": {
+        "completion_tokens": 1224,
+        "prompt_tokens": 101,
+        "total_tokens": 1325
+      },
+      "variant_id": "V4-repair"
+    }
+  ],
+  "task_digest": "sha256:b4ac1371185da240fc97385a9d5360127fa43158611dabc687e03543f1b30c20",
+  "task_id": "retry-strategy-design"
+}

@@ -76,6 +76,7 @@ def scan_installed_skills() -> dict[str, Any]:
     - ~/.config/devin/skills/
     - ~/.claude/skills/
     - ~/.local/share/devin/skills/
+    - ~/.codex/skills/ (direct child skill packages)
 
     Returns the audit artifact with the L1 IR and L3 graph.
     """
@@ -94,6 +95,7 @@ def scan_installed_skills() -> dict[str, Any]:
     # symlinks=True preserves symlinks so the compiler's symlink check
     # can catch symlinked SKILL.md files (RT-02 fix).
     skipped_duplicates: list[dict[str, str]] = []
+    coverage_items: list[dict[str, str]] = []
     with tempfile.TemporaryDirectory(prefix="crucible-installed-") as tmpdir:
         count = 0
         for skill_dir in skill_dirs:
@@ -105,12 +107,22 @@ def scan_installed_skills() -> dict[str, Any]:
                     continue
                 dest = Path(tmpdir) / skill_path.name
                 if dest.exists():
+                    coverage_items.append({
+                        'source_path': str(skill_md),
+                        'skill_name': skill_path.name,
+                        'status': 'SKIPPED_DUPLICATE',
+                    })
                     skipped_duplicates.append({
                         "skill_name": skill_path.name,
                         "skipped_from": str(skill_dir),
                     })
                     continue
                 shutil.copytree(skill_path, dest, symlinks=True)
+                coverage_items.append({
+                    'source_path': str(skill_md),
+                    'skill_name': skill_path.name,
+                    'status': 'ANALYZED',
+                })
                 count += 1
         if count == 0:
             return {
@@ -128,6 +140,15 @@ def scan_installed_skills() -> dict[str, Any]:
             "ir": _redact_ir(ir),
             "graph": graph,
             "skipped_duplicates": skipped_duplicates,
+            "coverage": {
+                'scope': 'installed-direct-child-packages',
+                'status': 'PARTIAL' if skipped_duplicates else 'COMPLETE',
+                'discovered': len(coverage_items),
+                'analyzed': count,
+                'skipped': len(skipped_duplicates),
+                'items': coverage_items,
+                'searched': [str(p) for p in _standard_skill_dirs()],
+            },
         }
 
 
@@ -138,6 +159,7 @@ def _standard_skill_dirs() -> list[Path]:
         home / ".config" / "devin" / "skills",
         home / ".claude" / "skills",
         home / ".local" / "share" / "devin" / "skills",
+        home / ".codex" / "skills",
     ]
 
 

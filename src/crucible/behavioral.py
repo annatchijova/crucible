@@ -52,6 +52,8 @@ BEHAVIORAL_VERSION = "crucible-behavioral/v1"
 TASK_FIXTURE: dict[str, Any] = {
     "task_id": "retry-strategy-design",
     "task_prompt": (
+        "Apply the supplied methodology exactly when answering; do not "
+        "replace it with your default best practices. "
         "Design a retry strategy for a payment processing system. "
         "Describe the retry budget, when to retry, and any exceptions."
     ),
@@ -162,7 +164,7 @@ class Executor(Protocol):
 NEBIUS_BASE_URL = "https://api.tokenfactory.nebius.com/v1/"
 NEBIUS_DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b"
 NEBIUS_DEFAULT_TEMPERATURE = 0
-NEBIUS_DEFAULT_MAX_TOKENS = 500
+NEBIUS_DEFAULT_MAX_TOKENS = 4000
 
 
 class NebiusExecutor:
@@ -236,11 +238,26 @@ class NebiusExecutor:
                 "model": self.model,
                 "provider": "nebius-token-factory",
             }
-        output = ""
-        if result.get("choices"):
-            output = result["choices"][0].get("message", {}).get("content", "")
+        choices = result.get("choices")
+        if not isinstance(choices, list) or not choices:
+            return {
+                "output": "",
+                "error": "provider response has no choices",
+                "model": self.model,
+                "provider": "nebius-token-factory",
+                "temperature": self.temperature,
+                "max_tokens": self.max_tokens,
+                "usage": {},
+                "response_id": result.get("id", ""),
+                "finish_reason": None,
+                "truncated": False,
+            }
+        choice = choices[0]
+        message = choice.get("message", {})
+        output = message.get("content") if isinstance(message, dict) else None
+        finish_reason = choice.get("finish_reason")
         usage = result.get("usage", {})
-        return {
+        response = {
             "output": output,
             "error": None,
             "model": self.model,
@@ -253,7 +270,16 @@ class NebiusExecutor:
                 "total_tokens": usage.get("total_tokens", 0),
             },
             "response_id": result.get("id", ""),
+            "finish_reason": finish_reason,
+            "truncated": finish_reason == "length",
         }
+        if not isinstance(output, str):
+            response["output"] = ""
+            response["error"] = (
+                "provider returned non-text content: "
+                f"{type(output).__name__}"
+            )
+        return response
 
 
 class MissingCredentialError(Exception):
@@ -368,7 +394,7 @@ def _check_mentions_budget(output: str) -> str:
     Checks for keyword presence with negation detection: "budget is not
     needed" fails because the keyword is negated.
     """
-    output_lower = output.lower()
+    output_lower = _normalize_oracle_text(output)
     keywords = ("finite", "bounded", "budget", "at most")
     for kw in keywords:
         if kw in output_lower and not _has_negation(output_lower, kw):
@@ -382,10 +408,20 @@ def _check_respects_exception(output: str) -> str:
     Checks for keyword presence with negation detection: "there is no
     exception" fails because the keyword is negated.
     """
-    output_lower = output.lower()
+    output_lower = _normalize_oracle_text(output)
+    explicit_denials = (
+        "no exception",
+        "no exceptions",
+        "without exception",
+        "without exceptions",
+        "exceptions are not allowed",
+        "exceptions are not permitted",
+    )
+    if any(denial in output_lower for denial in explicit_denials):
+        return "FAIL"
     keywords = ("except", "exempt", "exception", "read-only")
     for kw in keywords:
-        if kw in output_lower and not _has_negation(output_lower, kw):
+        if kw in output_lower:
             return "PASS"
     return "FAIL"
 
@@ -399,7 +435,7 @@ def _check_no_unbounded_retry(output: str) -> str:
     the weaker "until the operation succeeds" pattern, where the bound
     may be the primary recommendation and "until succeeds" a fallback.
     """
-    output_lower = output.lower()
+    output_lower = _normalize_oracle_text(output)
     # Negation patterns that recommend unbounded retry.
     negation_patterns = [
         "not be bounded",
@@ -431,10 +467,22 @@ def _check_no_unbounded_retry(output: str) -> str:
 
 def _check_mentions_idempotency(output: str) -> str:
     """P4: The response mentions idempotency or idempotent operations."""
-    output_lower = output.lower()
-    if "idempotent" in output_lower:
+    output_lower = _normalize_oracle_text(output)
+    if "idempotent" in output_lower or "idempotency" in output_lower:
         return "PASS"
     return "FAIL"
+
+
+def _normalize_oracle_text(output: str) -> str:
+    """Normalize provider typography before deterministic lexical checks."""
+    return output.lower().translate(str.maketrans({
+        "‐": "-",  # hyphen
+        "‑": "-",  # non-breaking hyphen
+        "‒": "-",  # figure dash
+        "–": "-",  # en dash
+        "—": "-",  # em dash
+        "−": "-",  # minus sign
+    }))
 
 
 PROPERTY_CHECKS: dict[str, Callable[[str], str]] = {
@@ -557,15 +605,47 @@ def _run_variant(
         }
 
     output = result.get("output", "")
+    if not isinstance(output, str):
+        return {
+            "variant_id": variant["variant_id"],
+            "description": variant["description"],
+            "status": "ERROR",
+            "error": (
+                "executor returned non-text output: "
+                f"{type(output).__name__}"
+            ),
+            "output": "",
+            "observations": [],
+            "model": result.get("model", getattr(executor, "model", "unknown")),
+            "provider": result.get(
+                "provider", getattr(executor, "provider", "unknown")
+            ),
+        }
     error = result.get("error")
-    status = "COMPLETED" if not error else "ERROR"
+    if error:
+        return {
+            "variant_id": variant["variant_id"],
+            "description": variant["description"],
+            "status": "ERROR",
+            "error": error,
+            "output": output,
+            "observations": [],
+            "model": result.get("model", ""),
+            "provider": result.get("provider", ""),
+            "temperature": result.get("temperature"),
+            "max_tokens": result.get("max_tokens"),
+            "usage": result.get("usage", {}),
+            "response_id": result.get("response_id", ""),
+            "finish_reason": result.get("finish_reason"),
+            "truncated": result.get("truncated", False),
+        }
 
     observations = run_property_oracle(output, task["properties"])
 
     return {
         "variant_id": variant["variant_id"],
         "description": variant["description"],
-        "status": status,
+        "status": "COMPLETED",
         "error": error,
         "output": output,
         "output_digest": "sha256:" + hashlib.sha256(
@@ -578,6 +658,8 @@ def _run_variant(
         "max_tokens": result.get("max_tokens"),
         "usage": result.get("usage", {}),
         "response_id": result.get("response_id", ""),
+        "finish_reason": result.get("finish_reason"),
+        "truncated": result.get("truncated", False),
     }
 
 

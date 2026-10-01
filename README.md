@@ -89,7 +89,7 @@ no skill → original skill → deliberate mutant → candidate repair
 
 The model generates the agent behavior that the oracle observes. Crucible records the model/runtime metadata and keeps deterministic findings separate from behavioral observations. The integration contract is in [`docs/NVIDIA_INTEGRATION.md`](docs/NVIDIA_INTEGRATION.md).
 
-**Current status:** the Nebius/Nemotron integration is code-complete but execution is BLOCKED until an API key is available. The system honestly reports `nebius_blocked: true` and falls back to the local deterministic executor. No simulated results are claimed.
+**Current status:** the L5 behavioral integration has been executed successfully against Nebius/Nemotron. The sealed four-way run completed without truncation and distinguished the polarity mutant from the original and repair. Real confirmation and LLM-proposal runs remain pending; no simulated result is presented as external evidence. See the [runtime red-team report](docs/red-team/2026-09-30-nebius-runtime-red-team.md).
 
 ## Verification layers
 
@@ -102,7 +102,7 @@ The model generates the agent behavior that the oracle observes. Crucible record
 7. **L6 — Bob workflow:** Bob receives findings, proposes a repair, and Crucible deterministically re-audits and accepts or rejects. Bob proposes; Crucible decides.
 8. **L7 — Closed repair loop:** integrates L6 and L5. A repair that passes deterministic but fails behavioral is REJECTED with `BEHAVIORAL_REGRESSION`.
 9. **L8 — CI and presentation:** composite report, read-only HTML viewer, GitHub Actions CI with determinism verification, mutation kill rate gate, and security regression.
-10. **L9-L13 — Style-agnostic extraction, engineering defect taxonomy, public API, Nemotron confirmation, corpus-agnostic validation.**
+10. **L9-L14 — Style-agnostic extraction, engineering defect taxonomy, public API, Nemotron confirmation, corpus-agnostic validation, and real-runtime boundary/activation integrity.**
 
 ## Run it
 

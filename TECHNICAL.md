@@ -1,6 +1,6 @@
 # Crucible — Technical README
 
-**Status: implementation complete through L13; real Nebius execution remains blocked until an API key is available.** This document is the technical contract and records the implemented boundaries and known limitations.
+**Status: implementation complete through L14; the L5 behavioral path is verified against real Nebius/Nemotron.** Real confirmation and LLM-proposal evidence remain pending. This document is the technical contract and records the implemented boundaries and known limitations.
 
 ![Crucible logo](visual/logo.png)
 
@@ -97,6 +97,7 @@ The levels are coherent product states, not technical departments. Security, det
 | L11 | Public API and demo surface | **Implemented:** the CLI exposes single-skill, directory, and installed-skill scan modes plus a FastAPI-compatible serving path and read-only report viewer. |
 | L12 | Nemotron confirmation | **Implemented (mock; external run blocked):** confirmation supports the expanded finding taxonomy while preserving deterministic audit authority and separate artifact provenance. |
 | L13 | Corpus-agnostic validation | **Implemented:** validation runs against 10 skills from 7 sources, with deterministic contracts and provenance-preserving fixtures. |
+| L14 | Real-runtime boundary and activation integrity | **Implemented for L5:** real Nebius execution is non-blocked; provider envelopes are validated; truncation is recorded; the task explicitly activates the methodology; and the sealed four-way run distinguishes the polarity mutant from original and repair. |
 
 The project may stop at any last fully closed level. It must not claim later levels merely because their interfaces exist.
 

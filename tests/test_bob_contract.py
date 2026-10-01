@@ -7,6 +7,8 @@ external dependencies. The LLM proposer is tested for correct BLOCKED behavior.
 
 from __future__ import annotations
 
+import json
+
 from crucible.bob import (
     BOB_FIXTURE,
     BOB_VERSION,
@@ -179,6 +181,42 @@ def test_llm_proposer_blocked_does_not_simulate(monkeypatch) -> None:
     assert report["outcome"] == OUTCOME_BLOCKED
     assert report["original_finding_gone"] is False
     assert report["repaired_finding_count"] == report["original_finding_count"]
+
+
+def test_llm_proposer_rejects_null_provider_content(monkeypatch) -> None:
+    """Invariant: content=null cannot crash the proposal boundary or become
+    a fabricated repair."""
+    payload = {
+        "id": "proposal-null",
+        "choices": [{
+            "finish_reason": "length",
+            "message": {"content": None},
+        }],
+        "usage": {"completion_tokens": 1000},
+    }
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self) -> bytes:
+            return json.dumps(payload).encode("utf-8")
+
+    monkeypatch.setattr(
+        "urllib.request.urlopen",
+        lambda request, timeout: FakeResponse(),
+    )
+    proposal = LLMProposer(api_key="test-key").propose(
+        {"class": "REQUIREMENT_WITHOUT_CHECK", "skill": "retrier"},
+        BOB_FIXTURE["retrier"],
+        {},
+    )
+    assert proposal["proposed_text"] is None
+    assert proposal["error"] == "provider returned non-text content: NoneType"
+    assert proposal["finish_reason"] == "length"
 
 
 # ---------------------------------------------------------------------------
