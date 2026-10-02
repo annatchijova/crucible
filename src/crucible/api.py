@@ -117,6 +117,7 @@ def scan_installed_skills() -> dict[str, Any]:
             "ir": None,
             "graph": None,
             "error": "no installed skills found in standard directories",
+            "skipped_duplicates": [],
             "searched": [
                 str(p) for p in _standard_skill_dirs()
             ],
@@ -182,6 +183,7 @@ def scan_installed_skills() -> dict[str, Any]:
                 "ir": None,
                 "graph": None,
                 "error": "no SKILL.md files found in installed skill directories",
+                "skipped_duplicates": skipped_duplicates,
                 "searched": [str(p) for p in skill_dirs],
             }
         ir = compile_corpus(tmpdir, max_skills=_MAX_SCAN_SKILLS)
