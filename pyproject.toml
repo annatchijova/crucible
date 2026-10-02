@@ -16,6 +16,7 @@ crucible = "crucible.cli:main"
 [project.optional-dependencies]
 test = ["pytest>=7"]
 api = ["fastapi>=0.100", "uvicorn>=0.20"]
+report = ["reportlab>=4.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

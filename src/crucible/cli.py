@@ -16,10 +16,15 @@ from .confirm import (
     confirm_candidates,
     confirm_semantic_redundancy,
 )
+from .final_report import build_final_report
+from .final_report_render import (
+    render_final_report_html,
+    render_final_report_markdown,
+    render_final_report_pdf,
+)
 from .graph import build_composition_graph
 from .mutation import run_mutation_lab
-from .narrator import MockNarrationExecutor, NebiusNarrationExecutor, narrate_skill
-from .recommendation import compute_recommendations
+from .narrator import MockNarrationExecutor, NebiusNarrationExecutor
 from .repair_loop import run_repair_loop
 from .repair_evidence import run_captured_repair
 from .report import run_full_report
@@ -112,6 +117,24 @@ def main() -> int:
         action="store_true",
         help="use deterministic mock executors for both confirmation and "
              "narration (for testing; implies --narrate)",
+    )
+    parser.add_argument(
+        "--render-report",
+        metavar="FINAL_REPORT_JSON",
+        help="render a sealed crucible-final-report/v1 JSON artifact (from "
+             "--narrate) as markdown, html, or pdf",
+    )
+    parser.add_argument(
+        "--render-format",
+        choices=("markdown", "html", "pdf"),
+        default=None,
+        help="output format for --render-report (default: markdown)",
+    )
+    parser.add_argument(
+        "--out",
+        metavar="FILE",
+        help="write --render-report output to FILE instead of stdout "
+             "(required for --render-format pdf)",
     )
     parser.add_argument(
         "--scan-skill",
@@ -296,29 +319,40 @@ def main() -> int:
     if args.narrate or args.mock_narrate:
         if not args.root:
             parser.error("root is required with --narrate")
-        artifact = compile_corpus(args.root)
-        audit = audit_corpus(artifact)
         if args.mock_narrate:
             confirm_executor: Any = MockConfirmExecutor()
             narration_executor: Any = MockNarrationExecutor()
         else:
             confirm_executor = NebiusConfirmExecutor()
             narration_executor = NebiusNarrationExecutor()
-        confirmation = confirm_candidates(audit, artifact, confirm_executor)
-        recommendations = compute_recommendations(audit, confirmation)
-        findings_by_id = {f["id"]: f for f in audit["findings"]}
-        narrations = {
-            skill_name: narrate_skill(skill_name, skill_rec, findings_by_id, narration_executor)
-            for skill_name, skill_rec in recommendations["skills"].items()
-        }
-        print(json.dumps(
-            {"recommendations": recommendations, "narrations": narrations},
-            ensure_ascii=False, indent=2, sort_keys=True,
-        ))
+        final_report = build_final_report(args.root, confirm_executor, narration_executor)
+        print(json.dumps(final_report, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0
+
+    if args.render_report:
+        with open(args.render_report, encoding="utf-8") as fh:
+            final_report = json.load(fh)
+        render_format = args.render_format or "markdown"
+        if render_format == "markdown":
+            rendered = render_final_report_markdown(final_report)
+        elif render_format == "html":
+            rendered = render_final_report_html(final_report)
+        else:
+            rendered = render_final_report_pdf(final_report)
+        if isinstance(rendered, bytes):
+            if not args.out:
+                parser.error("--out is required for --render-format pdf")
+            with open(args.out, "wb") as fh:
+                fh.write(rendered)
+        elif args.out:
+            with open(args.out, "w", encoding="utf-8") as fh:
+                fh.write(rendered)
+        else:
+            print(rendered)
         return 0
 
     if not args.root:
-        parser.error("root is required unless --mutate/--behave/--bob/--repair-loop/--report/--view is given")
+        parser.error("root is required unless --mutate/--behave/--bob/--repair-loop/--report/--view/--render-report is given")
 
     artifact = compile_corpus(args.root)
     if args.compile_only:
