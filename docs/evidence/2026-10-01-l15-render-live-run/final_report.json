@@ -1,0 +1,84 @@
+{
+  "audit_digest": "sha256:2282736cdb07f8e3bbece033456baa03e31cdc62f0ded2e5222ab680fb30a0dd",
+  "confirmation_digest": "sha256:74b683b72f70066d816330f3c64a0b257b83fa3364a444d1ef4eff61b3bca620",
+  "confirmation_digest_mismatch": false,
+  "recommendation_digest": "sha256:1c405a94f5422a275b7e40e54f813cda0427990872d011dc44faec333e2e0f79",
+  "report_digest": "sha256:30746926170db22b5bd4f5290ab9aeb8a7cd6c21eb412bf84d17b24c2ddaf91d",
+  "schema_version": "crucible-final-report/v1",
+  "skill_count": 1,
+  "skills": {
+    "retry-example": {
+      "cited_finding_ids": [
+        "finding-0001",
+        "finding-0002",
+        "finding-0003"
+      ],
+      "confirmed_finding_ids": [
+        "finding-0002",
+        "finding-0003"
+      ],
+      "findings": [
+        {
+          "class": "METHODOLOGICAL_VACUITY",
+          "epistemic_status": "CANDIDATE",
+          "evidence": "skill has 1 normative rule(s) but 0 procedural steps and 0 checks",
+          "id": "finding-0001",
+          "limitation": "procedural step extraction is pattern-based (section headings, numbered lists, and action-verb bullets); a skill with embedded procedural prose that does not match these patterns will be a false positive",
+          "rule_id": "rule-0001",
+          "skill": "retry-example",
+          "source_path": "SKILL.md",
+          "source_span": {
+            "column": 9,
+            "line": 5
+          },
+          "violated_invariant": "a methodology skill should specify how to verify or execute its normative rules, not just what to require"
+        },
+        {
+          "class": "REQUIREMENT_WITHOUT_CHECK",
+          "epistemic_status": "CANDIDATE",
+          "evidence": "skill has 1 normative rule(s) but 0 extracted checks",
+          "id": "finding-0002",
+          "limitation": "the IR does not link checks to specific rules; this is a coarse skill-level heuristic, not a per-rule coverage claim",
+          "rule_id": "rule-0001",
+          "skill": "retry-example",
+          "source_path": "SKILL.md",
+          "source_span": {
+            "column": 9,
+            "line": 5
+          },
+          "violated_invariant": "normative rules should have an identifiable verification path"
+        },
+        {
+          "class": "UNBOUNDED_RETRY",
+          "epistemic_status": "CANDIDATE",
+          "evidence": "rule rule-0001 contains a retry/repeat indicator without an explicit bound (max attempts, timeout, backoff, or circuit breaker)",
+          "id": "finding-0003",
+          "limitation": "retry and bound detection are pattern-based; a skill may describe a bounded retry using vocabulary not captured by the patterns; the finding is CANDIDATE",
+          "rule_id": "rule-0001",
+          "skill": "retry-example",
+          "source_path": "SKILL.md",
+          "source_span": {
+            "column": 9,
+            "line": 5
+          },
+          "violated_invariant": "a retry or repeat instruction must specify a bound (maximum attempts, timeout, backoff, or circuit breaker)"
+        }
+      ],
+      "narration_blocked": false,
+      "narration_error": null,
+      "narrative": "\n\nThe recommendation to MODIFY follows because the skill exhibits methodological vacuity (finding\u20110001), lacks any verification path for its normative rule (finding\u20110002), and contains an unbounded retry instruction (finding\u20110003); together these deficiencies indicate the skill\u2019s current form does not meet methodological invariants and therefore requires revision rather than acceptance or removal.  \n\nNext steps (prioritized):  \n1. Add explicit procedural steps and checks that define how the normative rule is executed and verified.  \n2. Introduce a bounded retry mechanism (e.g., maximum attempts, timeout, or backoff) for rule\u20110001.  \n3. Update the skill documentation to reflect the added steps, checks, and retry bounds, ensuring a clear verification path.",
+      "pending_finding_ids": [
+        "finding-0001"
+      ],
+      "recommendation": "MODIFY",
+      "rejected_finding_ids": [],
+      "untraceable_finding_ids": []
+    }
+  },
+  "summary": {
+    "by_recommendation": {
+      "MODIFY": 1
+    },
+    "total_skills": 1
+  }
+}
