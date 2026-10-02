@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from typing import Any
 
 from .auditor import audit_corpus
 from .behavioral import LocalExecutor, NebiusExecutor, run_behavioral_differential
@@ -17,6 +18,8 @@ from .confirm import (
 )
 from .graph import build_composition_graph
 from .mutation import run_mutation_lab
+from .narrator import MockNarrationExecutor, NebiusNarrationExecutor, narrate_skill
+from .recommendation import compute_recommendations
 from .repair_loop import run_repair_loop
 from .repair_evidence import run_captured_repair
 from .report import run_full_report
@@ -97,6 +100,18 @@ def main() -> int:
         "--mock-confirm",
         action="store_true",
         help="use the deterministic mock executor for the confirmation layer (for testing)",
+    )
+    parser.add_argument(
+        "--narrate",
+        action="store_true",
+        help="run L2 audit + L2.5 confirmation, compute L15 deterministic "
+             "recommendations, and have an LLM narrate each non-KEEP skill",
+    )
+    parser.add_argument(
+        "--mock-narrate",
+        action="store_true",
+        help="use deterministic mock executors for both confirmation and "
+             "narration (for testing; implies --narrate)",
     )
     parser.add_argument(
         "--scan-skill",
@@ -276,6 +291,30 @@ def main() -> int:
             executor = NebiusConfirmExecutor()
         confirmation = confirm_candidates(audit, artifact, executor)
         print(json.dumps(confirmation, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0
+
+    if args.narrate or args.mock_narrate:
+        if not args.root:
+            parser.error("root is required with --narrate")
+        artifact = compile_corpus(args.root)
+        audit = audit_corpus(artifact)
+        if args.mock_narrate:
+            confirm_executor: Any = MockConfirmExecutor()
+            narration_executor: Any = MockNarrationExecutor()
+        else:
+            confirm_executor = NebiusConfirmExecutor()
+            narration_executor = NebiusNarrationExecutor()
+        confirmation = confirm_candidates(audit, artifact, confirm_executor)
+        recommendations = compute_recommendations(audit, confirmation)
+        findings_by_id = {f["id"]: f for f in audit["findings"]}
+        narrations = {
+            skill_name: narrate_skill(skill_name, skill_rec, findings_by_id, narration_executor)
+            for skill_name, skill_rec in recommendations["skills"].items()
+        }
+        print(json.dumps(
+            {"recommendations": recommendations, "narrations": narrations},
+            ensure_ascii=False, indent=2, sort_keys=True,
+        ))
         return 0
 
     if not args.root:

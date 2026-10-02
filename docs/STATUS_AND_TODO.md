@@ -1,8 +1,8 @@
 # Crucible Skills — Estado y Pendientes
 
-**Fecha:** 2026-09-24  
-**Base:** main @ 1fe6361  
-**Tests:** 411 pasan
+**Fecha original:** 2026-09-24 (actualizado 2026-10-01, ver nota abajo)
+**Base:** main @ 1fe6361
+**Tests:** 411 pasan originalmente — **655 pasan al 2026-10-01** (R3, R4, y L15 se agregaron después de esta fecha; ver TECHNICAL.md para el estado nivel por nivel actualizado, esta tabla quedó vieja)
 
 ---
 
@@ -27,6 +27,10 @@ verificado cross-process, y sellado SHA-256:
 | L11 | API pública + demo UI + 3 modos de scan | Completo |
 | L12 | Confirmación Nemotron para 19 tipos | Completo (mock) |
 | L13 | Validación corpus-agnóstico (10 skills, 7 fuentes) | Completo |
+| L14 | Real-runtime boundary (L5) | Completo — agregado después de esta fecha, ver TECHNICAL.md |
+| R2/R3 | Replay bundle (acquisition/export + offline oracle replay) | Completo — agregado 2026-10-01, ver docs/REPLAY_BUNDLE.md |
+| R4 | Private repair evidence capture | Core implementado, corrida en vivo pendiente — ver docs/REPAIR_EVIDENCE.md |
+| L15 | Recomendación determinística + narrador LLM | Core implementado y corrido en vivo contra Nebius 2026-10-01; faltan MD/PDF/HTML del reporte final — ver docs/red-team/2026-10-01-l15-recommendation-narrator-review.md |
 
 Red team L11 completado: 5 hallazgos encontrados y arreglados (RT-01 a RT-05),
 1 hipótesis falsificada (RT-06), invariantes verificados (RT-07).

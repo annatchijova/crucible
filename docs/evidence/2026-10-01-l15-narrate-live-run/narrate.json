@@ -1,0 +1,51 @@
+{
+  "narrations": {
+    "retry-example": {
+      "blocked": false,
+      "cited_finding_ids": [
+        "finding-0001",
+        "finding-0002",
+        "finding-0003"
+      ],
+      "error": null,
+      "executor_model": "nvidia/nemotron-3-super-120b-a12b",
+      "executor_provider": "nebius-token-factory",
+      "narration_digest": "sha256:275ad0be2128220ca72d06b79a5b71b0b6ca9177b47099ff337053e206b724ee",
+      "narrative": "\n\nThe recommendation to MODIFY follows because the skill exhibits methodological vacuity with no procedural steps or checks (finding-0001), lacks any verification path for its sole normative rule (finding-0002), and contains an unbounded retry instruction (finding-0003); together these gaps indicate the skill must be revised to add clear execution steps, verification checks, and bounded retry logic.\n\nPrioritized next steps:\n1. Define procedural steps and extractable checks for rule-0001 to address findings-0001 and finding-0002.\n2. Impose an explicit bound on the retry in rule-0001 (e.g., maximum attempts, timeout, or backoff) to resolve finding-0003.\n3. Update the skill documentation to reflect the added methodology, verification path, and bounded retry mechanism.",
+      "recommendation": "MODIFY",
+      "runtime": {
+        "finish_reason": "stop",
+        "response_id": "chatcmpl-8bff506f305b148d",
+        "usage": {
+          "completion_tokens": 469,
+          "prompt_tokens": 359,
+          "total_tokens": 828
+        }
+      },
+      "schema_version": "crucible-narration/v1",
+      "skill": "retry-example",
+      "untraceable_finding_ids": []
+    }
+  },
+  "recommendations": {
+    "confirmation_digest_mismatch": false,
+    "recommendation_digest": "sha256:88580c93ca7fe40450f0704024ccd2fff39f24ba0b171c1c69ca8acfbb70bdc2",
+    "schema_version": "crucible-recommendation/v1",
+    "skills": {
+      "retry-example": {
+        "confirmed_finding_ids": [
+          "finding-0002",
+          "finding-0003"
+        ],
+        "pending_finding_ids": [
+          "finding-0001"
+        ],
+        "recommendation": "MODIFY",
+        "rejected_finding_ids": [],
+        "total_finding_count": 3
+      }
+    },
+    "source_audit_digest": "sha256:2282736cdb07f8e3bbece033456baa03e31cdc62f0ded2e5222ab680fb30a0dd",
+    "source_confirmation_digest": "sha256:ce015324d615cca8a577aa88d830edd878f478103993f1e759717a56ce15bb42"
+  }
+}
