@@ -63,6 +63,69 @@ def test_mismatch_not_detected_when_trigger_and_rules_share_tokens() -> None:
     assert len(mismatches) == 0
 
 
+def test_mismatch_not_detected_when_only_steps_share_tokens() -> None:
+    """Invariant: a skill whose single rule is lexically off-topic but
+    whose procedural steps match the trigger must NOT be flagged -- the
+    comparison must cover steps, not just rules.
+    Mutation: revert to comparing rules alone -> red. See
+    docs/evidence/2026-10-02-scope-trigger-mismatch-audit/FINDINGS.md."""
+    audit = _audit({
+        "steps_match": (
+            "---\nname: steps_match\n"
+            "description: Use this skill when debugging memory leaks in C programs.\n"
+            "license: Apache-2.0\n---\n\n"
+            "# StepsMatch\n\n"
+            "Transaction logs MUST be rotated nightly.\n\n"
+            "## Steps\n\n"
+            "1. Attach a debugger to the process to find the memory leak.\n"
+            "2. Free the leaked memory allocation.\n"
+        ),
+    })
+    mismatches = _findings_by_class(audit, "SCOPE_TRIGGER_MISMATCH")
+    assert len(mismatches) == 0
+
+
+def test_mismatch_not_detected_when_only_checks_share_tokens() -> None:
+    """Invariant: a skill whose single rule is lexically off-topic but
+    whose checks match the trigger must NOT be flagged.
+    Mutation: revert to comparing rules alone -> red."""
+    audit = _audit({
+        "checks_match": (
+            "---\nname: checks_match\n"
+            "description: Use this skill when debugging memory leaks in C programs.\n"
+            "license: Apache-2.0\n---\n\n"
+            "# ChecksMatch\n\n"
+            "Transaction logs MUST be rotated nightly.\n\n"
+            "## Checks\n\n"
+            "- Verify no memory leaks remain after debugging.\n"
+        ),
+    })
+    mismatches = _findings_by_class(audit, "SCOPE_TRIGGER_MISMATCH")
+    assert len(mismatches) == 0
+
+
+def test_mismatch_still_detected_when_rules_steps_and_checks_all_mismatch() -> None:
+    """Invariant: a genuine mismatch across rules, steps, AND checks must
+    still be flagged -- broadening the comparison must not silently
+    suppress every finding.
+    Mutation: always suppress the finding -> red."""
+    audit = _audit({
+        "all_mismatch": (
+            "---\nname: all_mismatch\n"
+            "description: Use this skill when debugging memory leaks in C programs.\n"
+            "license: Apache-2.0\n---\n\n"
+            "# AllMismatch\n\n"
+            "Deployments MUST be automated.\n\n"
+            "## Steps\n\n"
+            "1. Tag the release with a semantic version.\n\n"
+            "## Checks\n\n"
+            "- Verify the release artifact was uploaded.\n"
+        ),
+    })
+    mismatches = _findings_by_class(audit, "SCOPE_TRIGGER_MISMATCH")
+    assert len(mismatches) >= 1
+
+
 # ---------------------------------------------------------------------------
 # No false positives
 # ---------------------------------------------------------------------------

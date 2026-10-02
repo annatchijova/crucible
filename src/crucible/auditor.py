@@ -820,22 +820,33 @@ def _check_scope_trigger_mismatch(
     skills: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
     """The declared trigger (from the description) shares zero meaningful
-    tokens with the rule content (from the body).
+    tokens with the skill's normative content (rules, procedural steps,
+    and checks).
 
     This is the conservative base for SCOPE_TRIGGER_MISMATCH. It extracts
     the trigger clause from the description ("Use this skill whenever
-    X"), tokenizes it, and compares to the combined tokens of all rule
-    texts. If both token sets are non-empty and their intersection is
-    empty, the skill's declared scope and its actual normative content
-    are lexically disjoint — a CANDIDATE finding.
+    X"), tokenizes it, and compares to the combined tokens of the rules,
+    procedural steps, and checks. If both token sets are non-empty and
+    their intersection is empty, the skill's declared scope and its
+    actual normative content are lexically disjoint — a CANDIDATE
+    finding.
+
+    Originally compared the trigger to `rules` alone. On a corpus that
+    favors numbered-step methodology over RFC-2119 phrasing, almost all
+    topical content lives in `procedural_steps` instead -- a skill can
+    have a single, narrow, off-topic rule (e.g. a log-replay mechanics
+    detail) while its steps obviously match the trigger. Measured
+    against mukul975/Anthropic-Cybersecurity-Skills: 44/54 (81%) of
+    rules-only mismatches resolved once steps/checks were included. See
+    docs/evidence/2026-10-02-scope-trigger-mismatch-audit/FINDINGS.md.
 
     The check uses the same tokenizer and stopword list as
     SEMANTIC_REDUNDANCY for consistency.
 
     Limitation: lexical disjointness is not semantic disjointness. The
-    trigger and rules may use different vocabulary for the same domain
-    (e.g., "debugging" in the trigger and "retries" in the rules could
-    be related). The finding is CANDIDATE, not CONFIRMED.
+    trigger and normative content may use different vocabulary for the
+    same domain (e.g., "debugging" in the trigger and "retries" in the
+    rules could be related). The finding is CANDIDATE, not CONFIRMED.
     """
     findings: list[dict[str, Any]] = []
     for skill in skills:
@@ -848,35 +859,51 @@ def _check_scope_trigger_mismatch(
         trigger_tokens = _tokenize(trigger_text)
         if not trigger_tokens:
             continue
-        # Build rule text token set from all rules.
-        rule_parts: list[str] = []
-        for rule in skill.get("rules", []):
-            rule_parts.append(rule.get("text", ""))
-        if not rule_parts:
+        # The check only ever evaluated skills with at least one rule --
+        # preserve that population (a skill with zero rules was never in
+        # scope here and expanding scope to steps-only methodologies is a
+        # separate question, not measured). Broaden what each in-scope
+        # skill is compared against: rules, procedural steps, and checks
+        # combined -- not rules alone. First measured with the gate left
+        # as "rules OR steps OR checks", which newly evaluated 51 zero-
+        # rule skills never checked before, most resolving only against
+        # body_text -- the same root cause one level down, out of scope
+        # for this fix. See docs/evidence/2026-10-02-scope-trigger-
+        # mismatch-audit/FINDINGS.md.
+        rules = skill.get("rules", [])
+        if not rules:
             continue
-        rule_tokens = _tokenize(" ".join(rule_parts))
-        if not rule_tokens:
+        steps = skill.get("procedural_steps", [])
+        checks = skill.get("checks", [])
+        content_parts: list[str] = (
+            [rule.get("text", "") for rule in rules]
+            + [step.get("text", "") for step in steps]
+            + [check.get("text", "") for check in checks]
+        )
+        content_tokens = _tokenize(" ".join(content_parts))
+        if not content_tokens:
             continue
         # Check for zero overlap.
-        intersection = trigger_tokens & rule_tokens
+        intersection = trigger_tokens & content_tokens
         if intersection:
             continue
         # Zero overlap — CANDIDATE finding.
         name = skill["identity"]["name"]
         source_path = skill["identity"]["source_path"]
-        # Find the first rule for source evidence.
-        first_rule = skill["rules"][0] if skill.get("rules") else None
+        # Find the first available item (rule, then step, then check) for
+        # source evidence.
+        first_item = (rules or steps or checks)[0]
         findings.append(_finding(
             cls="SCOPE_TRIGGER_MISMATCH",
             epistemic_status="CANDIDATE",
             skill=name,
             source_path=source_path,
-            source_span=first_rule["source_span"] if first_rule else None,
-            rule_id=first_rule["id"] if first_rule else None,
+            source_span=first_item["source_span"],
+            rule_id=first_item["id"],
             evidence=(
                 f"trigger tokens {sorted(trigger_tokens)[:5]}... share zero "
-                f"meaningful tokens with rule tokens "
-                f"{sorted(rule_tokens)[:5]}...; the declared activation "
+                f"meaningful tokens with normative-content tokens "
+                f"{sorted(content_tokens)[:5]}...; the declared activation "
                 f"scope and the normative content are lexically disjoint"
             ),
             violated_invariant=(
