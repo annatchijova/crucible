@@ -840,6 +840,19 @@ def _extract_procedural_steps(
         bullet_match = _BULLET.match(line)
         if not bullet_match:
             continue
+        if _VERIFICATION_STARTER.match(line):
+            # A line already shaped as a verification check is a check,
+            # not a step, by the exact same precedence this function
+            # already applies to lines inside a titled Checks/Verification
+            # section above -- just extended from section-scoped to
+            # line-scoped. Without this, _ACTION_VERBS's independently-
+            # maintained vocabulary overlaps _VERIFICATION_VERBS's (both
+            # include validate/verify/check/test/assert/confirm/
+            # demonstrate/prove/inspect/run), so a bullet like "Validate
+            # the configuration file." was extracted as BOTH a check (by
+            # _extract_checks) and a step (here) -- confirmed on 250/818
+            # (31%) of mukul975/Anthropic-Cybersecurity-Skills.
+            continue
         text = bullet_match.group("value")
         first_word = text.split(" ", 1)[0].lower().strip(".,;:()")
         if first_word in _ACTION_VERBS:

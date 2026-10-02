@@ -483,3 +483,45 @@ def test_verification_starter_recognizes_the_full_oracle_command_verb_list(tmp_p
         )
     for check in artifact["skills"][0]["checks"]:
         assert check["oracle_kind"] == "command"
+
+
+def test_a_verification_shaped_bullet_is_a_check_not_also_a_step(tmp_path: Path) -> None:
+    """Regression, found via variant analysis of the two compiler bugs
+    above (same family: two things meant to describe related concepts had
+    drifted). _ACTION_VERBS (decides whether a prose bullet outside a
+    procedural section is a step) independently duplicates every verb in
+    _VERIFICATION_VERBS (validate/verify/check/test/assert/confirm/
+    demonstrate/prove/inspect/run), with no cross-function deduplication
+    against _extract_checks. A bullet like "- Validate the configuration
+    file before deployment." was extracted as BOTH a check and a step --
+    confirmed on 250/818 (31%) of mukul975/Anthropic-Cybersecurity-Skills.
+    A verification-shaped bullet must be a check only, by the same
+    precedence this function already applies to a titled Checks/
+    Verification section ("those are checks, not steps")."""
+    _write_skill(
+        tmp_path,
+        "dual-extract",
+        "---\nname: dual-extract\ndescription: Exercises a bullet outside any section that matches both extraction paths.\n---\n\n## Overview\n\n- Validate the configuration file before deployment.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    assert len(artifact["skills"][0]["checks"]) == 1
+    assert artifact["skills"][0]["procedural_steps"] == []
+
+
+def test_a_genuine_action_verb_bullet_is_still_extracted_as_a_step(tmp_path: Path) -> None:
+    """The fix above must not over-exclude: a bullet starting with an
+    action verb that is NOT also a verification verb (e.g. "Deploy", not
+    in _VERIFICATION_VERBS) must still become a step as before."""
+    _write_skill(
+        tmp_path,
+        "genuine-step",
+        "---\nname: genuine-step\ndescription: Exercises a genuine action-verb bullet.\n---\n\n## Overview\n\n- Deploy the configuration to all nodes.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    assert artifact["skills"][0]["checks"] == []
+    step_texts = [s["text"] for s in artifact["skills"][0]["procedural_steps"]]
+    assert step_texts == ["Deploy the configuration to all nodes."]

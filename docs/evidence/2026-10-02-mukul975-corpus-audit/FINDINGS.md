@@ -128,22 +128,89 @@ too, and the test was updated to assert that instead of silently loosened.
 A new regression test exercises all six previously-missing verbs
 explicitly. 683/683 tests pass; mutation-lab kill rate held 6/6.
 
-This is why every finding count below is reported post-both-fixes; the two
-earlier audit passes (committed 2026-10-02) are both superseded and should
-not be cited as the corpus's real finding distribution.
+## Variant analysis: sweeping for siblings of the Finding 0/0b pattern
 
-## Audit: 446 findings across 818 real skills (post both compiler fixes)
+Findings 0 and 0b share one shape: two things meant to encode the same
+concept (a heading vs. code-fence exclusion; two verb vocabularies) had
+drifted apart independently, with no single source of truth forcing them
+to agree. Per the `variant-analysis` skill, that shape — not the specific
+bug — is the real lead. Before moving to a new finding class, every
+top-level vocabulary/pattern constant in `compiler.py` and `auditor.py`
+was enumerated and checked for a sibling it should agree with but might
+not.
+
+**Confirmed and fixed**: `_ACTION_VERBS` (decides whether a prose bullet
+outside a procedural section is a step) independently duplicates every
+verb in `_VERIFICATION_VERBS` (validate/verify/check/test/assert/confirm/
+demonstrate/prove/inspect/run) by value, not by reference. A bullet like
+"- Validate the configuration file before deployment." was extracted as
+**both** a check (by `_extract_checks`) and a step (by
+`_extract_procedural_steps`) — on **250/818 (31%)** of this corpus. Unlike
+the other two candidates below, this one has an explicit, already-written
+precedence claim in the code itself ("Bullets in Checks or Verification
+sections are skipped — those are checks, not steps"), just never extended
+from section-scoped to line-scoped. Fixed: a line already matching
+`_VERIFICATION_STARTER` is excluded from step extraction, the same
+precedence now applied uniformly. Verified by induction (the motivating
+bullet now counts once, as a check only); two new regression tests (the
+fix, and that a genuine non-verification action verb like "Deploy" still
+becomes a step). 685/685 tests pass; mutation-lab kill rate held 6/6.
+
+**Reviewed, evidence too weak to fix**: `_ACTION_VERBS` also duplicates
+every verb in `_NORMATIVE_IMPERATIVE_VERBS` (enforce/require/ensure/
+maintain/preserve/protect/guard/isolate/contain/limit/restrict/constrain/
+bound/avoid/prevent/pin/seal/guarantee), raising the same hypothesis for
+rules vs. steps. Measured: only **1/818** skills would gain a
+`METHODOLOGICAL_VACUITY` finding if this were "fixed" the same way.
+Reading that one case
+(`implementing-network-segmentation-for-ot`, "Rollback plan approved by
+operations management") showed a *different* root cause: this is a
+prerequisites-checklist noun phrase ("a rollback plan that is approved"),
+not an imperative instruction — `_ACTION_VERBS` matched the bare first
+word "Rollback" with no part-of-speech awareness at all. Unlike the
+check/step case, there is no existing claim anywhere in the codebase that
+a rule and a step must be mutually exclusive (a rule phrased
+imperatively can legitimately also describe an action). Per this
+project's own refutation discipline, n=1 plus a weaker, different-shaped
+root cause does not justify a speculative fix; not implemented, recorded
+here as a discarded vector instead.
+
+**Reviewed, evidence points the other way**: `_ABSOLUTE_MODALITIES` (gates
+`OVERCLAIM`/overgeneralization) includes `MUST`, `MUST_NOT`, `NEVER`,
+`ALWAYS` but not `IMPERATIVE` — the same shape of question (a vocabulary
+set that might have missed a sibling added later). Checked git history:
+the commit that added `IMPERATIVE`-modality extraction (`0b90dc9`, L9)
+predates the commit that defined `_ABSOLUTE_MODALITIES` (`539b5d9`) — so
+`IMPERATIVE` already existed when the set was written, and that same
+commit's own code comment shows explicit awareness of non-RFC-2119
+modalities (it special-cases their empty `subject` field a few lines
+away). The simpler, better-supported hypothesis is deliberate scoping
+(an "Ensure X" instruction isn't judged to carry the same universal-claim
+semantics as "X MUST"), not an oversight. Not changed.
+
+| Candidate | Prevalence | Disposition | Why |
+|---|---|---|---|
+| `_ACTION_VERBS` / `_VERIFICATION_VERBS` (check vs. step) | 250/818 (31%) | **Fixed** | Explicit existing precedence claim in the code; high prevalence |
+| `_ACTION_VERBS` / `_NORMATIVE_IMPERATIVE_VERBS` (rule vs. step) | 1/818 | **Deferred, not fixed** | n=1; real root cause is POS ambiguity, not vocabulary drift |
+| `_ABSOLUTE_MODALITIES` missing `IMPERATIVE` | n/a (scope question, not a count) | **Not a bug** | Git history supports deliberate scoping over oversight |
+
+This is why every finding count below is reported post-every-fix found
+this session (two compiler bugs plus this variant-analysis fix); all
+earlier audit passes (committed 2026-10-02) are superseded and should not
+be cited as the corpus's real finding distribution.
+
+## Audit: 443 findings across 818 real skills (post all three compiler fixes)
 
 ```
-CHECK_WITHOUT_ORACLE            27   (91 before Finding 0; unchanged by Finding 0b)
+CHECK_WITHOUT_ORACLE            27   (91 before Finding 0; unchanged since)
 CLAIM_WITHOUT_PROVENANCE         3
-DESCRIPTION_BODY_GAP           177   (179 before Finding 0 -> 188 after Finding 0 -> 177 after Finding 0b)
+DESCRIPTION_BODY_GAP           177   (179 -> 188 -> 177 across the two prior fixes; unchanged by this one)
 IRREVERSIBLE_WITHOUT_REVIEW     49
-METHODOLOGICAL_VACUITY           1   (3 before Finding 0 -> 5 after Finding 0 -> 1 after Finding 0b)
-MISSING_FAILURE_MODE            55
-NON_DETERMINISTIC_INSTRUCTION   20
+METHODOLOGICAL_VACUITY           1
+MISSING_FAILURE_MODE            53   (55 before this fix)
+NON_DETERMINISTIC_INSTRUCTION   19   (20 before this fix)
 OVERCLAIM                        1
-REQUIREMENT_WITHOUT_CHECK       34   (70 before Finding 0b -- 51% was this bug)
+REQUIREMENT_WITHOUT_CHECK       34   (70 before Finding 0b -- 51% was that bug)
 SCOPE_TRIGGER_MISMATCH          54
 SECRET_IN_OUTPUT                 1
 SEMANTIC_REDUNDANCY              1
@@ -268,11 +335,17 @@ for L2/L10.
   question, and is now fixed — 70 -> 34. Remaining 34 not yet individually
   classified as genuine gaps vs. a different false-positive pattern.
 - Spot-checking the remaining large finding classes (`MISSING_FAILURE_MODE`
-  55, `SCOPE_TRIGGER_MISMATCH` 54, `CHECK_WITHOUT_ORACLE` 27, and the
+  53, `SCOPE_TRIGGER_MISMATCH` 54, `CHECK_WITHOUT_ORACLE` 27, and the
   remaining 34 `REQUIREMENT_WITHOUT_CHECK`) for the same kind of
   style-driven false positive or compiler bug. Given that two of the first
   three categories checked this way turned out to be real compiler bugs,
   not calibration questions, this is a high-value check, not a formality.
+- The variant-analysis sweep above covered `compiler.py` and `auditor.py`'s
+  top-level vocabulary/pattern constants; it did not exhaustively check
+  every other kind of "two things meant to agree" shape (e.g. docstrings
+  claiming behavior the code doesn't match, section-range exclusions
+  outside the ones already touched). A second, differently-scoped sweep
+  could still find more.
 - Running L2.5/L12 confirmation and L15 recommendation/narration against
   this corpus (would cost real Nebius calls across potentially hundreds of
   candidates; not run here).
