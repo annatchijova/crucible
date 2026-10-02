@@ -18,6 +18,7 @@ from .confirm import (
 from .graph import build_composition_graph
 from .mutation import run_mutation_lab
 from .repair_loop import run_repair_loop
+from .repair_evidence import run_captured_repair
 from .report import run_full_report
 from .viewer import render_artifact_html
 
@@ -66,6 +67,11 @@ def main() -> int:
         "--repair-loop",
         action="store_true",
         help="run the L7 closed repair loop (find -> repair -> re-audit -> behavioral replay -> accept/reject)",
+    )
+    parser.add_argument(
+        "--repair-evidence",
+        metavar="NEW_PRIVATE_DIR",
+        help="capture and seal one real --repair-loop run in a new private directory (requires --llm-proposer and Nebius credentials)",
     )
     parser.add_argument(
         "--report",
@@ -122,17 +128,27 @@ def main() -> int:
                               help='inspect a local journal offline without printing prompt/response bodies')
     replay_modes.add_argument('--export-replay', metavar='JOURNAL_DIRECTORY',
                               help='export a stored complete bundle to stdout offline (private evidence)')
+    replay_modes.add_argument('--replay-bundle', metavar='BUNDLE_JSON',
+                              help='recompute observations offline with the exact recorded oracle')
+    replay_modes.add_argument('--reevaluate-bundle', metavar='BUNDLE_JSON',
+                              help='explicitly recompute observations with the installed oracle')
     args = parser.parse_args()
-    replay_names = ('capture_replay', 'inspect_replay', 'export_replay')
+    replay_names = ('capture_replay', 'inspect_replay', 'export_replay',
+                    'replay_bundle', 'reevaluate_bundle')
     selected = [name for name in replay_names if getattr(args, name) is not None]
     if selected:
         if any(value is not None and value is not False for name, value in vars(args).items()
                if name not in replay_names):
-            parser.error('replay journal modes cannot be combined with other options or a corpus path')
+            parser.error('replay modes cannot be combined with other options or a corpus path')
+        if selected[0] in ('replay_bundle', 'reevaluate_bundle'):
+            from .oracle_replay_cli import run_oracle_replay_command
+            return run_oracle_replay_command(selected[0], getattr(args, selected[0]))
         from .replay_cli import run_replay_command
         return run_replay_command(selected[0], getattr(args, selected[0]))
     if args.include_coverage and not args.scan_installed:
         parser.error('--include-coverage requires --scan-installed')
+    if args.repair_evidence and not args.repair_loop:
+        parser.error('--repair-evidence requires --repair-loop')
 
     if args.scan_installed_collection:
         from .api import scan_installed_collection
@@ -215,6 +231,19 @@ def main() -> int:
         return 0
 
     if args.repair_loop:
+        if args.repair_evidence:
+            if not args.llm_proposer or args.local_executor:
+                parser.error("--repair-evidence requires --llm-proposer and cannot use --local-executor")
+            bundle = run_captured_repair(args.repair_evidence)
+            print(json.dumps({
+                "evidence_dir": args.repair_evidence,
+                "schema_version": bundle["schema_version"],
+                "bundle_digest": bundle["bundle_digest"],
+                "outcome": bundle["report"].get("outcome"),
+                "rejection_reason": bundle["report"].get("rejection_reason"),
+                "captured_events": len(bundle["events"]),
+            }, ensure_ascii=False, indent=2, sort_keys=True))
+            return 0
         if args.llm_proposer:
             proposer = LLMProposer()
         else:

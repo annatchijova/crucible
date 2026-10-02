@@ -4,8 +4,10 @@ Status: v1 storage validation and v2 capture-backed acquisition are implemented.
 Optional local journaling retains committed partial work. CLI acquisition,
 inspection and export are locally verified for the current four-way adapter,
 closing R2's bounded storage/acquisition/export gate. No new live-provider run
-is claimed; R3 is next.
-R3 offline oracle execution and repair acceptance are not implemented here.
+is claimed. R3 offline replay is locally verified for the retained property
+observations. The code review and its negative-control evidence are recorded in
+the repository's red-team review log. Provider authenticity and L7 repair
+acceptance replay remain outside R3.
 
 `src/crucible/replay.py` exposes `validate_bundle`, `dump_bundle`, `load_bundle`
 and `replay_readiness`. All are offline and side-effect-free. JSON is limited
@@ -65,9 +67,8 @@ round-trip preservation, network prohibition, resealed internal inconsistencies,
 unknown schema, truncation/error states, missing observations, duplicate JSON,
 credential fields and the input size limit.
 
-Next increment: R3 trusted-oracle matching and offline observation/decision replay.
-Inspection and export below do not perform replay. Do not
-change historical artifacts or invoke remote generation merely to validate one.
+Inspection and export below do not perform replay. Do not change historical
+artifacts or invoke remote generation merely to validate one.
 
 ## Executor transport capture
 
@@ -276,3 +277,43 @@ SQLite recovery constraints and pre-commit loss windows remain as documented abo
 
 Reproduce the local CLI boundary checks with
 `PYTHONPATH=src python3 -m pytest tests/test_replay_cli.py -q`.
+
+## R3 — offline oracle replay
+
+`--replay-bundle BUNDLE_JSON` runs the local property oracle only when the
+bundle's recorded oracle ID and implementation digest exactly match the
+installed trusted oracle. It requires complete evidence, recomputes every
+property status from the retained response text, and compares the result with
+the stored observation. The versioned `crucible-oracle-replay/v1` result records
+the source bundle digest, both oracle identities, and per-property agreement;
+its own digest seals that replay result. Exit 0 means statuses matched, exit 1
+means the evidence cannot be replayed or statuses diverged, and exit 2 means
+the input could not be loaded or validated.
+
+`--reevaluate-bundle BUNDLE_JSON` is an explicit new evaluation using the
+currently installed oracle, including when its identity differs from the
+historical oracle. Its result says `REEVALUATED_MATCH` or
+`REEVALUATED_DIVERGED`, retains the historical oracle identity, and never
+rewrites the bundle or its recorded observations. Both actions are offline:
+they do not construct a provider executor or make network requests.
+
+The replay outcome means only that per-property statuses match under the named
+local oracle. It does not authenticate the provider, prove a response came from
+the named model, assess skill quality, or re-run L7 repair acceptance. A valid
+digest and a matching replay can be produced from a maliciously authored and
+resealed bundle; source authenticity remains outside this contract. Oracle
+identity also trusts the installed Python source/runtime and is not runtime code
+attestation. Incomplete bundles, including blocked or truncated runs, are never
+passed to the oracle.
+
+R3's local negative controls cover exact-oracle mismatch, resealed observation
+tampering, incomplete response refusal, explicit re-evaluation, v1 replay and
+offline CLI behavior. The observation-tampering test was mutation-checked: making
+both sides of the comparison use the recorded status caused the test to fail.
+See the [R3 code review and evidence](red-team/2026-10-01-r3-replay-code-review.md).
+
+Run the focused R3 and inherited replay contracts with:
+
+```bash
+PYTHONPATH=src python3 -m pytest -q tests/test_oracle_replay.py tests/test_replay_bundle_contract.py tests/test_capture_bundle.py tests/test_replay_cli.py
+```

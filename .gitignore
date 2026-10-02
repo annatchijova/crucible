@@ -19,10 +19,14 @@ build/
 .skilllab/
 audit-output/
 reports/local/
+artifacts/nebius/repair-*/
 docs/research/
 .env
 .env.*
 !.env.example
+
+# Private hackathon prep notes — never push.
+NO PUSH/
 
 # OS/editor noise.
 .DS_Store

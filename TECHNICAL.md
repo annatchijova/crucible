@@ -100,6 +100,7 @@ The levels are coherent product states, not technical departments. Security, det
 | L12 | Nemotron confirmation | **Executed with mock and real provider:** 14 real responses completed; the full artifact was not retained. Confirmation remains a separate observation and does not modify audit authority. |
 | L13 | Corpus-agnostic validation | **Implemented:** validation runs against 10 skills from 7 sources, with deterministic contracts and provenance-preserving fixtures. |
 | L14 | Real-runtime boundary and activation integrity | **Implemented for L5:** real Nebius execution is non-blocked; provider envelopes are validated; truncation is recorded; the task explicitly activates the methodology; and the sealed four-way run distinguishes the polarity mutant from original and repair. |
+| L15 | Final LLM report and multi-format delivery | **Destination requirement:** the final product uses an LLM to turn the sealed analysis into a human-readable final report delivered in Markdown (`.md`), PDF (`.pdf`), and self-contained HTML (`.html`). The three formats must present the skill analysis, evidence-backed findings, prioritized improvement suggestions, and explicit limitations. Every interpretive claim and suggestion must trace back to the sealed artifacts; the LLM summarizes and recommends, but does not replace or modify deterministic audit decisions. |
 
 The project may stop at any last fully closed level. It must not claim later levels merely because their interfaces exist.
 
@@ -387,9 +388,13 @@ Its recovery reader distinguishes partial acquisition from a stored complete bun
 The [journal CLI](docs/REPLAY_BUNDLE.md#journal-cli) now separates acquisition,
 offline summary inspection and explicit private-bundle export. R2's bounded
 storage/acquisition/export gate is locally verified for the current four-way
-Nebius adapter; no new live-provider evidence is claimed. R3 offline oracle
-execution is next; R4 real repair evidence remains pending under the
-[active plan](docs/NEXT_LEVELS.md).
+Nebius adapter; no new live-provider evidence is claimed. R3 now provides
+offline pinned-oracle replay and explicit re-evaluation as separate sealed
+results. These compare property statuses and do not authenticate providers or
+replay L7 repair acceptance. R3 is locally verified for observation replay;
+its adversarial review and negative-control evidence are recorded in
+[the review log](docs/red-team/2026-10-01-r3-replay-code-review.md). R4 real
+repair evidence remains pending under the [active plan](docs/NEXT_LEVELS.md).
 
 ## 17. Runtime and API operations
 

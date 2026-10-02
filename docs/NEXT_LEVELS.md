@@ -20,7 +20,7 @@ for methodological accuracy or release readiness.
 | Product outcome | Evidence now | Remaining exit evidence | Work state |
 |---|---|---|---|
 | Audit one skill, a repository or installed packages with honest scope | Local APIs/CLI, sealed independent collection, ingestion regression cases | Shared cross-mode coverage contract, explicit roots, missing-context reporting, equivalence fixtures | Implemented in part; gate open |
-| Inspect and replay a bounded model experiment without recontacting the provider | Saved real L5 run; v2 bundles with source/oracle links; journal and offline CLI export | R3 trusted-oracle matching, observation recomputation and decision replay | **Active construction block** |
+| Inspect and replay a bounded model experiment without recontacting the provider | Saved real L5 run; v2 bundles with source/oracle links; journal, export, pinned replay and explicit re-evaluation | R4 retained real repair evidence plus integrated release verification | **R1–R3 locally closed; R4 next** |
 | Justify findings and repair decisions independently | Seeded mutations, external-corpus fixtures, local repair loop | Held-out adjudication, class-level denominators, repeated pinned experiments, real repair evidence | Gate open; not benchmarked |
 | Use and publish the complete workflow | CLI, API and read-only viewer | End-to-end user tasks, accessibility, deployment/privacy review and release evidence | Gate open; not release-ready |
 
@@ -34,8 +34,11 @@ for methodological accuracy or release readiness.
    Export/import must preserve original evidence; missing/truncated inputs must
    not earn acceptance. No implicit remote calls during replay.
 3. **R3 — offline replay:** reproduce observations and acceptance decisions with
-   the pinned oracle, reject tampered/mismatched bundles, and distinguish replay
-   from re-evaluation under a newer oracle. Keep historical outputs untouched.
+   the pinned oracle (property decisions are PASS/FAIL/ABSTAINED), reject
+   tampered/mismatched bundles, and distinguish replay from re-evaluation under
+   a newer oracle. Keep historical outputs untouched. The current bundle does
+   not carry L7 repair-decision inputs, so replay must not claim to reconstruct
+   L7 acceptance.
 4. **R4 — real repair evidence:** only after R2/R3, run the authorized provider
    path and retain a full evidence bundle, including rejected/failed outcomes.
    A favorable single run does not close independent evaluation.
@@ -54,9 +57,17 @@ provider retries (`tests/test_capture_journal.py`). The CLI now exposes separate
 exit codes, no implicit retries and no provider calls on read/export. Evidence:
 `tests/test_replay_cli.py` and the [scoped review](red-team/2026-10-01-replay-cli.md).
 R2's bounded storage/acquisition/export gate is locally verified for the current
-four-way Nebius adapter. This is not a live-provider rerun, global recovery
-guarantee, oracle replay or repair acceptance. **R3 is the next active increment**;
-R4 remains pending. No historical-artifact conversion is claimed.
+four-way Nebius adapter. This is not a live-provider rerun or global recovery
+guarantee. R3 has separate pinned replay and explicit re-evaluation CLI paths.
+They recompute per-property observations offline and seal a new result without
+changing the bundle. The [R3 review and negative controls](red-team/2026-10-01-r3-replay-code-review.md)
+close local R3 verification under its stated trust assumptions. Replay reports
+per-property decision agreement and does not reconstruct L7 repair acceptance.
+R4's private capture path and local negative controls are implemented in
+`repair_evidence.py` and `tests/test_repair_evidence.py`. The live run is
+authorized but currently blocked because `NEBIUS_API_KEY` is not configured in
+this environment; no provider request was made. No historical-artifact
+conversion is claimed. See the [L7 evidence contract](REPAIR_EVIDENCE.md).
 
 ### Selection and closure discipline
 
