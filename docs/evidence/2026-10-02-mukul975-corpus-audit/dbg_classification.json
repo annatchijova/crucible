@@ -1,100 +1,12 @@
 {
-  "total": 177,
+  "total": 40,
   "results": [
-    {
-      "skill": "acquiring-disk-image-with-dd-and-dcfldd",
-      "body_chars": 8015,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-apt-group-with-mitre-navigator",
-      "body_chars": 10528,
-      "heading_count": 15,
-      "real_section_count": 5,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
     {
       "skill": "analyzing-browser-forensics-with-hindsight",
       "body_chars": 10262,
       "heading_count": 15,
       "real_section_count": 11,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-cobalt-strike-beacon-configuration",
-      "body_chars": 12496,
-      "heading_count": 14,
-      "real_section_count": 5,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-disk-image-with-autopsy",
-      "body_chars": 10039,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-dns-logs-for-exfiltration",
-      "body_chars": 10691,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-email-headers-for-phishing-investigation",
-      "body_chars": 11253,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-golang-malware-with-ghidra",
-      "body_chars": 10539,
-      "heading_count": 12,
-      "real_section_count": 5,
-      "step_section_count": 2,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-heap-spray-exploitation",
-      "body_chars": 1840,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-ios-app-security-with-objection",
-      "body_chars": 5838,
-      "heading_count": 13,
-      "real_section_count": 3,
-      "step_section_count": 7,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-malware-family-relationships-with-malpedia",
-      "body_chars": 11072,
-      "heading_count": 13,
-      "real_section_count": 5,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-malware-persistence-with-autoruns",
-      "body_chars": 3728,
-      "heading_count": 7,
-      "real_section_count": 2,
-      "step_section_count": 1,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -106,91 +18,11 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "analyzing-network-covert-channels-in-malware",
-      "body_chars": 7015,
-      "heading_count": 7,
-      "real_section_count": 2,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "analyzing-outlook-pst-for-email-forensics",
       "body_chars": 11958,
       "heading_count": 10,
       "real_section_count": 6,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-slack-space-and-file-system-artifacts",
-      "body_chars": 14066,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-supply-chain-malware-artifacts",
-      "body_chars": 5379,
-      "heading_count": 7,
-      "real_section_count": 2,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-threat-actor-ttps-with-mitre-attack",
-      "body_chars": 9079,
-      "heading_count": 15,
-      "real_section_count": 5,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-typosquatting-domains-with-dnstwist",
-      "body_chars": 11661,
-      "heading_count": 17,
-      "real_section_count": 8,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-usb-device-connection-history",
-      "body_chars": 12753,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-windows-event-logs-in-splunk",
-      "body_chars": 10315,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-windows-lnk-files-for-artifacts",
-      "body_chars": 12086,
-      "heading_count": 11,
-      "real_section_count": 4,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-windows-prefetch-with-python",
-      "body_chars": 4310,
-      "heading_count": 10,
-      "real_section_count": 3,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-windows-registry-for-artifacts",
-      "body_chars": 11031,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -202,67 +34,11 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "building-adversary-infrastructure-tracking-system",
-      "body_chars": 13952,
-      "heading_count": 15,
-      "real_section_count": 7,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "building-attack-pattern-library-from-cti-reports",
-      "body_chars": 12737,
-      "heading_count": 13,
-      "real_section_count": 5,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "building-incident-response-dashboard",
-      "body_chars": 10414,
-      "heading_count": 14,
-      "real_section_count": 4,
-      "step_section_count": 7,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "building-incident-timeline-with-timesketch",
-      "body_chars": 8553,
-      "heading_count": 26,
-      "real_section_count": 18,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "building-ioc-defanging-and-sharing-pipeline",
-      "body_chars": 13758,
-      "heading_count": 14,
-      "real_section_count": 5,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "building-ioc-enrichment-pipeline-with-opencti",
-      "body_chars": 9081,
-      "heading_count": 10,
-      "real_section_count": 4,
-      "step_section_count": 2,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "building-malware-incident-communication-template",
       "body_chars": 9334,
       "heading_count": 14,
       "real_section_count": 10,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "building-red-team-c2-infrastructure-with-havoc",
-      "body_chars": 8960,
-      "heading_count": 13,
-      "real_section_count": 3,
-      "step_section_count": 6,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -274,22 +50,6 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "building-soc-metrics-and-kpi-tracking",
-      "body_chars": 10725,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "building-threat-feed-aggregation-with-misp",
-      "body_chars": 11962,
-      "heading_count": 14,
-      "real_section_count": 5,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "building-threat-intelligence-enrichment-in-splunk",
       "body_chars": 10083,
       "heading_count": 20,
@@ -298,35 +58,11 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "building-threat-intelligence-feed-integration",
-      "body_chars": 10609,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "building-vulnerability-dashboard-with-defectdojo",
       "body_chars": 7062,
       "heading_count": 17,
       "real_section_count": 13,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "bypassing-authentication-with-forced-browsing",
-      "body_chars": 10355,
-      "heading_count": 21,
-      "real_section_count": 12,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "coercing-authentication-with-coercer-petitpotam",
-      "body_chars": 8158,
-      "heading_count": 16,
-      "real_section_count": 6,
-      "step_section_count": 7,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -346,75 +82,11 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "configuring-host-based-intrusion-detection",
-      "body_chars": 7679,
-      "heading_count": 12,
-      "real_section_count": 3,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "configuring-windows-defender-advanced-settings",
-      "body_chars": 11333,
-      "heading_count": 14,
-      "real_section_count": 3,
-      "step_section_count": 8,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "configuring-windows-event-logging-for-detection",
-      "body_chars": 5724,
-      "heading_count": 11,
-      "real_section_count": 3,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "deobfuscating-powershell-obfuscated-malware",
-      "body_chars": 13212,
-      "heading_count": 13,
-      "real_section_count": 5,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "deploying-edr-agent-with-crowdstrike",
-      "body_chars": 8857,
-      "heading_count": 14,
-      "real_section_count": 3,
-      "step_section_count": 8,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "deploying-tailscale-for-zero-trust-vpn",
       "body_chars": 10768,
       "heading_count": 25,
       "real_section_count": 21,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "detecting-anomalies-in-industrial-control-systems",
-      "body_chars": 11930,
-      "heading_count": 7,
-      "real_section_count": 3,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "detecting-attacks-on-historian-servers",
-      "body_chars": 11151,
-      "heading_count": 6,
-      "real_section_count": 2,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "detecting-aws-cloudtrail-anomalies",
-      "body_chars": 1780,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -426,22 +98,6 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "detecting-azure-service-principal-abuse",
-      "body_chars": 7611,
-      "heading_count": 20,
-      "real_section_count": 12,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "detecting-bluetooth-low-energy-attacks",
-      "body_chars": 12605,
-      "heading_count": 16,
-      "real_section_count": 6,
-      "step_section_count": 7,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "detecting-broken-object-property-level-authorization",
       "body_chars": 15185,
       "heading_count": 9,
@@ -450,171 +106,11 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "detecting-dnp3-protocol-anomalies",
-      "body_chars": 13320,
-      "heading_count": 6,
-      "real_section_count": 2,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "detecting-evasion-techniques-in-endpoint-logs",
-      "body_chars": 8774,
-      "heading_count": 12,
-      "real_section_count": 3,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "detecting-fileless-attacks-on-endpoints",
-      "body_chars": 6297,
-      "heading_count": 11,
-      "real_section_count": 3,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "detecting-mobile-malware-behavior",
-      "body_chars": 7335,
-      "heading_count": 11,
-      "real_section_count": 3,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "detecting-modbus-protocol-anomalies",
-      "body_chars": 14015,
-      "heading_count": 7,
-      "real_section_count": 3,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "detecting-rdp-brute-force-attacks",
-      "body_chars": 2305,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "detecting-shadow-api-endpoints",
       "body_chars": 13639,
       "heading_count": 10,
       "real_section_count": 6,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "detecting-stuxnet-style-attacks",
-      "body_chars": 18761,
-      "heading_count": 9,
-      "real_section_count": 3,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "exploiting-idor-vulnerabilities",
-      "body_chars": 11083,
-      "heading_count": 22,
-      "real_section_count": 13,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "exploiting-oauth-misconfiguration",
-      "body_chars": 11679,
-      "heading_count": 21,
-      "real_section_count": 12,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "exploiting-sql-injection-with-sqlmap",
-      "body_chars": 8676,
-      "heading_count": 23,
-      "real_section_count": 13,
-      "step_section_count": 7,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "exploiting-template-injection-vulnerabilities",
-      "body_chars": 11825,
-      "heading_count": 21,
-      "real_section_count": 12,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "extracting-browser-history-artifacts",
-      "body_chars": 10968,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "extracting-config-from-agent-tesla-rat",
-      "body_chars": 6380,
-      "heading_count": 7,
-      "real_section_count": 2,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "extracting-credentials-from-memory-dump",
-      "body_chars": 11964,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "extracting-windows-event-logs-artifacts",
-      "body_chars": 12526,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "hardening-linux-endpoint-with-cis-benchmark",
-      "body_chars": 6505,
-      "heading_count": 11,
-      "real_section_count": 3,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "hunting-for-cobalt-strike-beacons",
-      "body_chars": 2173,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "hunting-for-dns-based-persistence",
-      "body_chars": 2282,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "hunting-for-lateral-movement-via-wmi",
-      "body_chars": 1835,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "hunting-for-t1098-account-manipulation",
-      "body_chars": 1976,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -674,43 +170,11 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "implementing-conduit-security-for-ot-remote-access",
-      "body_chars": 12622,
-      "heading_count": 7,
-      "real_section_count": 2,
-      "step_section_count": 2,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "implementing-container-image-minimal-base-with-distroless",
       "body_chars": 5649,
       "heading_count": 18,
       "real_section_count": 14,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-diamond-model-analysis",
-      "body_chars": 5836,
-      "heading_count": 12,
-      "real_section_count": 5,
-      "step_section_count": 2,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-disk-encryption-with-bitlocker",
-      "body_chars": 8032,
-      "heading_count": 12,
-      "real_section_count": 3,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-endpoint-dlp-controls",
-      "body_chars": 5017,
-      "heading_count": 11,
-      "real_section_count": 3,
-      "step_section_count": 5,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -722,51 +186,11 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "implementing-fuzz-testing-in-cicd-with-aflplusplus",
-      "body_chars": 7574,
-      "heading_count": 17,
-      "real_section_count": 7,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "implementing-gcp-binary-authorization",
       "body_chars": 7106,
       "heading_count": 21,
       "real_section_count": 17,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-ics-firewall-with-tofino",
-      "body_chars": 11438,
-      "heading_count": 7,
-      "real_section_count": 2,
-      "step_section_count": 2,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-immutable-backup-with-restic",
-      "body_chars": 3307,
-      "heading_count": 10,
-      "real_section_count": 3,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-kubernetes-pod-security-standards",
-      "body_chars": 7997,
-      "heading_count": 15,
-      "real_section_count": 6,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-mitre-attack-coverage-mapping",
-      "body_chars": 8429,
-      "heading_count": 18,
-      "real_section_count": 9,
-      "step_section_count": 5,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -778,139 +202,11 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "implementing-nerc-cip-compliance-controls",
-      "body_chars": 16315,
-      "heading_count": 9,
-      "real_section_count": 3,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-network-intrusion-prevention-with-suricata",
-      "body_chars": 11180,
-      "heading_count": 19,
-      "real_section_count": 9,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-network-policies-for-kubernetes",
-      "body_chars": 5092,
-      "heading_count": 12,
-      "real_section_count": 2,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-network-segmentation-with-firewall-zones",
-      "body_chars": 12618,
-      "heading_count": 14,
-      "real_section_count": 5,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-ot-network-traffic-analysis-with-nozomi",
-      "body_chars": 9147,
-      "heading_count": 6,
-      "real_section_count": 2,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-soar-automation-with-phantom",
-      "body_chars": 13816,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-soar-playbook-with-palo-alto-xsoar",
-      "body_chars": 8808,
-      "heading_count": 22,
-      "real_section_count": 15,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-stix-taxii-feed-integration",
-      "body_chars": 9826,
-      "heading_count": 15,
-      "real_section_count": 5,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-taxii-server-with-opentaxii",
-      "body_chars": 13462,
-      "heading_count": 15,
-      "real_section_count": 5,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-threat-intelligence-lifecycle-management",
-      "body_chars": 14429,
-      "heading_count": 15,
-      "real_section_count": 5,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-ticketing-system-for-incidents",
-      "body_chars": 15633,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-usb-device-control-policy",
-      "body_chars": 4715,
-      "heading_count": 10,
-      "real_section_count": 3,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "implementing-velociraptor-for-ir-collection",
       "body_chars": 8430,
       "heading_count": 23,
       "real_section_count": 19,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-vulnerability-sla-breach-alerting",
-      "body_chars": 9438,
-      "heading_count": 14,
-      "real_section_count": 6,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "investigating-ransomware-attack-artifacts",
-      "body_chars": 14846,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "mapping-mitre-attack-techniques",
-      "body_chars": 6109,
-      "heading_count": 11,
-      "real_section_count": 3,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-active-directory-bloodhound-analysis",
-      "body_chars": 7437,
-      "heading_count": 21,
-      "real_section_count": 12,
-      "step_section_count": 5,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -930,14 +226,6 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "performing-android-app-static-analysis-with-mobsf",
-      "body_chars": 6425,
-      "heading_count": 12,
-      "real_section_count": 3,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "performing-authenticated-scan-with-openvas",
       "body_chars": 8420,
       "heading_count": 20,
@@ -946,27 +234,11 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "performing-automated-malware-analysis-with-cape",
-      "body_chars": 6022,
-      "heading_count": 7,
-      "real_section_count": 2,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "performing-cloud-asset-inventory-with-cartography",
       "body_chars": 6022,
       "heading_count": 25,
       "real_section_count": 21,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-cloud-forensics-investigation",
-      "body_chars": 12968,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -986,38 +258,6 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "performing-directory-traversal-testing",
-      "body_chars": 10649,
-      "heading_count": 22,
-      "real_section_count": 13,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-docker-bench-security-assessment",
-      "body_chars": 4099,
-      "heading_count": 10,
-      "real_section_count": 2,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-dynamic-analysis-of-android-app",
-      "body_chars": 7770,
-      "heading_count": 13,
-      "real_section_count": 3,
-      "step_section_count": 7,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-endpoint-forensics-investigation",
-      "body_chars": 7395,
-      "heading_count": 12,
-      "real_section_count": 3,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "performing-external-network-penetration-test",
       "body_chars": 9888,
       "heading_count": 23,
@@ -1034,86 +274,6 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "performing-ioc-enrichment-automation",
-      "body_chars": 15951,
-      "heading_count": 11,
-      "real_section_count": 4,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-ios-app-security-assessment",
-      "body_chars": 10844,
-      "heading_count": 16,
-      "real_section_count": 6,
-      "step_section_count": 7,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-ip-reputation-analysis-with-shodan",
-      "body_chars": 11207,
-      "heading_count": 13,
-      "real_section_count": 5,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-kubernetes-penetration-testing",
-      "body_chars": 7795,
-      "heading_count": 17,
-      "real_section_count": 5,
-      "step_section_count": 8,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-lateral-movement-detection",
-      "body_chars": 11339,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-malware-hash-enrichment-with-virustotal",
-      "body_chars": 13639,
-      "heading_count": 15,
-      "real_section_count": 5,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-malware-ioc-extraction",
-      "body_chars": 12223,
-      "heading_count": 14,
-      "real_section_count": 5,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-memory-forensics-with-volatility3-plugins",
-      "body_chars": 7790,
-      "heading_count": 7,
-      "real_section_count": 2,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-mobile-device-forensics-with-cellebrite",
-      "body_chars": 11752,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-network-forensics-with-wireshark",
-      "body_chars": 11224,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "performing-network-packet-capture-analysis",
       "body_chars": 8217,
       "heading_count": 9,
@@ -1122,83 +282,11 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "performing-oil-gas-cybersecurity-assessment",
-      "body_chars": 15124,
-      "heading_count": 8,
-      "real_section_count": 3,
-      "step_section_count": 2,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-ot-vulnerability-assessment-with-claroty",
-      "body_chars": 11659,
-      "heading_count": 7,
-      "real_section_count": 3,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-ot-vulnerability-scanning-safely",
-      "body_chars": 10815,
-      "heading_count": 6,
-      "real_section_count": 2,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-paste-site-monitoring-for-credentials",
-      "body_chars": 13577,
-      "heading_count": 13,
-      "real_section_count": 5,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-plc-firmware-security-analysis",
-      "body_chars": 18676,
-      "heading_count": 9,
-      "real_section_count": 3,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-power-grid-cybersecurity-assessment",
-      "body_chars": 11142,
-      "heading_count": 8,
-      "real_section_count": 3,
-      "step_section_count": 2,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-red-team-with-covenant",
-      "body_chars": 1781,
-      "heading_count": 10,
-      "real_section_count": 2,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-scada-hmi-security-assessment",
-      "body_chars": 11160,
-      "heading_count": 6,
-      "real_section_count": 2,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "performing-soap-web-service-security-testing",
       "body_chars": 16013,
       "heading_count": 6,
       "real_section_count": 2,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-soc-tabletop-exercise",
-      "body_chars": 16046,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -1218,30 +306,6 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "performing-ssl-tls-inspection-configuration",
-      "body_chars": 10723,
-      "heading_count": 18,
-      "real_section_count": 8,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-ssl-tls-security-assessment",
-      "body_chars": 1599,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-steganography-detection",
-      "body_chars": 11713,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "performing-thick-client-application-penetration-test",
       "body_chars": 7616,
       "heading_count": 17,
@@ -1250,171 +314,11 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "performing-threat-landscape-assessment-for-sector",
-      "body_chars": 11748,
-      "heading_count": 19,
-      "real_section_count": 11,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-timeline-reconstruction-with-plaso",
-      "body_chars": 11274,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-user-behavior-analytics",
-      "body_chars": 9568,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-web-application-vulnerability-triage",
-      "body_chars": 8019,
-      "heading_count": 17,
-      "real_section_count": 9,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "performing-wireless-network-penetration-test",
       "body_chars": 6563,
       "heading_count": 18,
       "real_section_count": 14,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-yara-rule-development-for-detection",
-      "body_chars": 11080,
-      "heading_count": 13,
-      "real_section_count": 5,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "processing-stix-taxii-feeds",
-      "body_chars": 6031,
-      "heading_count": 11,
-      "real_section_count": 3,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "profiling-threat-actor-groups",
-      "body_chars": 6321,
-      "heading_count": 11,
-      "real_section_count": 3,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "reverse-engineering-ios-app-with-frida",
-      "body_chars": 8457,
-      "heading_count": 12,
-      "real_section_count": 3,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "reverse-engineering-ransomware-encryption-routine",
-      "body_chars": 9973,
-      "heading_count": 12,
-      "real_section_count": 5,
-      "step_section_count": 2,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "reverse-engineering-rust-malware",
-      "body_chars": 6200,
-      "heading_count": 7,
-      "real_section_count": 2,
-      "step_section_count": 1,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "scanning-docker-images-with-trivy",
-      "body_chars": 6621,
-      "heading_count": 17,
-      "real_section_count": 6,
-      "step_section_count": 7,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "securing-container-registry-with-harbor",
-      "body_chars": 6460,
-      "heading_count": 12,
-      "real_section_count": 2,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "securing-historian-server-in-ot-environment",
-      "body_chars": 14338,
-      "heading_count": 9,
-      "real_section_count": 3,
-      "step_section_count": 3,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "securing-remote-access-to-ot-environment",
-      "body_chars": 13645,
-      "heading_count": 8,
-      "real_section_count": 3,
-      "step_section_count": 2,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "testing-android-intents-for-vulnerabilities",
-      "body_chars": 6165,
-      "heading_count": 12,
-      "real_section_count": 3,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "testing-for-business-logic-vulnerabilities",
-      "body_chars": 12378,
-      "heading_count": 22,
-      "real_section_count": 13,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "testing-jwt-token-security",
-      "body_chars": 10915,
-      "heading_count": 22,
-      "real_section_count": 13,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "testing-mobile-api-authentication",
-      "body_chars": 6246,
-      "heading_count": 12,
-      "real_section_count": 3,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "tracking-threat-actor-infrastructure",
-      "body_chars": 9897,
-      "heading_count": 15,
-      "real_section_count": 6,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "triaging-vulnerabilities-with-ssvc-framework",
-      "body_chars": 6928,
-      "heading_count": 20,
-      "real_section_count": 12,
-      "step_section_count": 4,
       "classification": "procedural_structured_false_positive"
     }
   ]

@@ -510,6 +510,102 @@ def test_a_verification_shaped_bullet_is_a_check_not_also_a_step(tmp_path: Path)
     assert artifact["skills"][0]["procedural_steps"] == []
 
 
+def test_step_n_heading_is_extracted_as_a_procedural_step(tmp_path: Path) -> None:
+    """ADR-0019 Option B, part 1: procedural_steps's section-title filter
+    checked for the substring "steps" (plural) and never matched the
+    "### Step N: Title" convention (singular + number) -- confirmed by
+    induction that a real skill with four such headings and runnable code
+    extracted 0 procedural_steps before this fix. The heading's own title
+    is the step; this corpus's convention puts the actual procedure in a
+    fenced code block underneath, not a bullet/numbered list."""
+    _write_skill(
+        tmp_path,
+        "step-headings",
+        "---\nname: step-headings\ndescription: Exercises Step N heading recognition.\n---\n\n"
+        "## Workflow\n\n"
+        "### Step 1: Extract Configuration with CobaltStrikeParser\n\n"
+        "```python\nprint('irrelevant code, no bullets or numbered lists here')\n```\n\n"
+        "### Step 2: Manual XOR Decryption of Beacon Config\n\n"
+        "More prose, still no bullet or numbered list.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    step_texts = [s["text"] for s in artifact["skills"][0]["procedural_steps"]]
+    assert step_texts == [
+        "Extract Configuration with CobaltStrikeParser",
+        "Manual XOR Decryption of Beacon Config",
+    ]
+
+
+def test_step_n_heading_accepts_the_observed_separator_variants(tmp_path: Path) -> None:
+    """A corpus survey found ':' (dominant), em-dash '—', and a literal
+    '---' all in real use as the separator between the step number and
+    its descriptive title, plus lettered sub-steps like "Step 2a:"."""
+    _write_skill(
+        tmp_path,
+        "step-separators",
+        "---\nname: step-separators\ndescription: Exercises every observed Step-N separator variant.\n---\n\n"
+        "### Step 1: Colon Separator\n\ntext\n\n"
+        "### Step 2 — Em Dash Separator\n\ntext\n\n"
+        "### Step 3 --- Triple Hyphen Separator\n\ntext\n\n"
+        "### Step 2a: Lettered Sub-Step\n\ntext\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    step_texts = [s["text"] for s in artifact["skills"][0]["procedural_steps"]]
+    assert step_texts == [
+        "Colon Separator",
+        "Em Dash Separator",
+        "Triple Hyphen Separator",
+        "Lettered Sub-Step",
+    ]
+
+
+def test_step_n_heading_with_no_descriptive_title_falls_back_to_the_heading_text(
+    tmp_path: Path,
+) -> None:
+    """A bare "### Step 3" with nothing after the number must not be
+    silently dropped just because it has no descriptive suffix."""
+    _write_skill(
+        tmp_path,
+        "bare-step",
+        "---\nname: bare-step\ndescription: Exercises a Step heading with no title suffix.\n---\n\n"
+        "### Step 3\n\ntext\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    step_texts = [s["text"] for s in artifact["skills"][0]["procedural_steps"]]
+    assert step_texts == ["Step 3"]
+
+
+def test_plural_steps_heading_without_a_number_is_not_a_step_n_heading(tmp_path: Path) -> None:
+    """Regression guard explicitly named in ADR-0019: a heading that
+    merely contains the word "step(s)" in prose, with no number
+    immediately following the singular "Step", must not match path 4
+    (the new Step-N heading recognizer added by this fix). Surveyed
+    shapes: "## Next Steps to Consider" and "## Steps Overview".
+
+    Deliberately uses plain prose paragraphs, not bullets: a bullet under
+    "## Next Steps to Consider" would be extracted by the pre-existing,
+    unrelated path 1 (its title contains the substring "steps", which
+    _PROCEDURAL_SECTIONS already matched before this change) -- this test
+    isolates path 4's own behavior, not path 1's."""
+    _write_skill(
+        tmp_path,
+        "plural-steps",
+        "---\nname: plural-steps\ndescription: Exercises headings that must not match the Step-N pattern.\n---\n\n"
+        "## Next Steps to Consider\n\nSome unstructured prose, no bullets or numbers.\n\n"
+        "## Steps Overview\n\nMore unstructured prose.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    assert artifact["skills"][0]["procedural_steps"] == []
+
+
 def test_a_genuine_action_verb_bullet_is_still_extracted_as_a_step(tmp_path: Path) -> None:
     """The fix above must not over-exclude: a bullet starting with an
     action verb that is NOT also a verification verb (e.g. "Deploy", not

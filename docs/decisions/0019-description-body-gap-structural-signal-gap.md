@@ -131,19 +131,28 @@ signal is weaker and more judgment-laden (what counts as "boilerplate"
 is exactly the ad hoc risk this ADR already flagged) and should get the
 more careful negative-control testing of the two.
 
-### Implementation plan (not yet started)
+### Implementation plan
 
-1. **Step-N heading recognition** (`_extract_procedural_steps`): add a
-   path that matches a heading of the shape `Step \d+:` (via
-   `_section_ranges`' already-correct, code-fence-excluded heading
-   detection — reuse it, don't re-derive it) and extracts the heading's
-   own title text as one step. Needs tests: multiple Step headings in
-   one skill, a lone Step heading with no numbering gap tolerance
-   decided explicitly (do "Step 1" and "Step 3" with no "Step 2" still
-   count, or is that itself a defect worth a different finding?), a
-   false-positive guard (a heading that merely contains the word "step"
-   in prose, e.g. "## Next Steps to Consider", must not match the
-   anchored `Step \d+:` shape).
+1. **Step-N heading recognition** — **DONE 2026-10-02.** Implemented as a
+   fourth extraction path directly in `_extract_procedural_steps` (scans
+   `lines` with the same `_HEADING` + `code_lines` exclusion every other
+   path in the file already uses, rather than going through
+   `_section_ranges`'s lowercased title dict — needed the heading's
+   original casing for the extracted step text). New
+   `_STEP_HEADING` regex: `^step\s+\d+[a-z]?\b[:\-–—.\s]*(?P<title>.*)$`,
+   case-insensitive, anchored at the start of the heading's own title
+   (not a substring match). A corpus survey of all 2,908 real `Step N`
+   headings found separators `:` (2768), em-dash (108), and a literal
+   `---` (20), plus lettered sub-steps (`Step 2a:`, 18) — all covered.
+   Falls back to the full heading text when no descriptive suffix follows
+   the number (a bare `### Step 3`), rather than dropping the step. Four
+   regression tests, including the exact false-positive guards this plan
+   named (`## Next Steps to Consider`, `## Steps Overview` do not match).
+   **Result: `DESCRIPTION_BODY_GAP` 177 -> 40, matching the 137-skill
+   prediction exactly.** Full writeup, including a checked secondary
+   effect on two other checks that now correctly see previously-invisible
+   steps, in `docs/evidence/2026-10-02-mukul975-corpus-audit/FINDINGS.md`
+   ("Finding 2 follow-up").
 2. **Non-boilerplate heading count** (new, narrower rule — exact
    placement TBD: inside `_extract_procedural_steps` as a second path, or
    a new, separately named IR signal if steps-semantics turn out not to

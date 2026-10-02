@@ -25,6 +25,26 @@ _BULLET = re.compile(r"^\s*[-*+]\s+(?P<value>.+?)\s*$")
 _NUMBERED = re.compile(r"^\s*(?P<num>\d+)\.\s+(?P<value>.+?)\s*$")
 _PROCEDURAL_SECTIONS = {"steps", "procedure", "how to", "how", "process", "workflow", "method"}
 
+# ADR-0019 Option B, part 1: a heading of the shape "Step 1:", "Step 2a —",
+# "Step 5 - Title". Anchored at the start of the heading's own title text
+# (not a substring match anywhere in the line) and requires whitespace
+# then a digit immediately after the literal word "step" -- this is what
+# excludes "## Next Steps to Consider" (plural "Steps", no digit follows)
+# and "## Steps Overview" (same reason), surveyed as the two real-world
+# false-positive shapes to guard against. The optional single-letter
+# suffix (\d+[a-z]?) covers numbered sub-steps like "Step 2a:"/"Step 5b:",
+# observed in the wild alongside the plain numeric form. Separator
+# characters between the number and the descriptive title are deliberately
+# permissive (colon, hyphen, en/em dash, period, or just whitespace) since
+# a survey of github.com/mukul975/Anthropic-Cybersecurity-Skills found all
+# of ":", "—", and "---" in real use, dominated by ":" (2768 of 2908
+# occurrences); none of the separator choice is semantically load-bearing,
+# only the "step" + number anchor is.
+_STEP_HEADING = re.compile(
+    r"^step\s+\d+[a-z]?\b[:\-–—.\s]*(?P<title>.*)$",
+    re.IGNORECASE,
+)
+
 # Code fence detection for skipping code blocks during extraction.
 _CODE_FENCE = re.compile(r"^```")
 
@@ -862,6 +882,36 @@ def _extract_procedural_steps(
                 "source_span": {"line": index + 1, "column": 1},
             })
             seen_lines.add(index)
+
+    # 4. Extract "Step N: Title" headings as one procedural step each
+    #    (ADR-0019 Option B, part 1). The heading's own title is the
+    #    step: real-world skills following this convention typically
+    #    detail the step in a fenced code block immediately underneath
+    #    rather than in a bullet or numbered list, so there is often
+    #    nothing else on the line level to extract. Measured: 137/177
+    #    (77%) of the DESCRIPTION_BODY_GAP false positives found on
+    #    mukul975/Anthropic-Cybersecurity-Skills had this heading shape
+    #    and zero other extractable structure. Falls back to the full
+    #    heading title if no descriptive suffix follows the step number
+    #    (e.g. a bare "### Step 3" with nothing else) rather than
+    #    silently dropping a real step for lack of a subtitle.
+    for index in range(body_start, len(lines)):
+        if index in seen_lines or index in code_lines:
+            continue
+        heading_match = _HEADING.match(lines[index])
+        if not heading_match:
+            continue
+        raw_title = heading_match.group("title").strip()
+        step_match = _STEP_HEADING.match(raw_title)
+        if not step_match:
+            continue
+        step_text = step_match.group("title").strip() or raw_title
+        steps.append({
+            "id": f"step-{len(steps) + 1:04d}",
+            "text": step_text,
+            "source_span": {"line": index + 1, "column": 1},
+        })
+        seen_lines.add(index)
 
     return steps
 

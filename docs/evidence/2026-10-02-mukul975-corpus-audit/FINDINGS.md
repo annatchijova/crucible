@@ -326,10 +326,52 @@ rule. Recommend raising this as its own decision record before writing
 code, same discipline as this project's existing `docs/decisions/` entries
 for L2/L10.
 
+## Finding 2 follow-up: ADR-0019 Option B, part 1 implemented
+
+Anna chose Option B (2026-10-02, see `docs/decisions/0019-...md`).
+Investigation before writing code found that Option B did not need a new
+IR field: `procedural_steps` already existed, but its section-title
+filter checked for the substring `"steps"` (plural) and never matched
+this corpus's actual `### Step N: Title` convention (singular + number) —
+confirmed by induction that `analyzing-cobalt-strike-beacon-configuration`
+extracted 0 procedural_steps despite having four real numbered steps with
+runnable code. Fixed `_extract_procedural_steps` to recognize a
+`Step \d+[a-z]?` heading as one step, using the heading's own title text,
+with the documented separator variants (`:`, em-dash, `---`) and false-
+positive guards (`## Next Steps to Consider`, `## Steps Overview` do not
+match) that a corpus-wide survey required. Four new regression tests;
+689/689 pass; mutation-lab kill rate held 6/6.
+
+**Result, exactly as predicted before implementation: `DESCRIPTION_BODY_GAP`
+dropped 177 -> 40** (177 - 137 predicted-resolved = 40 predicted-remaining,
+confirmed to the skill). Re-classified the remaining 40: all 40 (100%)
+still have real procedural/reference-table structure with no Step-N
+heading at all (e.g. `## Running Hindsight`, `## Browser Profile
+Locations`) — exactly the "signal 2" category from the original
+measurement, not yet implemented.
+
+**Secondary effect, checked and confirmed legitimate, not a new false
+positive**: `MISSING_FAILURE_MODE` rose 55 -> 61 and
+`IRREVERSIBLE_WITHOUT_REVIEW` rose 49 -> 52. Both checks require
+`procedural_steps` to be non-empty before firing; skills whose steps were
+previously invisible to the compiler were silently skipped by these
+checks too, not because they discussed failure modes but because the
+gate `if not steps: continue` never let them reach the real question.
+Spot-checked `hunting-for-defense-evasion-via-timestomping` (newly
+flagged): it has real rules and real steps (now correctly extracted), and
+its only "error"/"recovery"-adjacent text is incidental code
+(`errors="coerce"`, a `norecovery` mount flag) — not a discussion of what
+happens when the methodology itself fails. The increase is the fix
+correctly letting an already-designed check see data it was blind to
+before, not a new defect.
+
+Full audit (`audit.json`) and classification (`dbg_classification.json`)
+in this directory are both updated to this post-fix state.
+
 ## Not yet done
 
-- Deciding and implementing the DESCRIPTION_BODY_GAP scope/extension
-  question above.
+- Implementing ADR-0019 Option B part 2 (the non-boilerplate heading-count
+  signal) for the remaining 40 DESCRIPTION_BODY_GAP false positives.
 - `REQUIREMENT_WITHOUT_CHECK` investigated (Finding 0b above): turned out
   to be a second real compiler bug (verb-list drift), not a calibration
   question, and is now fixed — 70 -> 34. Remaining 34 not yet individually
