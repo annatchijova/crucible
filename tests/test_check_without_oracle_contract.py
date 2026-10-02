@@ -142,6 +142,74 @@ def test_oracle_kind_command_extracted() -> None:
     assert ir["skills"][0]["checks"][0]["oracle_kind"] == "command"
 
 
+def test_oracle_kind_command_extracted_for_conjugated_verb() -> None:
+    """Invariant: a check phrased in third-person declarative style
+    ("Validates that...") is still classified as 'command', not just the
+    bare imperative form ("Validate...").
+    Mutation: revert to the bare-verb-only pattern -> red. See
+    docs/evidence/2026-10-02-check-without-oracle-audit/FINDINGS.md,
+    mechanism A."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        d = root / "skill"
+        d.mkdir()
+        (d / "SKILL.md").write_text(
+            "---\nname: skill\ndescription: S.\nlicense: Apache-2.0\n---\n\n"
+            "# S\n\nR MUST be.\n\n## Checks\n\n"
+            "- **BOLA Prevention**: Validates that object-level authorization is enforced.\n",
+            encoding="utf-8", newline="\n",
+        )
+        ir = compile_corpus(root)
+    assert ir["skills"][0]["checks"][0]["oracle_kind"] == "command"
+
+
+def test_oracle_kind_command_extracted_for_inline_code() -> None:
+    """Invariant: a check containing an inline runnable command is
+    classified as 'command' even when its leading verb is not a
+    recognized verification verb.
+    Mutation: remove the inline-code oracle pattern -> red. See the same
+    FINDINGS doc, mechanism B."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        d = root / "skill"
+        d.mkdir()
+        (d / "SKILL.md").write_text(
+            "---\nname: skill\ndescription: S.\nlicense: Apache-2.0\n---\n\n"
+            "# S\n\nR MUST be.\n\n## Checks\n\n"
+            "- Compile all custom rules without syntax errors: `yara -w rules/*.yar /dev/null`\n",
+            encoding="utf-8", newline="\n",
+        )
+        ir = compile_corpus(root)
+    assert ir["skills"][0]["checks"][0]["oracle_kind"] == "command"
+
+
+def test_oracle_kind_command_for_any_backtick_span_documents_real_scope() -> None:
+    """Scope documentation, not a negative control: the inline-code
+    pattern matches ANY backtick span, including one naming a file
+    rather than a runnable command. This is accepted as correct, not a
+    gap to close -- "the `config.yaml` file exists" is itself a concrete,
+    inspectable condition (`test -f config.yaml`) regardless of whether
+    the backticked token is itself executable. Written explicitly so a
+    future reader does not mistake the broad match for an oversight."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        d = root / "skill"
+        d.mkdir()
+        (d / "SKILL.md").write_text(
+            "---\nname: skill\ndescription: S.\nlicense: Apache-2.0\n---\n\n"
+            "# S\n\nR MUST be.\n\n## Checks\n\n"
+            "- The `config.yaml` file exists in the repository.\n",
+            encoding="utf-8", newline="\n",
+        )
+        ir = compile_corpus(root)
+    # A backtick span is present ("`config.yaml`"), but it names a file,
+    # not a command -- this intentionally still classifies as "command"
+    # under the current (deliberately conservative, any-backtick) rule,
+    # documenting the real scope of this fix rather than asserting a
+    # distinction the implementation does not draw.
+    assert ir["skills"][0]["checks"][0]["oracle_kind"] == "command"
+
+
 def test_oracle_kind_checkbox_extracted() -> None:
     """Invariant: a check with [ ] is classified as 'checkbox'."""
     with tempfile.TemporaryDirectory() as tmpdir:

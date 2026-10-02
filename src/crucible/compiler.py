@@ -1031,18 +1031,61 @@ def _extract_checks(
     return checks
 
 
+# Conjugated forms of _VERIFICATION_VERBS, for oracle_kind classification
+# only (NOT for _VERIFICATION_STARTER -- that pattern anchors on the
+# first word of a bullet, which is almost always imperative, so
+# conjugation does not apply there and widening its shared tuple would be
+# a different, unmeasured change). A check extracted from a titled
+# "## Checks" section is often phrased in third-person declarative style
+# ("Validates that...", "Checks for...") rather than imperative
+# ("Validate...", "Check..."), and the bare-verb pattern misses every
+# conjugated form: confirmed `\bvalidate\b` does not match "Validates".
+# Hand-written per verb rather than a blind suffix rule, since English
+# conjugation is irregular (verify -> verifies, not "verifys"; run ->
+# running, not "runing"). See docs/evidence/2026-10-02-check-without-
+# oracle-audit/FINDINGS.md, mechanism A.
+_VERIFICATION_VERB_CONJUGATIONS = {
+    "verify": ("verifies", "verified", "verifying"),
+    "assert": ("asserts", "asserted", "asserting"),
+    "run": ("runs", "running"),
+    "check": ("checks", "checked", "checking"),
+    "confirm": ("confirms", "confirmed", "confirming"),
+    "test": ("tests", "tested", "testing"),
+    "query": ("queries", "queried", "querying"),
+    "inspect": ("inspects", "inspected", "inspecting"),
+    "ensure": ("ensures", "ensured", "ensuring"),
+    "prove": ("proves", "proved", "proving"),
+    "validate": ("validates", "validated", "validating"),
+    "demonstrate": ("demonstrates", "demonstrated", "demonstrating"),
+}
+_ORACLE_VERB_FORMS = sorted(
+    {*_VERIFICATION_VERBS}
+    | {form for forms in _VERIFICATION_VERB_CONJUGATIONS.values() for form in forms}
+)
+_ORACLE_VERB_ALTERNATION = "|".join(_ORACLE_VERB_FORMS)
+
+# A check that contains an inline code span or fenced code block has a
+# self-evident oracle (run it, see if it errors) regardless of its
+# leading verb -- e.g. "Compile all custom rules without syntax errors:
+# `yara -w rules/*.yar /dev/null`" has no recognized verification verb
+# ("Compile" isn't one) but is obviously runnable. See the same FINDINGS
+# doc, mechanism B.
+_ORACLE_INLINE_CODE = re.compile(r"`[^`]+`")
+
 # Oracle kind extraction. Each check is classified by how it can be
 # verified. The oracle_kind indicates what kind of oracle the check
 # implies:
 #   "question"    — the check is a question (has a question mark)
 #   "command"     — the check is a command (verify, assert, run, check,
-#                   confirm, test, query, inspect, does)
+#                   confirm, test, query, inspect, does -- or a
+#                   conjugated form, or an inline runnable command)
 #   "checkbox"    — the check is a checkbox item ([ ] or [x])
 #   "unknown"     — the check has no extractable oracle indicator
 _ORACLE_PATTERNS = [
     (re.compile(r"\?\s*$"), "question"),
     (re.compile(r"^\s*\[\s*[xX ]\s*\]"), "checkbox"),
-    (re.compile(rf"\b(?:{_VERIFICATION_VERB_ALTERNATION})\b", re.IGNORECASE), "command"),
+    (re.compile(rf"\b(?:{_ORACLE_VERB_ALTERNATION})\b", re.IGNORECASE), "command"),
+    (_ORACLE_INLINE_CODE, "command"),
 ]
 
 
