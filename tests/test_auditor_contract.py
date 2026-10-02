@@ -217,6 +217,44 @@ def test_requirement_without_check_ignores_may_only_rules(tmp_path: Path) -> Non
     assert "REQUIREMENT_WITHOUT_CHECK" not in _classes(audit["findings"])
 
 
+def test_requirement_without_check_does_not_fire_with_validation_criteria_section(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a "## Validation Criteria" checkbox section counts as
+    checks, same as "## Checks"/"## Verification" -- a real heading
+    convention this check originally missed entirely.
+    Mutation: narrow the check-section filter back to "check"/
+    "verification" only -> red. See docs/evidence/2026-10-02-requirement-
+    without-check-audit/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "validated",
+        "---\nname: validated\ndescription: Validated.\n---\n\n"
+        "The operation MUST be idempotent.\n\n"
+        "## Validation Criteria\n\n- [ ] Idempotency confirmed by re-run.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "REQUIREMENT_WITHOUT_CHECK" not in _classes(audit["findings"])
+
+
+def test_requirement_without_check_still_fires_with_unrelated_heading(
+    tmp_path: Path,
+) -> None:
+    """Invariant: an unrelated heading must not be mistaken for a
+    checks-like section -- the Validation-section fix must not
+    over-broaden the filter.
+    Mutation: over-broaden the check-section filter -> red."""
+    _write_skill(
+        tmp_path,
+        "unvalidated",
+        "---\nname: unvalidated\ndescription: Not validated.\n---\n\n"
+        "The operation MUST be idempotent.\n\n"
+        "## Additional Notes\n\nNothing checkable in this section.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "REQUIREMENT_WITHOUT_CHECK" in _classes(audit["findings"])
+
+
 # ---------------------------------------------------------------------------
 # STRUCTURAL_REDUNDANCY
 # ---------------------------------------------------------------------------

@@ -979,20 +979,29 @@ def _extract_checks(
     """Extract checks from a skill body.
 
     Checks are found in:
-    - Sections titled "## Checks" or "## Verification" (existing behavior).
+    - Sections titled "## Checks", "## Verification", or "## Validation"
+      (e.g. "Validation Criteria", "Validation and Testing").
     - Lines anywhere in the body that start with a verification verb
       (verify, check, test, assert, confirm, demonstrate, prove).
 
+    "Validation" was added after measuring that 11/34 REQUIREMENT_
+    WITHOUT_CHECK hits on mukul975/Anthropic-Cybersecurity-Skills were a
+    "## Validation Criteria" checkbox section -- a real, common heading
+    convention in this corpus, invisible to the original "check"/
+    "verification"-only filter. Same bug shape as ADR-0019's original
+    _PROCEDURAL_SECTIONS gap. See docs/evidence/2026-10-02-requirement-
+    without-check-audit/FINDINGS.md.
+
     Code blocks and headings are skipped. Lines already extracted from
-    a Checks/Verification section are not re-extracted.
+    a Checks/Verification/Validation section are not re-extracted.
     """
     checks: list[dict[str, Any]] = []
     seen_lines: set[int] = set()
     code_lines = _code_block_lines(lines, body_start)
 
-    # 1. Extract from Checks/Verification sections.
+    # 1. Extract from Checks/Verification/Validation sections.
     for title, (start, end) in sections.items():
-        if "check" not in title and "verification" not in title:
+        if not any(k in title for k in ("check", "verification", "validation")):
             continue
         for index in range(start, end):
             if index in code_lines:

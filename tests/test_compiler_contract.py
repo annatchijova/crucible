@@ -430,6 +430,31 @@ def test_real_checks_section_containing_a_code_block_only_extracts_bullets_outsi
     ]
 
 
+def test_validation_criteria_section_is_extracted_as_checks(tmp_path: Path) -> None:
+    """A "## Validation Criteria" section (and the "Validation"/
+    "Validation and Testing" variants) is a real checklist convention in
+    the mukul975 corpus, missed entirely by the original "check"/
+    "verification"-only section-title filter. Mutation: narrow the
+    filter back to just those two substrings -> red. See
+    docs/evidence/2026-10-02-requirement-without-check-audit/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "validation-criteria",
+        "---\nname: validation-criteria\ndescription: Has a Validation Criteria section.\n---\n\n"
+        "## Validation Criteria\n\n"
+        "- [ ] Encryption produces valid ciphertext\n"
+        "- [ ] Decryption recovers original plaintext exactly\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    check_texts = [c["text"] for c in artifact["skills"][0]["checks"]]
+    assert check_texts == [
+        "[ ] Encryption produces valid ciphertext",
+        "[ ] Decryption recovers original plaintext exactly",
+    ]
+
+
 def test_numbered_comment_inside_code_fence_in_a_steps_section_is_not_a_step(
     tmp_path: Path,
 ) -> None:
