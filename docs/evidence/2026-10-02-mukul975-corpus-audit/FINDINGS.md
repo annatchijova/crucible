@@ -48,31 +48,80 @@ cleanly.** 679/679 tests pass (24 new/updated regression tests for the
 compiler alone). See `src/crucible/compiler.py` and
 `tests/test_compiler_contract.py`.
 
-## Audit: 552 findings across 818 real skills
+## Finding 0 (CONFIRMED BY INDUCTION): a shell comment inside a code fence was silently corrupting section extraction corpus-wide
+
+Spot-checking `CHECK_WITHOUT_ORACLE` findings (see Finding 2 below)
+surfaced something much larger than a calibration question: 40+ "checks"
+on `analyzing-bootkit-and-rootkit-samples` turned out to be bash comments
+like `# Check for known UEFI malware patterns` inside a ` ```bash ` fence,
+misread as a real Markdown heading.
+
+**Root cause**: `_HEADING` in `compiler.py` matches any `^#{1,6}\s+text$`
+line, and `_section_ranges` (which `_extract_checks`,
+`_extract_procedural_steps`, and `_extract_relations` all consume) never
+excluded lines inside fenced code blocks from heading detection — even
+though the sibling function `_code_block_lines` already existed and was
+used *elsewhere* in the same file for exactly this purpose. A shell
+comment and a level-1 Markdown heading are syntactically identical
+(`# text`); fenced code is supposed to be opaque to the surrounding
+document's structure, and here it wasn't.
+
+**Measured blast radius before the fix**: 544/818 skills (66%) contained
+at least one such comment; **10,749 phantom headings against 11,332 real
+ones corpus-wide — nearly 1:1**. A phantom heading whose text happened to
+contain "check" or "verification" (extremely common in security-skill
+code comments) then matched `_extract_checks`'s substring-based
+Checks/Verification section filter, misclassifying an unrelated bullet
+list or reference block as a batch of unverifiable "checks."
+
+**Fix**: `_section_ranges` now excludes code-fence lines before matching
+`_HEADING` against anything, fixing every downstream consumer at the
+source. The same exclusion was also completed in three call sites that
+had a partial version of this bug independently (`_extract_checks` and
+`_extract_procedural_steps` already excluded code lines on their
+*secondary* "anywhere in body" extraction path, but not on their primary
+"inside a correctly-titled section" path; `_extract_relations` had no
+exclusion at all). Verified by induction, not just by re-running the
+suite: re-compiling `analyzing-bootkit-and-rootkit-samples` went from 40+
+fabricated checks to 2 real ones (`Verify the integrity of the entire boot
+chain`, `Verify Secure Boot configuration...`), both correctly classified
+`oracle_kind: command`. Four new regression tests cover the shell-comment-
+as-heading case directly, a legitimate Checks section that itself embeds
+a code block, and the same exclusion for procedural-step extraction.
+682/682 tests pass; mutation-lab kill rate stayed 6/6 (no surviving
+mutants introduced). See `src/crucible/compiler.py` and
+`tests/test_compiler_contract.py`.
+
+This is why every finding count below is reported post-fix; the pre-fix
+audit (committed 2026-10-02 as the first pass) is superseded by this one
+and should not be cited as the corpus's real finding distribution.
+
+## Audit: 497 findings across 818 real skills (post-fix)
 
 ```
-CHECK_WITHOUT_ORACLE            91
+CHECK_WITHOUT_ORACLE            27   (was 91 pre-fix -- 70% was the bug above)
 CLAIM_WITHOUT_PROVENANCE         3
-DESCRIPTION_BODY_GAP           179
+DESCRIPTION_BODY_GAP           188   (was 179 -- skills that lost fake checks correctly gained this finding)
 IRREVERSIBLE_WITHOUT_REVIEW     49
-METHODOLOGICAL_VACUITY           3
-MISSING_FAILURE_MODE            57
+METHODOLOGICAL_VACUITY           5   (was 3)
+MISSING_FAILURE_MODE            55   (was 57)
 NON_DETERMINISTIC_INSTRUCTION   20
 OVERCLAIM                        1
-REQUIREMENT_WITHOUT_CHECK       67
+REQUIREMENT_WITHOUT_CHECK       70   (was 67)
 SCOPE_TRIGGER_MISMATCH          54
 SECRET_IN_OUTPUT                 1
 SEMANTIC_REDUNDANCY              1
 UNBOUNDED_RESOURCE               1
 UNBOUNDED_RETRY                  4
-UNPINNED_DEPENDENCY             19
+UNPINNED_DEPENDENCY             16   (was 19)
 UNVALIDATED_EXTERNAL_INPUT       2
 ```
 
 All `CANDIDATE` (none of this corpus's skills compose with each other or
 self-reference, so no natively-`CONFIRMED` findings exist). Full audit
-artifact: `audit.json` in this directory. Compile+audit over all 818 skills
-takes ~3.3s.
+artifact: `audit.json` in this directory (overwritten post-fix; the
+pre-fix version is recoverable from git history of this file if needed
+for comparison). Compile+audit over all 818 skills takes ~3.3s.
 
 ## Finding 1 (CONFIRMED BY INDUCTION): SEMANTIC_REDUNDANCY is well-calibrated, not under-triggering
 
@@ -100,7 +149,7 @@ count is not evidence of a false-negative gap.**
 
 ## Finding 2 (CONFIRMED BY INDUCTION): DESCRIPTION_BODY_GAP has a real false-positive pattern — procedural/workflow-style skills
 
-`DESCRIPTION_BODY_GAP` is the single largest category (179/552, 32%). Its
+`DESCRIPTION_BODY_GAP` is the single largest category (188/497, 38%). Its
 own docstring already states the honest limitation: the L1 rule extractor
 is lexical, looking only for RFC-2119 modals (MUST/SHOULD/MAY) and a
 narrow set of imperative/absoluteness patterns, so a skill using normative
@@ -119,7 +168,7 @@ with...", "Manual XOR Decryption of..."), a perfectly legitimate and
 common style for a procedural skill that this extractor's RFC-2119-centric
 pattern set does not recognize as normative structure at all.
 
-**Quantified 2026-10-02: 179/179 (100%) of DESCRIPTION_BODY_GAP hits on
+**Quantified 2026-10-02: 188/188 (100%) of DESCRIPTION_BODY_GAP hits on
 this corpus are this false-positive pattern. Zero are genuinely thin.**
 
 Method: for every flagged skill, count Markdown section headings in the
@@ -132,7 +181,7 @@ Files`, `Validation Criteria`) or >=2 numbered Step sections.
 
 | Classification | Count |
 |---|---|
-| Structured (procedural/workflow content, false positive) | 179 |
+| Structured (procedural/workflow content, false positive) | 188 |
 | Genuinely thin (<300 chars of body, no real content) | 0 |
 | Unclassified / needs individual review | 0 |
 
@@ -178,12 +227,12 @@ for L2/L10.
 
 - Deciding and implementing the DESCRIPTION_BODY_GAP scope/extension
   question above.
-- Spot-checking the other finding classes (`CHECK_WITHOUT_ORACLE` 91,
-  `REQUIREMENT_WITHOUT_CHECK` 67, `MISSING_FAILURE_MODE` 57,
-  `SCOPE_TRIGGER_MISMATCH` 54 — the next-largest categories) for the same
-  kind of style-driven false positive. Given DESCRIPTION_BODY_GAP's 100%
-  false-positive rate on this corpus's dominant style, these are now a
-  real priority, not a formality.
+- Spot-checking the other finding classes (`REQUIREMENT_WITHOUT_CHECK` 70,
+  `MISSING_FAILURE_MODE` 55, `SCOPE_TRIGGER_MISMATCH` 54,
+  `CHECK_WITHOUT_ORACLE` 27 post-fix — the next-largest categories) for
+  the same kind of style-driven false positive. Given DESCRIPTION_BODY_GAP's
+  100% false-positive rate on this corpus's dominant style, these are now
+  a real priority, not a formality.
 - Running L2.5/L12 confirmation and L15 recommendation/narration against
   this corpus (would cost real Nebius calls across potentially hundreds of
   candidates; not run here).

@@ -381,3 +381,68 @@ def test_duplicate_skill_names_fail_closed(tmp_path: Path) -> None:
         assert "duplicate skill name" in str(exc).lower()
     else:
         raise AssertionError("duplicate skill names must not compile")
+
+
+def test_shell_comment_inside_code_fence_is_not_a_heading(tmp_path: Path) -> None:
+    """Regression: running the compiler against mukul975/Anthropic-
+    Cybersecurity-Skills found that a shell comment like "# Check for
+    known UEFI malware patterns" inside a ```bash fence matches the same
+    regex as a real level-1 Markdown heading, since fenced code was never
+    excluded from heading detection. 544/818 skills in that corpus
+    contained at least one such comment, producing 10,749 phantom headings
+    against 11,332 real ones corpus-wide (nearly 1:1) -- and a phantom
+    heading whose text happens to contain "check" then misclassifies the
+    unrelated reference list that follows it as a batch of checks. This
+    corrupted `_section_ranges`, which is shared by check, procedural-step,
+    and composition/delegation-relation extraction."""
+    _write_skill(
+        tmp_path,
+        "bootkit",
+        "---\nname: bootkit\ndescription: Analyze bootkit samples for persistence mechanisms and indicators.\n---\n\n## Workflow\n\n```bash\n# Check for known UEFI malware patterns\necho hello\n```\n\nKnown indicators:\n- Modified SPI flash\n- Added DXE driver\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    # The shell comment must not have opened a fake "check for known uefi
+    # malware patterns" section that swallows the "Known indicators" list
+    # as checks.
+    assert artifact["skills"][0]["checks"] == []
+
+
+def test_real_checks_section_containing_a_code_block_only_extracts_bullets_outside_it(
+    tmp_path: Path,
+) -> None:
+    """A legitimate "## Checks" section may itself contain a code example;
+    a shell comment inside that embedded code block must not be extracted
+    as a check bullet, even though the section title correctly matches."""
+    _write_skill(
+        tmp_path,
+        "with-embedded-code",
+        "---\nname: with-embedded-code\ndescription: Has a real checks section with embedded code.\n---\n\n## Checks\n\n- Verify the output matches expectations\n\n```bash\n# Check exit code\necho $?\n```\n\n- Confirm no errors were logged\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    check_texts = [c["text"] for c in artifact["skills"][0]["checks"]]
+    assert check_texts == [
+        "Verify the output matches expectations",
+        "Confirm no errors were logged",
+    ]
+
+
+def test_numbered_comment_inside_code_fence_in_a_steps_section_is_not_a_step(
+    tmp_path: Path,
+) -> None:
+    """The same code-fence exclusion must apply to procedural-step
+    extraction within a genuinely titled "## Steps" section, not only to
+    checks."""
+    _write_skill(
+        tmp_path,
+        "with-numbered-comment",
+        "---\nname: with-numbered-comment\ndescription: Has a steps section with an embedded numbered comment in code.\n---\n\n## Steps\n\n1. Run the initial scan\n\n```python\n# 1. this looks like a numbered step but is a code comment\nprint('scanning')\n```\n\n2. Review the results\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    step_texts = [s["text"] for s in artifact["skills"][0]["procedural_steps"]]
+    assert step_texts == ["Run the initial scan", "Review the results"]

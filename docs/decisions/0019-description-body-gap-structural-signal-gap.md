@@ -20,9 +20,19 @@ corpus (github.com/mukul975/Anthropic-Cybersecurity-Skills, 818 skills)
 makes that deferred question answerable with real evidence instead of
 speculation.
 
+This measurement was run after fixing an unrelated compiler bug found on
+the same corpus (a shell comment inside a code fence was misread as a
+Markdown heading, corrupting check/step/relation extraction corpus-wide —
+see `docs/evidence/2026-10-02-mukul975-corpus-audit/FINDINGS.md`, Finding
+0). The DESCRIPTION_BODY_GAP count shifted slightly after that fix (179 ->
+188, since some skills that previously had fabricated "checks" correctly
+lost them); the 100% false-positive conclusion below held across both
+measurements and is not an artifact of the compiler bug.
+
 ## What was measured
 
-179/818 skills (22%) were flagged DESCRIPTION_BODY_GAP. Every flagged
+188/818 skills (23%) were flagged DESCRIPTION_BODY_GAP (post compiler
+fix). Every flagged
 skill's body was classified by whether it contains real structural
 content beyond this corpus's universal boilerplate sections (`Overview`,
 `When to Use`, `Prerequisites`, `References`, `Key Concepts`) — either
@@ -32,7 +42,7 @@ sections. Full method and per-skill classification:
 `docs/evidence/2026-10-02-mukul975-corpus-audit/FINDINGS.md` and
 `dbg_classification.json` in the same directory.
 
-**Result: 179/179 (100%) have real procedural/workflow structure. Zero are
+**Result: 188/188 (100%) have real procedural/workflow structure. Zero are
 genuinely thin or empty.** A hand-verified sample
 (`analyzing-cobalt-strike-beacon-configuration`,
 `analyzing-browser-forensics-with-hindsight`) confirmed the automated
@@ -95,7 +105,7 @@ before implementing.
 ## Alternatives rejected (for the measurement itself)
 
 - **Requiring a fenced code block alongside Step headings.** The first
-  classification pass used this and left 34/179 skills unclassified
+  classification pass used this and left 34/188 skills unclassified
   (correctly) as not yet accounted for; manual review showed these were
   equally structured, just organized around domain-specific headings
   (`Running Hindsight`, `Browser Profile Locations`) rather than
@@ -111,7 +121,7 @@ before implementing.
 Accepted now (the measurement itself, independent of which option is
 chosen):
 - DESCRIPTION_BODY_GAP's false-positive rate against a numbered-step/
-  reference-table-style corpus is quantified at 100% (179/179), not
+  reference-table-style corpus is quantified at 100% (188/188), not
   estimated or assumed.
 - The sanity check confirms the detector logic itself is not broken — it
   correctly flags a deliberately empty fixture.
@@ -121,7 +131,7 @@ chosen):
 Deferred, pending Option A/B decision:
 - Any change to L1's extractor or to DESCRIPTION_BODY_GAP's logic.
 - Applying the same structural-signal classification method to the other
-  large CANDIDATE classes on this corpus (CHECK_WITHOUT_ORACLE 91,
-  REQUIREMENT_WITHOUT_CHECK 67, MISSING_FAILURE_MODE 57,
-  SCOPE_TRIGGER_MISMATCH 54) to check whether they share the same
-  style-driven false-positive pattern.
+  large CANDIDATE classes on this corpus (REQUIREMENT_WITHOUT_CHECK 70,
+  MISSING_FAILURE_MODE 55, SCOPE_TRIGGER_MISMATCH 54, CHECK_WITHOUT_ORACLE
+  27 post-fix) to check whether they share the same style-driven
+  false-positive pattern.

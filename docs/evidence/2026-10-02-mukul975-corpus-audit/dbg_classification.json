@@ -1,5 +1,5 @@
 {
-  "total": 179,
+  "total": 188,
   "results": [
     {
       "skill": "acquiring-disk-image-with-dd-and-dcfldd",
@@ -322,6 +322,14 @@
       "classification": "procedural_structured_false_positive"
     },
     {
+      "skill": "building-vulnerability-dashboard-with-defectdojo",
+      "body_chars": 7062,
+      "heading_count": 17,
+      "real_section_count": 13,
+      "step_section_count": 0,
+      "classification": "procedural_structured_false_positive"
+    },
+    {
       "skill": "bypassing-authentication-with-forced-browsing",
       "body_chars": 10355,
       "heading_count": 21,
@@ -514,6 +522,30 @@
       "classification": "procedural_structured_false_positive"
     },
     {
+      "skill": "detecting-stuxnet-style-attacks",
+      "body_chars": 18761,
+      "heading_count": 9,
+      "real_section_count": 3,
+      "step_section_count": 3,
+      "classification": "procedural_structured_false_positive"
+    },
+    {
+      "skill": "exploiting-http-request-smuggling",
+      "body_chars": 10210,
+      "heading_count": 22,
+      "real_section_count": 13,
+      "step_section_count": 6,
+      "classification": "procedural_structured_false_positive"
+    },
+    {
+      "skill": "exploiting-idor-vulnerabilities",
+      "body_chars": 11083,
+      "heading_count": 22,
+      "real_section_count": 13,
+      "step_section_count": 6,
+      "classification": "procedural_structured_false_positive"
+    },
+    {
       "skill": "exploiting-oauth-misconfiguration",
       "body_chars": 11679,
       "heading_count": 21,
@@ -527,6 +559,14 @@
       "heading_count": 23,
       "real_section_count": 13,
       "step_section_count": 7,
+      "classification": "procedural_structured_false_positive"
+    },
+    {
+      "skill": "exploiting-template-injection-vulnerabilities",
+      "body_chars": 11825,
+      "heading_count": 21,
+      "real_section_count": 12,
+      "step_section_count": 6,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -599,6 +639,14 @@
       "heading_count": 9,
       "real_section_count": 2,
       "step_section_count": 4,
+      "classification": "procedural_structured_false_positive"
+    },
+    {
+      "skill": "implementing-api-schema-validation-security",
+      "body_chars": 12960,
+      "heading_count": 10,
+      "real_section_count": 6,
+      "step_section_count": 0,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -759,6 +807,14 @@
       "heading_count": 4,
       "real_section_count": 2,
       "step_section_count": 0,
+      "classification": "procedural_structured_false_positive"
+    },
+    {
+      "skill": "implementing-nerc-cip-compliance-controls",
+      "body_chars": 16315,
+      "heading_count": 9,
+      "real_section_count": 3,
+      "step_section_count": 3,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -983,6 +1039,14 @@
       "heading_count": 9,
       "real_section_count": 2,
       "step_section_count": 4,
+      "classification": "procedural_structured_false_positive"
+    },
+    {
+      "skill": "performing-directory-traversal-testing",
+      "body_chars": 10649,
+      "heading_count": 22,
+      "real_section_count": 13,
+      "step_section_count": 6,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -1398,6 +1462,14 @@
       "body_chars": 6165,
       "heading_count": 12,
       "real_section_count": 3,
+      "step_section_count": 6,
+      "classification": "procedural_structured_false_positive"
+    },
+    {
+      "skill": "testing-for-business-logic-vulnerabilities",
+      "body_chars": 12378,
+      "heading_count": 22,
+      "real_section_count": 13,
       "step_section_count": 6,
       "classification": "procedural_structured_false_positive"
     },

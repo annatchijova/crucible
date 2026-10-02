@@ -320,8 +320,8 @@ def _compile_skill(path: Path, root: Path, raw_bytes: bytes | None = None) -> di
         "checks": _extract_checks(lines, sections, body_start),
         "procedural_steps": _extract_procedural_steps(lines, sections, body_start),
         "relations": {
-            "composes_with": _extract_relations(lines, sections, "composes with"),
-            "delegates_to": _extract_relations(lines, sections, "delegates to"),
+            "composes_with": _extract_relations(lines, sections, "composes with", body_start),
+            "delegates_to": _extract_relations(lines, sections, "delegates to", body_start),
         },
         "references": sorted(set(_URL.findall(raw))),
     }
@@ -451,8 +451,30 @@ def _normalize_yaml_value(value: Any) -> Any:
 
 
 def _section_ranges(lines: list[str], body_start: int) -> dict[str, tuple[int, int]]:
+    """Map each Markdown heading's lowercased title to the line range it
+    governs (up to the next heading).
+
+    A line inside a fenced code block that happens to start with "#" (a
+    shell/Python comment, most commonly) is not a Markdown heading, even
+    though it matches `_HEADING`'s regex exactly -- fenced code is opaque
+    to the surrounding document's heading structure. Observed live on
+    mukul975/Anthropic-Cybersecurity-Skills: 544/818 skills contain at
+    least one such comment, producing 10,749 phantom headings against
+    11,332 real ones corpus-wide (nearly 1:1). A phantom heading like
+    "# Check for known UEFI malware patterns" then matches the
+    Checks/Verification section filter in `_extract_checks` by substring,
+    misclassifying an unrelated reference list as a batch of unverifiable
+    checks -- corrupting not just check extraction but every other
+    consumer of this function's output (procedural steps, composition/
+    delegation relations). Excluding code-block lines here, once, fixes
+    all of those consumers at the source rather than requiring each one
+    to re-derive and apply the same exclusion independently.
+    """
+    code_lines = _code_block_lines(lines, body_start)
     headings: list[tuple[int, str]] = []
     for index in range(body_start, len(lines)):
+        if index in code_lines:
+            continue
         match = _HEADING.match(lines[index])
         if match:
             headings.append((index, match.group("title").strip().lower()))
@@ -745,7 +767,7 @@ def _extract_procedural_steps(
         if not any(ps in title for ps in _PROCEDURAL_SECTIONS):
             continue
         for index in range(start, end):
-            if index in seen_lines:
+            if index in seen_lines or index in code_lines:
                 continue
             # Numbered list
             num_match = _NUMBERED.match(lines[index])
@@ -839,6 +861,8 @@ def _extract_checks(
         if "check" not in title and "verification" not in title:
             continue
         for index in range(start, end):
+            if index in code_lines:
+                continue
             match = _BULLET.match(lines[index])
             if match:
                 text = match.group("value")
@@ -899,12 +923,17 @@ def _extract_oracle_kind(check_text: str) -> str:
     return "unknown"
 
 
-def _extract_relations(lines: list[str], sections: dict[str, tuple[int, int]], section_name: str) -> list[str]:
+def _extract_relations(
+    lines: list[str], sections: dict[str, tuple[int, int]], section_name: str, body_start: int
+) -> list[str]:
     relations: list[str] = []
+    code_lines = _code_block_lines(lines, body_start)
     for title, (start, end) in sections.items():
         if section_name not in title:
             continue
         for index in range(start, end):
+            if index in code_lines:
+                continue
             match = _BULLET.match(lines[index])
             if match:
                 relations.append(match.group("value"))
