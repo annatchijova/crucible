@@ -1,0 +1,238 @@
+{
+  "block_reason": null,
+  "levels": {
+    "L4": {
+      "base_audit_digest": "sha256:f40614daa403af71f5eff7646e461476b3072b4a6ada86a2ffe0eb9190eebd1d",
+      "by_status": {
+        "ABSTAINED": 2,
+        "KILLED": 6
+      },
+      "by_survivor_classification": {
+        "OUT_OF_SCOPE": 2
+      },
+      "kill_rate": "6/6",
+      "mutation_digest": "sha256:3489d857a24d0dd1b618719d0f4ed4a06e04ffd2b7497eeca57593ae6989e76e",
+      "mutation_version": "crucible-mutation/v1",
+      "results": [
+        {
+          "evidence": "expected check class NORMATIVE_CONFLICT is documented as abstained in the audit limitations",
+          "mutation_class": "POLARITY_INVERSION",
+          "mutation_id": "M001-polarity-inversion",
+          "status": "ABSTAINED",
+          "survivor_classification": "OUT_OF_SCOPE"
+        },
+        {
+          "evidence": "expected finding OVERGENERALIZATION was emitted by the auditor",
+          "mutation_class": "EXCEPTION_REMOVAL",
+          "mutation_id": "M002-exception-removal",
+          "status": "KILLED",
+          "survivor_classification": null
+        },
+        {
+          "evidence": "expected finding BROKEN_REFERENCE was emitted by the auditor",
+          "mutation_class": "REFERENCE_BREAK",
+          "mutation_id": "M003-reference-break",
+          "status": "KILLED",
+          "survivor_classification": null
+        },
+        {
+          "evidence": "expected finding REQUIREMENT_WITHOUT_CHECK was emitted by the auditor",
+          "mutation_class": "CHECK_REMOVAL",
+          "mutation_id": "M004-check-removal",
+          "status": "KILLED",
+          "survivor_classification": null
+        },
+        {
+          "evidence": "expected check class SCOPE_TRIGGER_MISMATCH is documented as abstained in the audit limitations",
+          "mutation_class": "TRIGGER_WIDENING",
+          "mutation_id": "M005-trigger-widening",
+          "status": "ABSTAINED",
+          "survivor_classification": "OUT_OF_SCOPE"
+        },
+        {
+          "evidence": "expected finding ISOLATED_SKILL was emitted by the auditor",
+          "mutation_class": "EDGE_REMOVAL",
+          "mutation_id": "M006-edge-removal",
+          "status": "KILLED",
+          "survivor_classification": null
+        },
+        {
+          "evidence": "expected finding COMPOSITION_CYCLE was emitted by the auditor",
+          "mutation_class": "CYCLE_INTRODUCTION",
+          "mutation_id": "M007-cycle-introduction",
+          "status": "KILLED",
+          "survivor_classification": null
+        },
+        {
+          "evidence": "expected finding STRUCTURAL_REDUNDANCY was emitted by the auditor",
+          "mutation_class": "CAPABILITY_DUPLICATION",
+          "mutation_id": "M008-capability-duplication",
+          "status": "KILLED",
+          "survivor_classification": null
+        }
+      ],
+      "total_mutations": 8
+    },
+    "L5": {
+      "behavioral_digest": "sha256:7705fb0fd241d6585ca886be338e780e6ac51e556fa3d99d257b29cb6bee7b9f",
+      "behavioral_version": "crucible-behavioral/v1",
+      "block_reason": null,
+      "executor_type": "NebiusExecutor",
+      "local_fallback_runs": null,
+      "nebius_blocked": false,
+      "runs": [
+        {
+          "observations": [
+            {
+              "description": "The response mentions a finite or bounded retry budget.",
+              "evidence": "output checked for: The response mentions a finite or bounded retry budget.",
+              "property_id": "P1-mentions-budget",
+              "status": "PASS"
+            },
+            {
+              "description": "The response acknowledges that some operations may be exempt from the budget.",
+              "evidence": "output checked for: The response acknowledges that some operations may be exempt from the budget.",
+              "property_id": "P2-respects-exception",
+              "status": "PASS"
+            },
+            {
+              "description": "The response does not recommend retrying without any bound.",
+              "evidence": "output checked for: The response does not recommend retrying without any bound.",
+              "property_id": "P3-no-unbounded-retry",
+              "status": "PASS"
+            },
+            {
+              "description": "The response mentions idempotency or idempotent operations.",
+              "evidence": "output checked for: The response mentions idempotency or idempotent operations.",
+              "property_id": "P4-mentions-idempotency",
+              "status": "FAIL"
+            }
+          ],
+          "status": "COMPLETED",
+          "variant_id": "V1-no-skill"
+        },
+        {
+          "observations": [
+            {
+              "description": "The response mentions a finite or bounded retry budget.",
+              "evidence": "output checked for: The response mentions a finite or bounded retry budget.",
+              "property_id": "P1-mentions-budget",
+              "status": "PASS"
+            },
+            {
+              "description": "The response acknowledges that some operations may be exempt from the budget.",
+              "evidence": "output checked for: The response acknowledges that some operations may be exempt from the budget.",
+              "property_id": "P2-respects-exception",
+              "status": "PASS"
+            },
+            {
+              "description": "The response does not recommend retrying without any bound.",
+              "evidence": "output checked for: The response does not recommend retrying without any bound.",
+              "property_id": "P3-no-unbounded-retry",
+              "status": "PASS"
+            },
+            {
+              "description": "The response mentions idempotency or idempotent operations.",
+              "evidence": "output checked for: The response mentions idempotency or idempotent operations.",
+              "property_id": "P4-mentions-idempotency",
+              "status": "PASS"
+            }
+          ],
+          "status": "COMPLETED",
+          "variant_id": "V2-original"
+        },
+        {
+          "observations": [
+            {
+              "description": "The response mentions a finite or bounded retry budget.",
+              "evidence": "output checked for: The response mentions a finite or bounded retry budget.",
+              "property_id": "P1-mentions-budget",
+              "status": "PASS"
+            },
+            {
+              "description": "The response acknowledges that some operations may be exempt from the budget.",
+              "evidence": "output checked for: The response acknowledges that some operations may be exempt from the budget.",
+              "property_id": "P2-respects-exception",
+              "status": "PASS"
+            },
+            {
+              "description": "The response does not recommend retrying without any bound.",
+              "evidence": "output checked for: The response does not recommend retrying without any bound.",
+              "property_id": "P3-no-unbounded-retry",
+              "status": "PASS"
+            },
+            {
+              "description": "The response mentions idempotency or idempotent operations.",
+              "evidence": "output checked for: The response mentions idempotency or idempotent operations.",
+              "property_id": "P4-mentions-idempotency",
+              "status": "PASS"
+            }
+          ],
+          "status": "COMPLETED",
+          "variant_id": "V3-mutant-polarity-inversion"
+        },
+        {
+          "observations": [
+            {
+              "description": "The response mentions a finite or bounded retry budget.",
+              "evidence": "output checked for: The response mentions a finite or bounded retry budget.",
+              "property_id": "P1-mentions-budget",
+              "status": "PASS"
+            },
+            {
+              "description": "The response acknowledges that some operations may be exempt from the budget.",
+              "evidence": "output checked for: The response acknowledges that some operations may be exempt from the budget.",
+              "property_id": "P2-respects-exception",
+              "status": "PASS"
+            },
+            {
+              "description": "The response does not recommend retrying without any bound.",
+              "evidence": "output checked for: The response does not recommend retrying without any bound.",
+              "property_id": "P3-no-unbounded-retry",
+              "status": "PASS"
+            },
+            {
+              "description": "The response mentions idempotency or idempotent operations.",
+              "evidence": "output checked for: The response mentions idempotency or idempotent operations.",
+              "property_id": "P4-mentions-idempotency",
+              "status": "PASS"
+            }
+          ],
+          "status": "COMPLETED",
+          "variant_id": "V4-repair"
+        }
+      ],
+      "task_digest": "sha256:b4ac1371185da240fc97385a9d5360127fa43158611dabc687e03543f1b30c20",
+      "task_id": "retry-strategy-design"
+    },
+    "L6": {
+      "base_audit_digest": "sha256:8c39ca6ec5a230f8ab0f2c97651bcad6c4fa80d62e02682cb6242a74b227da15",
+      "bob_version": "crucible-bob/v1",
+      "finding_class": "METHODOLOGICAL_VACUITY",
+      "finding_skill": "retrier",
+      "no_new_findings": true,
+      "original_finding_count": 2,
+      "original_finding_gone": true,
+      "outcome": "ACCEPTED",
+      "proposer": "rule-based",
+      "rejection_reason": null,
+      "repaired_audit_digest": "sha256:edf5609dffb9b295442f92eb362e3df6ce4b578842c53b44f88147f48f105c60",
+      "repaired_finding_count": 0
+    },
+    "L7": {
+      "base_audit_digest": "sha256:8c39ca6ec5a230f8ab0f2c97651bcad6c4fa80d62e02682cb6242a74b227da15",
+      "behavioral_regression": false,
+      "behavioral_regressions": [],
+      "loop_digest": "sha256:e9f2ff0c2cf4b5524561d6f3816114d1f05560afbe3161f7161c7fb8d3252faa",
+      "loop_version": "crucible-repair-loop/v1",
+      "no_new_findings": true,
+      "original_finding_gone": true,
+      "outcome": "ACCEPTED",
+      "rejection_reason": null,
+      "repaired_audit_digest": "sha256:edf5609dffb9b295442f92eb362e3df6ce4b578842c53b44f88147f48f105c60"
+    }
+  },
+  "nebius_blocked": false,
+  "report_digest": "sha256:1eb55c6fe3d37662cd88e5dda5bd56e825025fed3c5cd7c6b698c17749af269d",
+  "report_version": "crucible-report/v1"
+}

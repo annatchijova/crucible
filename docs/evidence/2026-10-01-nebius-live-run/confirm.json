@@ -1,0 +1,65 @@
+{
+  "confirmation_digest": "sha256:e587da27434d22232b0f2b45da3e8cc57a9f3ca2b5ec5a7954c85c8814152208",
+  "confirmations": [
+    {
+      "executor_model": "nvidia/nemotron-3-super-120b-a12b",
+      "executor_provider": "nebius-token-factory",
+      "executor_response_id": "chatcmpl-bd6c69de5adc3618",
+      "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+      "finding_id": "finding-0002",
+      "rationale": "The skill text contains only the rule statement and no explicit verification or check statements, so zero extracted checks is accurate.",
+      "runtime": {
+        "finish_reason": "stop",
+        "max_tokens": 2000,
+        "response_id": "chatcmpl-bd6c69de5adc3618",
+        "temperature": 0,
+        "truncated": false,
+        "usage": {
+          "completion_tokens": 435,
+          "prompt_tokens": 259,
+          "total_tokens": 694
+        }
+      },
+      "skill": "retry-example",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "executor_model": "nvidia/nemotron-3-super-120b-a12b",
+      "executor_provider": "nebius-token-factory",
+      "executor_response_id": "chatcmpl-88c0bda93890ec97",
+      "finding_class": "UNBOUNDED_RETRY",
+      "finding_id": "finding-0003",
+      "rationale": "The skill explicitly states retries must continue until success with no limit, confirming an unbounded retry.",
+      "runtime": {
+        "finish_reason": "stop",
+        "max_tokens": 2000,
+        "response_id": "chatcmpl-88c0bda93890ec97",
+        "temperature": 0,
+        "truncated": false,
+        "usage": {
+          "completion_tokens": 108,
+          "prompt_tokens": 283,
+          "total_tokens": 391
+        }
+      },
+      "skill": "retry-example",
+      "verdict": "CONFIRMED"
+    }
+  ],
+  "executor": {
+    "model": "nvidia/nemotron-3-super-120b-a12b",
+    "provider": "",
+    "temperature": 0
+  },
+  "schema_version": "crucible-confirmation/v1",
+  "source_audit_digest": "sha256:2282736cdb07f8e3bbece033456baa03e31cdc62f0ded2e5222ab680fb30a0dd",
+  "source_ir_digest": "sha256:e3b5af7189d651320f2084c2bf2f4e9d0ed647c0b04e249775834140aba03411",
+  "status": "COMPLETED",
+  "summary": {
+    "blocked": 0,
+    "confirmed": 2,
+    "rejected": 0,
+    "total": 2,
+    "unclear": 0
+  }
+}
