@@ -8,6 +8,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from .ir import SCHEMA_VERSION, digest_bytes, digest_payload
 
 _MAX_CORPUS_BYTES = 20_000_000
@@ -17,7 +19,6 @@ _MAX_CORPUS_ENTRIES = 100_000
 # Match "MUST NOT" / "SHOULD NOT" (with space) before bare MUST/SHOULD/MAY
 # so that negated modalities are captured correctly.
 _MODALITY = re.compile(r"\b(MUST\s+NOT|SHOULD\s+NOT|MUST|SHOULD|MAY)\b")
-_FRONTMATTER_LINE = re.compile(r"^(?P<key>[A-Za-z0-9_-]+):\s*(?P<value>.*)$")
 _URL = re.compile(r"https?://[^\s)>]+")
 _HEADING = re.compile(r"^(#{1,6})\s+(?P<title>.+?)\s*$")
 _BULLET = re.compile(r"^\s*[-*+]\s+(?P<value>.+?)\s*$")
@@ -327,6 +328,19 @@ def _compile_skill(path: Path, root: Path, raw_bytes: bytes | None = None) -> di
 
 
 def _parse_frontmatter(lines: list[str], relative_path: str) -> tuple[dict[str, Any], int]:
+    """Parse the YAML frontmatter block with a real YAML parser.
+
+    A hand-rolled line-by-line parser previously lived here. Real SKILL.md
+    corpora in the wild (mukul975/Anthropic-Cybersecurity-Skills: 818
+    skills) use YAML sequences, plain and quoted multi-line scalars, and
+    sequences nested inside mappings -- each one required its own special
+    case, and a list-of-mappings shape (`techniques: / - id: ... / name:
+    ...`) surfaced as soon as the previous gaps were closed. Recognizing
+    that as the general shape of the problem (YAML is recursive; a flat or
+    one-level-nested hand-rolled parser will always have one more shape to
+    chase), this now delegates to `yaml.safe_load` -- the actual root-cause
+    fix rather than another special case.
+    """
     if not lines or lines[0].strip() != "---":
         raise ValueError(f"{relative_path}: missing frontmatter opening delimiter")
     try:
@@ -334,51 +348,106 @@ def _parse_frontmatter(lines: list[str], relative_path: str) -> tuple[dict[str, 
     except StopIteration as exc:
         raise ValueError(f"{relative_path}: unterminated frontmatter") from exc
 
-    metadata: dict[str, Any] = {}
-    current_mapping: dict[str, str] | None = None
-    index = 1
-    while index < end:
-        line_number = index + 1
-        line = lines[index]
-        if not line.strip():
-            index += 1
-            continue
-        match = _FRONTMATTER_LINE.match(line.strip())
-        if not match:
-            raise ValueError(f"{relative_path}:{line_number}: unsupported frontmatter line")
-        key = match.group("key")
-        value = _strip_scalar(match.group("value"))
-        block_marker = match.group("value").strip()
-        if line.startswith((" ", "\t")):
-            if current_mapping is None:
-                raise ValueError(f"{relative_path}:{line_number}: nested value without mapping")
-            current_mapping[key] = value
-        elif block_marker in {">", "|", ">-", "|-", ">+", "|+"}:
-            folded = block_marker[0] == ">"
-            block: list[str] = []
-            index += 1
-            while index < end and (not lines[index].strip() or lines[index].startswith((" ", "\t"))):
-                block.append(lines[index].strip())
-                index += 1
-            separator = " " if folded else "\n"
-            metadata[key] = separator.join(part for part in block if part)
-            current_mapping = None
-            continue
-        elif value:
-            metadata[key] = value
-            current_mapping = None
-        else:
-            current_mapping = {}
-            metadata[key] = current_mapping
-        index += 1
-    return metadata, end + 1
+    raw_yaml = "\n".join(lines[1:end])
+    parsed = _load_yaml_with_colon_repair(raw_yaml, relative_path)
+
+    if parsed is None:
+        parsed = {}
+    if not isinstance(parsed, dict):
+        raise ValueError(f"{relative_path}: frontmatter must be a YAML mapping, got {type(parsed).__name__}")
+
+    return _normalize_yaml_value(parsed), end + 1
 
 
-def _strip_scalar(value: str) -> str:
-    value = value.strip()
-    if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
-        return value[1:-1]
-    return value
+# A plain top-level "key: <free text>" line. Used only to decide whether a
+# line PyYAML rejected can be safely auto-quoted -- not a general
+# frontmatter grammar (real YAML parsing is `yaml.safe_load` itself).
+_PLAIN_KEY_LINE = re.compile(r"^([A-Za-z0-9_-]+):[ \t](.*)$")
+_YAML_SAFE_LEADING_CHARS = ("'", '"', "[", "{", "|", ">", "-")
+_MAX_COLON_REPAIR_ATTEMPTS = 100
+
+
+def _quote_yaml_scalar(value: str) -> str:
+    escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
+
+
+def _load_yaml_with_colon_repair(raw_yaml: str, relative_path: str) -> Any:
+    """Parse frontmatter YAML, auto-quoting one specific, common real-world
+    deviation from strict YAML: a plain (unquoted) scalar value containing
+    an unescaped `: ` later in the same line, e.g.:
+
+        description: Use when live-triaging a host: "acquire the disk",
+          "grab a memory dump"...
+
+    YAML's grammar does not allow this (an unquoted `: ` inside a plain
+    scalar is ambiguous with a new mapping key), but it is an extremely
+    common way to write a free-text description by hand, and strict
+    rejection would break the large majority of already-working,
+    hand-written SKILL.md files in this project's own corpus -- a worse
+    regression than the real-world structural gaps (YAML sequences,
+    multi-line scalars, nested sequences) that motivated using a real YAML
+    parser in the first place.
+
+    On a YAML scanner/parser error, this looks at PyYAML's own reported
+    line, and only if that exact line is a complete top-level "key: text"
+    pair whose value does not already start with YAML-meaningful syntax
+    (a quote, a sequence/mapping/block indicator), it re-quotes that one
+    line's value and retries. A problem on any other kind of line (a
+    multi-line scalar continuation, a nested sequence item, etc.) is left
+    as the real, honest YAML error -- this is a narrow, targeted repair
+    for one observed real-world pattern, not a general fallback parser.
+    """
+    working_lines = raw_yaml.split("\n")
+    last_error: yaml.YAMLError | None = None
+    for _ in range(_MAX_COLON_REPAIR_ATTEMPTS):
+        text = "\n".join(working_lines)
+        try:
+            return yaml.safe_load(text)
+        except yaml.YAMLError as exc:
+            last_error = exc
+            mark = getattr(exc, "problem_mark", None)
+            if mark is None or not (0 <= mark.line < len(working_lines)):
+                break
+            problem_line = working_lines[mark.line]
+            match = _PLAIN_KEY_LINE.match(problem_line)
+            if not match:
+                break
+            value = match.group(2)
+            if not value or value.lstrip()[:1] in _YAML_SAFE_LEADING_CHARS:
+                break
+            working_lines[mark.line] = f"{match.group(1)}: {_quote_yaml_scalar(value)}"
+    raise ValueError(f"{relative_path}: invalid frontmatter YAML: {last_error}") from last_error
+
+
+def _normalize_yaml_value(value: Any) -> Any:
+    """Stringify every scalar leaf so frontmatter metadata keeps the shape
+    every caller already expects (name/description/etc. as plain strings),
+    regardless of whether the source YAML wrote a value quoted or not --
+    the previous hand-rolled parser never produced anything but strings
+    for a scalar, since it had no type inference at all. An unquoted
+    `version: 1.1` must stay the string "1.1", not become a float: this
+    project never allows a float into any downstream decision path, and a
+    frontmatter scalar is exactly the kind of value that should not be the
+    first float smuggled in by a parser upgrade.
+    """
+    if isinstance(value, dict):
+        return {str(key): _normalize_yaml_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_normalize_yaml_value(item) for item in value]
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        # Frontmatter metadata is descriptive text carried through to
+        # reports, never arithmetic -- stringifying here (rather than
+        # rejecting) matches what the previous hand-rolled parser always
+        # did for every scalar, quoted or not. No float value is retained
+        # as a float past this point, which is what the project's
+        # no-float-in-the-decision-path invariant actually requires.
+        return str(value)
+    return str(value)
 
 
 def _section_ranges(lines: list[str], body_start: int) -> dict[str, tuple[int, int]]:

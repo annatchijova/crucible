@@ -8,7 +8,7 @@ version = "0.1.0.dev0"
 description = "Verification engineering for AI agent methodologies"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
-dependencies = []
+dependencies = ["pyyaml>=6.0"]
 
 [project.scripts]
 crucible = "crucible.cli:main"

@@ -82,11 +82,17 @@ Requisito del hackathon. Opciones:
 El evaluation plan define 4 corpus (autor, mutantes, OSS, NVIDIA). Solo el
 corpus del autor (88-103 skills) y el diverse corpus (10 skills, 7 fuentes)
 están implementados. Falta:
-- Corpus OSS independiente (false-positive pressure real) — **candidato
-  elegido 2026-10-01 para la demo**: github.com/mukul975/Anthropic-
-  Cybersecurity-Skills (818 skills reales, mismo repo que ya se viene
-  usando para destilar annatchijova/SKILLS). Todavía no corrido contra
-  Crucible ni licenciado explícitamente — solo clonado y contado.
+- Corpus OSS independiente (false-positive pressure real) — **corrido
+  2026-10-02**: github.com/mukul975/Anthropic-Cybersecurity-Skills (818
+  skills reales). Encontró y cerró 3 bugs reales del compilador (frontmatter
+  YAML real vía PyYAML + reparo dirigido de dos puntos sin comillas, ver
+  commit de compiler.py); 818/818 compilan, 552 findings reales. Dos
+  hallazgos concretos de calibración documentados en
+  `docs/evidence/2026-10-02-mukul975-corpus-audit/FINDINGS.md`:
+  SEMANTIC_REDUNDANCY bien calibrado (confirmado por inducción, no
+  subdetecta), DESCRIPTION_BODY_GAP con un patrón real de falso positivo en
+  skills estilo workflow/procedural sin vocabulario RFC-2119. Todavía sin
+  licenciar explícitamente para uso como demo pública.
 - Corpus NVIDIA verified skills (interoperabilidad)
 - Documentar licencias de cada corpus
 
