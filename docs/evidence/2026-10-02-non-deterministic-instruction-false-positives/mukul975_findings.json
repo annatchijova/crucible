@@ -1,0 +1,211 @@
+[
+  {
+    "skill": "configuring-oauth2-authorization-flow",
+    "rule_id": "step-0005",
+    "modality": null,
+    "text": "Client generates random `code_verifier` (43-128 characters, unreserved URI chars)",
+    "source_path": "skills/configuring-oauth2-authorization-flow/SKILL.md",
+    "source_span": {
+      "line": 94,
+      "column": 1
+    }
+  },
+  {
+    "skill": "configuring-oauth2-authorization-flow",
+    "rule_id": "step-0010",
+    "modality": null,
+    "text": "Generate cryptographically random code_verifier (min 43 chars)",
+    "source_path": "skills/configuring-oauth2-authorization-flow/SKILL.md",
+    "source_span": {
+      "line": 108,
+      "column": 1
+    }
+  },
+  {
+    "skill": "detecting-command-and-control-over-dns",
+    "rule_id": "step-0011",
+    "modality": null,
+    "text": "Train Random Forest and Gradient Boosting classifiers, evaluate with 5-fold cross-validation",
+    "source_path": "skills/detecting-command-and-control-over-dns/SKILL.md",
+    "source_span": {
+      "line": 1304,
+      "column": 1
+    }
+  },
+  {
+    "skill": "detecting-golden-ticket-attacks-in-kerberos-logs",
+    "rule_id": "step-0004",
+    "modality": null,
+    "text": "**Hunt for Non-Existent SIDs**: Golden Tickets can include arbitrary SIDs (including non-existent accounts or groups). Correlate TGS requests against known AD SID inventory.",
+    "source_path": "skills/detecting-golden-ticket-attacks-in-kerberos-logs/SKILL.md",
+    "source_span": {
+      "line": 55,
+      "column": 1
+    }
+  },
+  {
+    "skill": "detecting-t1548-abuse-elevation-control-mechanism",
+    "rule_id": "step-0009",
+    "modality": null,
+    "text": "**sdclt.exe Bypass**: Leveraging the Windows Backup utility's auto-elevation to execute arbitrary commands.",
+    "source_path": "skills/detecting-t1548-abuse-elevation-control-mechanism/SKILL.md",
+    "source_span": {
+      "line": 128,
+      "column": 1
+    }
+  },
+  {
+    "skill": "escaping-containers-to-host",
+    "rule_id": "step-0004",
+    "modality": null,
+    "text": "**The November 2025 runC procfs write-redirect family \u2014 CVE-2025-31133, CVE-2025-52565, CVE-2025-52881** \u2014 race/symlink abuse of the `/dev/null`, `/dev/console`, and other bind mounts performed *before* runC applies `maskedPaths`/`readonlyPaths`, allowing read-write access to `/proc` entries (e.g. `/proc/sysrq-trigger`, `core_pattern`) and arbitrary write redirection. Patched in runC 1.2.8, 1.3.3, and 1.4.0-rc.3.",
+    "source_path": "skills/escaping-containers-to-host/SKILL.md",
+    "source_span": {
+      "line": 43,
+      "column": 1
+    }
+  },
+  {
+    "skill": "exploiting-kerberoasting-with-impacket",
+    "rule_id": "step-0001",
+    "modality": null,
+    "text": "**Use Group Managed Service Accounts (gMSA)** - 240-character random passwords, auto-rotated",
+    "source_path": "skills/exploiting-kerberoasting-with-impacket/SKILL.md",
+    "source_span": {
+      "line": 220,
+      "column": 1
+    }
+  },
+  {
+    "skill": "exploiting-prototype-pollution-in-javascript",
+    "rule_id": "step-0002",
+    "modality": null,
+    "text": "**RCE via Template Engine** \u2014 Exploit EJS/Pug/Handlebars gadgets to execute arbitrary commands through polluted template rendering properties",
+    "source_path": "skills/exploiting-prototype-pollution-in-javascript/SKILL.md",
+    "source_span": {
+      "line": 215,
+      "column": 1
+    }
+  },
+  {
+    "skill": "hunting-for-command-and-control-beaconing",
+    "rule_id": "step-0011",
+    "modality": null,
+    "text": "**DGA-based C2**: Malware generating random domains daily, with adversary registering upcoming domains for C2.",
+    "source_path": "skills/hunting-for-command-and-control-beaconing/SKILL.md",
+    "source_span": {
+      "line": 100,
+      "column": 1
+    }
+  },
+  {
+    "skill": "implementing-aes-encryption-for-data-at-rest",
+    "rule_id": "step-0003",
+    "modality": null,
+    "text": "Create a random nonce for each encryption operation",
+    "source_path": "skills/implementing-aes-encryption-for-data-at-rest/SKILL.md",
+    "source_span": {
+      "line": 83,
+      "column": 1
+    }
+  },
+  {
+    "skill": "implementing-zero-knowledge-proof-for-authentication",
+    "rule_id": "step-0003",
+    "modality": null,
+    "text": "**Commitment**: Prover sends t = g^r mod p (random r)",
+    "source_path": "skills/implementing-zero-knowledge-proof-for-authentication/SKILL.md",
+    "source_span": {
+      "line": 67,
+      "column": 1
+    }
+  },
+  {
+    "skill": "implementing-zero-knowledge-proof-for-authentication",
+    "rule_id": "step-0004",
+    "modality": null,
+    "text": "**Challenge**: Verifier sends random c",
+    "source_path": "skills/implementing-zero-knowledge-proof-for-authentication/SKILL.md",
+    "source_span": {
+      "line": 68,
+      "column": 1
+    }
+  },
+  {
+    "skill": "performing-api-rate-limiting-bypass",
+    "rule_id": "step-0005",
+    "modality": null,
+    "text": "Test parameter pollution: Adding `?_=<random>` to each request bypasses the rate limit",
+    "source_path": "skills/performing-api-rate-limiting-bypass/SKILL.md",
+    "source_span": {
+      "line": 370,
+      "column": 1
+    }
+  },
+  {
+    "skill": "performing-cryptographic-audit-of-application",
+    "rule_id": "rule-0001",
+    "modality": "IMPERATIVE",
+    "text": "- Validate random number generator usage",
+    "source_path": "skills/performing-cryptographic-audit-of-application/SKILL.md",
+    "source_span": {
+      "line": 77,
+      "column": 1
+    }
+  },
+  {
+    "skill": "performing-web-application-penetration-test",
+    "rule_id": "step-0003",
+    "modality": null,
+    "text": "Discover IDOR vulnerability in the order retrieval API (`/api/orders/{orderId}`) where any authenticated user can view any order by iterating order IDs",
+    "source_path": "skills/performing-web-application-penetration-test/SKILL.md",
+    "source_span": {
+      "line": 157,
+      "column": 1
+    }
+  },
+  {
+    "skill": "red-teaming-llms-with-garak",
+    "rule_id": "step-0019",
+    "modality": null,
+    "text": "Configure garak against a local Hugging Face model, an OpenAI-compatible API, and an arbitrary REST endpoint.",
+    "source_path": "skills/red-teaming-llms-with-garak/SKILL.md",
+    "source_span": {
+      "line": 68,
+      "column": 1
+    }
+  },
+  {
+    "skill": "testing-api-for-broken-object-level-authorization",
+    "rule_id": "step-0014",
+    "modality": null,
+    "text": "Find that `GET /api/v1/orders/{id}` returns any order regardless of ownership (BOLA on read)",
+    "source_path": "skills/testing-api-for-broken-object-level-authorization/SKILL.md",
+    "source_span": {
+      "line": 341,
+      "column": 1
+    }
+  },
+  {
+    "skill": "testing-for-json-web-token-vulnerabilities",
+    "rule_id": "step-0002",
+    "modality": null,
+    "text": "**Algorithm Confusion RCE** \u2014 Switch RS256 to HS256 using leaked public key to forge arbitrary tokens for administrative access",
+    "source_path": "skills/testing-for-json-web-token-vulnerabilities/SKILL.md",
+    "source_span": {
+      "line": 218,
+      "column": 1
+    }
+  },
+  {
+    "skill": "testing-for-json-web-token-vulnerabilities",
+    "rule_id": "step-0004",
+    "modality": null,
+    "text": "**Weak Secret Cracking** \u2014 Brute-force HMAC-SHA256 secrets using hashcat to forge arbitrary JWTs for any user",
+    "source_path": "skills/testing-for-json-web-token-vulnerabilities/SKILL.md",
+    "source_span": {
+      "line": 220,
+      "column": 1
+    }
+  }
+]

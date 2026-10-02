@@ -1488,11 +1488,19 @@ def _check_missing_failure_mode(
 # ---------------------------------------------------------------------------
 
 # Patterns that indicate a non-deterministic instruction.
+#
+# "pick"/"choose" only match "any" or "one" (an unconstrained choice), not
+# the bare indefinite article "a" — "pick a `type` that matches the kind"
+# is an ordinary instruction to select the applicable item, not a claim
+# that the choice is arbitrary. A genuine "pick a random X" is still
+# caught by the separate \brandom\b pattern above, so narrowing this one
+# does not lose coverage (see docs/evidence/2026-10-02-non-deterministic-
+# instruction-false-positives/FINDINGS.md, mechanism 7).
 _NON_DETERMINISTIC_PATTERNS = [
     re.compile(r"\brandom(?:ly)?\b", re.IGNORECASE),
     re.compile(r"\barbitrary\b", re.IGNORECASE),
-    re.compile(r"\bpick\s+(?:any|one|a)\b", re.IGNORECASE),
-    re.compile(r"\bchoose\s+(?:any|one|a)\b", re.IGNORECASE),
+    re.compile(r"\bpick\s+(?:any|one)\b", re.IGNORECASE),
+    re.compile(r"\bchoose\s+(?:any|one)\b", re.IGNORECASE),
     re.compile(r"\bany\s+(?:order|way|approach|method)\b", re.IGNORECASE),
 ]
 
@@ -1532,6 +1540,13 @@ def _check_non_deterministic(
         name = skill["identity"]["name"]
         source_path = skill["identity"]["source_path"]
         for rule in skill.get("rules", []):
+            # A rule whose own modality already prohibits the behavior
+            # (MUST_NOT / SHOULD_NOT / NEVER) cannot be introducing the
+            # non-determinism its text names — it is forbidding it. See
+            # docs/evidence/2026-10-02-non-deterministic-instruction-
+            # false-positives/FINDINGS.md, mechanism 8.
+            if rule.get("modality") in _NEGATIVE_MODALITIES:
+                continue
             text = rule.get("text", "")
             has_non_det = any(p.search(text) for p in _NON_DETERMINISTIC_PATTERNS)
             if not has_non_det:

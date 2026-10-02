@@ -275,6 +275,74 @@ def test_non_deterministic_fires_on_arbitrary(tmp_path: Path) -> None:
     assert "NON_DETERMINISTIC_INSTRUCTION" in _classes(audit["findings"])
 
 
+def test_non_deterministic_does_not_fire_on_pick_a(tmp_path: Path) -> None:
+    """Invariant: 'pick a NOUN' is an ordinary indefinite article, not a
+    claim of arbitrary choice -- only 'pick any/one NOUN' is.
+    Mutation: restore bare 'a' to the pick/choose alternation -> this test
+    goes red. See docs/evidence/2026-10-02-non-deterministic-instruction-
+    false-positives/FINDINGS.md, mechanism 7."""
+    _write_skill(
+        tmp_path,
+        "picker",
+        "---\nname: picker\ndescription: Pick a type.\n---\n\n"
+        "Pick a `type` that matches the kind. Use self-explanatory values.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "NON_DETERMINISTIC_INSTRUCTION" not in _classes(audit["findings"])
+
+
+def test_non_deterministic_still_fires_on_pick_any(tmp_path: Path) -> None:
+    """Invariant: 'pick any NOUN' is still a genuinely unconstrained choice.
+    Mutation: over-narrow the pick/choose pattern -> this test goes red."""
+    _write_skill(
+        tmp_path,
+        "picker_any",
+        "---\nname: picker_any\ndescription: Pick any approach.\n---\n\n"
+        "The agent MUST pick any approach that seems reasonable.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "NON_DETERMINISTIC_INSTRUCTION" in _classes(audit["findings"])
+
+
+def test_non_deterministic_does_not_fire_on_negative_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST_NOT/SHOULD_NOT/NEVER rule that forbids arbitrary
+    behavior is not introducing the non-determinism it names -- it is
+    prohibiting it.
+    Mutation: remove the _NEGATIVE_MODALITIES guard -> this test goes red.
+    See docs/evidence/2026-10-02-non-deterministic-instruction-false-
+    positives/FINDINGS.md, mechanism 8."""
+    _write_skill(
+        tmp_path,
+        "no_arbitrary",
+        "---\nname: no_arbitrary\ndescription: No arbitrary thresholds.\n---\n\n"
+        "The agent MUST NOT assign an arbitrary numeric threshold for this "
+        "judgment.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "NON_DETERMINISTIC_INSTRUCTION" not in _classes(audit["findings"])
+
+
+def test_non_deterministic_still_fires_on_positive_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST rule that genuinely introduces arbitrary behavior
+    must still fire -- the negative-modality guard must not suppress
+    positive-modality rules.
+    Mutation: over-broaden the _NEGATIVE_MODALITIES guard -> this test
+    goes red."""
+    _write_skill(
+        tmp_path,
+        "uses_arbitrary",
+        "---\nname: uses_arbitrary\ndescription: Uses arbitrary thresholds.\n---\n\n"
+        "The agent MUST assign an arbitrary numeric threshold for this "
+        "judgment.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "NON_DETERMINISTIC_INSTRUCTION" in _classes(audit["findings"])
+
+
 # ---------------------------------------------------------------------------
 # IRREVERSIBLE_WITHOUT_REVIEW
 # ---------------------------------------------------------------------------
