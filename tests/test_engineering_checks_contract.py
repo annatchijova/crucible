@@ -230,6 +230,71 @@ def test_missing_failure_mode_does_not_fire_without_steps(tmp_path: Path) -> Non
     assert "MISSING_FAILURE_MODE" not in _classes(audit["findings"])
 
 
+def test_missing_failure_mode_does_not_fire_on_conjugated_failure_word(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a conjugated form ('fails', not just 'fail'/'failed'/
+    'failure') must still count as mentioning failure.
+    Mutation: narrow the suffix alternation back to the original -> red.
+    See docs/evidence/2026-10-02-missing-failure-mode-audit/FINDINGS.md,
+    mechanism 1."""
+    _write_skill(
+        tmp_path,
+        "conjugated",
+        "---\nname: conjugated\ndescription: Uses a conjugated failure word.\n---\n\n"
+        "Operations MUST be processed.\n\n"
+        "## Steps\n\n"
+        "1. Process the operation.\n"
+        "2. Verify the operation recovers cleanly if the backend restarts.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "MISSING_FAILURE_MODE" not in _classes(audit["findings"])
+
+
+def test_missing_failure_mode_does_not_fire_with_pitfalls_heading(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a 'Common Pitfalls' section is failure-mode content even
+    when its bullets never use any of the check's vocabulary words.
+    Mutation: remove the heading signal -> red.
+    See docs/evidence/2026-10-02-missing-failure-mode-audit/FINDINGS.md,
+    mechanism 2."""
+    _write_skill(
+        tmp_path,
+        "pitfalls",
+        "---\nname: pitfalls\ndescription: Documents pitfalls without failure vocabulary.\n---\n\n"
+        "Operations MUST be processed.\n\n"
+        "## Steps\n\n"
+        "1. Process the operation.\n"
+        "2. Return the result.\n\n"
+        "## Common Pitfalls\n\n"
+        "- Using a stale token instead of refreshing it first.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "MISSING_FAILURE_MODE" not in _classes(audit["findings"])
+
+
+def test_missing_failure_mode_still_fires_with_unrelated_heading(
+    tmp_path: Path,
+) -> None:
+    """Invariant: an unrelated heading must not be mistaken for a
+    pitfalls-style section -- the heading guard is a real boundary.
+    Mutation: over-broaden _FAILURE_MODE_HEADING -> red."""
+    _write_skill(
+        tmp_path,
+        "unrelated_heading",
+        "---\nname: unrelated_heading\ndescription: Has an unrelated heading, no failure content.\n---\n\n"
+        "Operations MUST be processed.\n\n"
+        "## Steps\n\n"
+        "1. Process the operation.\n"
+        "2. Return the result.\n\n"
+        "## Additional Notes\n\n"
+        "This section is unrelated to the procedure above.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "MISSING_FAILURE_MODE" in _classes(audit["findings"])
+
+
 # ---------------------------------------------------------------------------
 # NON_DETERMINISTIC_INSTRUCTION
 # ---------------------------------------------------------------------------

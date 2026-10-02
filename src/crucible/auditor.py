@@ -1417,19 +1417,37 @@ def _check_overclaim(
 # ---------------------------------------------------------------------------
 
 # Patterns that indicate failure handling is mentioned.
+#
+# Each base word's suffix alternation includes plain "-s"/"-ing" so a verb
+# conjugation ("fails", "recovers", "degrading") is not silently missed.
+# The two-word pattern below already used "fails?" -- proof the gap on the
+# single-word patterns was an oversight, not a deliberate narrowing. See
+# docs/evidence/2026-10-02-missing-failure-mode-audit/FINDINGS.md,
+# mechanism 1.
 _FAILURE_MODE_PATTERNS = [
-    re.compile(r"\bfail(?:ed|ure)?\b", re.IGNORECASE),
-    re.compile(r"\berror\b", re.IGNORECASE),
-    re.compile(r"\bexception\b", re.IGNORECASE),
-    re.compile(r"\bfallback\b", re.IGNORECASE),
-    re.compile(r"\brecover(?:y)?\b", re.IGNORECASE),
-    re.compile(r"\brollback\b", re.IGNORECASE),
-    re.compile(r"\babort\b", re.IGNORECASE),
-    re.compile(r"\btimeout\b", re.IGNORECASE),
-    re.compile(r"\bdegrad(?:e|ation)\b", re.IGNORECASE),
+    re.compile(r"\bfail(?:s|ed|ure|ing)?\b", re.IGNORECASE),
+    re.compile(r"\berror(?:s|ed|ing)?\b", re.IGNORECASE),
+    re.compile(r"\bexception(?:s)?\b", re.IGNORECASE),
+    re.compile(r"\bfallback(?:s)?\b", re.IGNORECASE),
+    re.compile(r"\brecover(?:y|s|ed|ing)?\b", re.IGNORECASE),
+    re.compile(r"\brollback(?:s)?\b", re.IGNORECASE),
+    re.compile(r"\babort(?:s|ed|ing)?\b", re.IGNORECASE),
+    re.compile(r"\btimeout(?:s)?\b", re.IGNORECASE),
+    re.compile(r"\bdegrad(?:e|es|ed|ing|ation)\b", re.IGNORECASE),
     re.compile(r"\bwhat\s+happens\s+if\b", re.IGNORECASE),
     re.compile(r"\bif\s+(?:it|this|the)\s+(?:fails?|errors?)\b", re.IGNORECASE),
 ]
+
+# ADR-0019-style heading signal (mechanism 2): a section explicitly about
+# what goes wrong is failure-mode content even when its body never uses
+# any of the vocabulary above -- e.g. "## Common Pitfalls" bullets phrased
+# entirely in domain-specific terms ("Using implicit grant instead of
+# authorization code + PKCE").
+_FAILURE_MODE_HEADING = re.compile(
+    r"^#{1,6}\s*(?:common\s+)?(?:pitfalls?|troubleshooting|known\s+issues?|"
+    r"limitations?|failure\s+modes?)\b",
+    re.IGNORECASE | re.MULTILINE,
+)
 
 
 def _check_missing_failure_mode(
@@ -1464,7 +1482,10 @@ def _check_missing_failure_mode(
         all_texts.append(skill.get("body_text", ""))
         combined = " ".join(all_texts)
         has_failure_mode = any(p.search(combined) for p in _FAILURE_MODE_PATTERNS)
-        if has_failure_mode:
+        has_failure_heading = bool(
+            _FAILURE_MODE_HEADING.search(skill.get("body_text", ""))
+        )
+        if has_failure_mode or has_failure_heading:
             continue
         name = skill["identity"]["name"]
         source_path = skill["identity"]["source_path"]
