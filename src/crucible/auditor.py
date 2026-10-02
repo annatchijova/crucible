@@ -901,6 +901,14 @@ def _check_scope_trigger_mismatch(
 # considered "substantive" (i.e., the skill promises something real).
 _DESC_MIN_TOKENS = 10
 
+# ADR-0019 Option B, part 2: minimum non-boilerplate section headings
+# (`structural_headings`) that counts as real body structure even with
+# zero rules/checks/steps. Measured against the 40 skills that remained
+# DESCRIPTION_BODY_GAP after part 1 (mukul975/Anthropic-Cybersecurity-
+# Skills): every one has >=2; none has 0 or 1, corpus-wide. See
+# docs/decisions/0019-description-body-gap-structural-signal-gap.md.
+_MIN_STRUCTURAL_HEADINGS = 2
+
 
 def _check_description_body_gap(
     skills: list[dict[str, Any]]
@@ -932,7 +940,10 @@ def _check_description_body_gap(
         rules = skill.get("rules", [])
         checks = skill.get("checks", [])
         steps = skill.get("procedural_steps", [])
+        structural_headings = skill.get("structural_headings", [])
         if rules or checks or steps:
+            continue
+        if len(structural_headings) >= _MIN_STRUCTURAL_HEADINGS:
             continue
         # No extractable structure despite a substantive description.
         name = skill["identity"]["name"]
@@ -946,9 +957,10 @@ def _check_description_body_gap(
             rule_id=None,
             evidence=(
                 f"description has {len(desc_tokens)} meaningful tokens "
-                f"but body has 0 rules, 0 checks, 0 procedural steps; "
-                f"the description promises something the body does not "
-                f"deliver in extractable normative structure"
+                f"but body has 0 rules, 0 checks, 0 procedural steps, and "
+                f"{len(structural_headings)} non-boilerplate section "
+                f"headings; the description promises something the body "
+                f"does not deliver in extractable normative structure"
             ),
             violated_invariant=(
                 "a skill's description should be backed by normative "

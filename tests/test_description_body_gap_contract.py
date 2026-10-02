@@ -153,6 +153,93 @@ def test_gap_has_limitation_documented() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Structural headings (ADR-0019 Option B, part 2)
+# ---------------------------------------------------------------------------
+
+def test_gap_not_detected_with_two_non_boilerplate_headings() -> None:
+    """Invariant: 2+ non-boilerplate section headings count as real body
+    structure, even with zero rules/checks/steps.
+    Mutation: remove the structural_headings suppression -> red."""
+    audit = _audit({
+        "nogap": (
+            "---\nname: nogap\n"
+            "description: Use this skill when debugging memory leaks in C programs. "
+            "It helps find leaks with valgrind and other tools.\n"
+            "license: Apache-2.0\n---\n\n"
+            "# NoGap\n\n"
+            "## Running Valgrind\n\nInvoke valgrind with the memcheck tool.\n\n"
+            "## Key Artifact Files\n\nThe suppressions file lives at /etc/valgrind.\n"
+        ),
+    })
+    gaps = _findings_by_class(audit, "DESCRIPTION_BODY_GAP")
+    assert len(gaps) == 0
+
+
+def test_gap_still_detected_with_only_boilerplate_headings() -> None:
+    """Negative control: a skill whose ONLY headings are universal
+    boilerplate (Overview/When to Use/Prerequisites/References) has no
+    real structure and must still be flagged -- the boilerplate exclusion
+    list is load-bearing, not decorative (ADR-0019's own rejected
+    alternative: "counting any heading as structured" would trivially
+    pass every skill).
+    Mutation: drop the boilerplate exclusion -> red (false negative)."""
+    audit = _audit({
+        "gap": (
+            "---\nname: gap\n"
+            "description: Use this skill when debugging memory leaks in C programs. "
+            "It helps find leaks with valgrind and other tools.\n"
+            "license: Apache-2.0\n---\n\n"
+            "# Gap\n\n"
+            "## Overview\n\nThis skill helps with memory leaks.\n\n"
+            "## When to Use\n\nUse it when debugging C programs.\n\n"
+            "## Prerequisites\n\nvalgrind must be installed.\n\n"
+            "## References\n\nSee the valgrind manual.\n"
+        ),
+    })
+    gaps = _findings_by_class(audit, "DESCRIPTION_BODY_GAP")
+    assert len(gaps) == 1
+
+
+def test_gap_still_detected_with_one_non_boilerplate_heading() -> None:
+    """Invariant: a single non-boilerplate heading is below the minimum
+    (2) and must still be flagged -- the threshold is a real boundary,
+    not a rubber stamp.
+    Mutation: lower _MIN_STRUCTURAL_HEADINGS to 1 -> red."""
+    audit = _audit({
+        "gap": (
+            "---\nname: gap\n"
+            "description: Use this skill when debugging memory leaks in C programs. "
+            "It helps find leaks with valgrind and other tools.\n"
+            "license: Apache-2.0\n---\n\n"
+            "# Gap\n\n"
+            "## Overview\n\nThis skill helps with memory leaks.\n\n"
+            "## A Single Extra Section\n\nJust one, not enough on its own.\n"
+        ),
+    })
+    gaps = _findings_by_class(audit, "DESCRIPTION_BODY_GAP")
+    assert len(gaps) == 1
+
+
+def test_gap_evidence_mentions_structural_heading_count() -> None:
+    """Invariant: the evidence states the structural-heading count, so a
+    reader can see the signal was checked and found insufficient, not
+    silently ignored.
+    Mutation: omit the count from evidence -> red (untraceable)."""
+    audit = _audit({
+        "gap": (
+            "---\nname: gap\n"
+            "description: Use this skill when debugging memory leaks in C programs. "
+            "It helps find leaks with valgrind and other tools.\n"
+            "license: Apache-2.0\n---\n\n"
+            "# Gap\n\nThis skill helps you find memory leaks.\n"
+        ),
+    })
+    gaps = _findings_by_class(audit, "DESCRIPTION_BODY_GAP")
+    assert len(gaps) >= 1
+    assert "0 non-boilerplate section" in gaps[0]["evidence"]
+
+
+# ---------------------------------------------------------------------------
 # Distinction from METHODOLOGICAL_VACUITY
 # ---------------------------------------------------------------------------
 

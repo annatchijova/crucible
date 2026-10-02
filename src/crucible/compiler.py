@@ -25,6 +25,19 @@ _BULLET = re.compile(r"^\s*[-*+]\s+(?P<value>.+?)\s*$")
 _NUMBERED = re.compile(r"^\s*(?P<num>\d+)\.\s+(?P<value>.+?)\s*$")
 _PROCEDURAL_SECTIONS = {"steps", "procedure", "how to", "how", "process", "workflow", "method"}
 
+# ADR-0019 Option B, part 2: universal boilerplate sections that appear in
+# nearly every skill in this corpus style regardless of whether the skill
+# has any real content. Counting any heading as "structured" would
+# trivially classify every skill as structured (ADR-0019's own rejected
+# alternative) -- this list is what makes a non-boilerplate heading count
+# mean something. Measured against mukul975/Anthropic-Cybersecurity-Skills:
+# "overview"/"when to use"/"prerequisites" appear in 40/40, "references" in
+# 36/40, of the skills DESCRIPTION_BODY_GAP still flagged after part 1.
+# "key concepts" carried over from ADR-0014's original classification.
+_BOILERPLATE_SECTIONS = frozenset({
+    "overview", "when to use", "prerequisites", "references", "key concepts",
+})
+
 # ADR-0019 Option B, part 1: a heading of the shape "Step 1:", "Step 2a —",
 # "Step 5 - Title". Anchored at the start of the heading's own title text
 # (not a substring match anywhere in the line) and requires whitespace
@@ -355,6 +368,7 @@ def _compile_skill(path: Path, root: Path, raw_bytes: bytes | None = None) -> di
         "rules": _extract_rules(lines, body_start),
         "checks": _extract_checks(lines, sections, body_start),
         "procedural_steps": _extract_procedural_steps(lines, sections, body_start),
+        "structural_headings": _extract_structural_headings(lines, body_start),
         "relations": {
             "composes_with": _extract_relations(lines, sections, "composes with", body_start),
             "delegates_to": _extract_relations(lines, sections, "delegates to", body_start),
@@ -914,6 +928,47 @@ def _extract_procedural_steps(
         seen_lines.add(index)
 
     return steps
+
+
+def _extract_structural_headings(lines: list[str], body_start: int) -> list[str]:
+    """Collect non-boilerplate section headings (ADR-0019 Option B, part 2).
+
+    A skill can have real structural content -- domain-specific reference
+    material like "Running Hindsight" or "MFT Structure and Record Layout"
+    -- organized entirely under section headings, with no RFC-2119 rules,
+    no checks, and no procedural steps anywhere in the body. None of the
+    three existing IR lists (`rules`, `checks`, `procedural_steps`) can see
+    this, because reference-style sections are prose, not normative
+    statements or steps. DESCRIPTION_BODY_GAP's "no rules/checks/steps"
+    test alone would misread this as a genuine gap; this signal lets it
+    see the content that's actually there.
+
+    The heading that gives the document its title (the single level-1
+    heading) is excluded -- it names the skill, not a section of content,
+    and is present even for a skill with zero real body structure.
+    Boilerplate sections present in nearly every skill of this corpus
+    style (`_BOILERPLATE_SECTIONS`) are excluded for the same reason
+    ADR-0019 rejected "count any heading as structured": without the
+    exclusion list, every skill would trivially qualify. Fenced code
+    lines are excluded, matching `_section_ranges`.
+    """
+    code_lines = _code_block_lines(lines, body_start)
+    headings: list[str] = []
+    seen: set[str] = set()
+    for index in range(body_start, len(lines)):
+        if index in code_lines:
+            continue
+        match = _HEADING.match(lines[index])
+        if not match:
+            continue
+        if len(match.group(1)) < 2:
+            continue  # the document's own title, not a content section
+        title = match.group("title").strip().lower()
+        if title in _BOILERPLATE_SECTIONS or title in seen:
+            continue
+        seen.add(title)
+        headings.append(title)
+    return headings
 
 
 def _extract_checks(

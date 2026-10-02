@@ -1,9 +1,11 @@
 # ADR-0019: Description-Body Gap — Procedural-Structure False-Positive Finding
 
-**Status:** Accepted — Option B
-**Date:** 2026-10-02 (measurement); decision 2026-10-02
-**Reversibility:** high; no code changed by this record, it only documents a
-measurement and the chosen design for implementation
+**Status:** Implemented — Option B, both parts done
+**Date:** 2026-10-02 (measurement); decision 2026-10-02; part 2 implemented
+2026-10-02
+**Reversibility:** high; the implementation plan below is now fully carried
+out in `compiler.py`/`auditor.py`, both parts verified against the real
+corpus
 
 ## Context
 
@@ -153,21 +155,37 @@ more careful negative-control testing of the two.
    effect on two other checks that now correctly see previously-invisible
    steps, in `docs/evidence/2026-10-02-mukul975-corpus-audit/FINDINGS.md`
    ("Finding 2 follow-up").
-2. **Non-boilerplate heading count** (new, narrower rule — exact
-   placement TBD: inside `_extract_procedural_steps` as a second path, or
-   a new, separately named IR signal if steps-semantics turn out not to
-   fit): define the boilerplate exclusion list as a committed, named
-   constant (not inferred per-run), require a stated minimum count
-   (measurement above used >=2), and write negative controls proving a
-   skill with only boilerplate headings and no real content does NOT
-   get promoted.
+2. **Non-boilerplate heading count** — **DONE 2026-10-02.** Placed as a
+   new, separately named IR field (`structural_headings`), not folded
+   into `_extract_procedural_steps` — a reference-style section heading
+   ("Running Hindsight", "MFT Structure and Record Layout") is not a
+   step, and mislabeling it as one would have been a false simplification.
+   New `_extract_structural_headings` function (`compiler.py`) collects
+   non-boilerplate, non-title, non-code-fence level->=2 headings per
+   skill. `_BOILERPLATE_SECTIONS` (`compiler.py`) is the committed
+   constant: `{overview, when to use, prerequisites, references, key
+   concepts}` — measured against the 40 skills still flagged after part
+   1: `overview`/`when to use`/`prerequisites` in 40/40, `references` in
+   36/40; `key concepts` carried over from ADR-0014's original list.
+   `_check_description_body_gap` (`auditor.py`) suppresses the finding
+   when `len(structural_headings) >= _MIN_STRUCTURAL_HEADINGS` (2),
+   alongside the existing rules/checks/steps test. Measured before
+   implementing: every one of the 40 remaining skills has >=2
+   non-boilerplate headings (minimum observed: 2); zero skills anywhere
+   in the 818-skill corpus have 0 or 1 — meaning no real negative control
+   exists in the live corpus, exactly the risk this ADR's own rejected
+   alternative ("count any heading as structured") warned about. A
+   synthetic negative control (a skill with only the four boilerplate
+   headings and prose, no other structure) was written as a test and
+   confirmed the check still fires. **Result: `DESCRIPTION_BODY_GAP`
+   40 -> 0** on mukul975/Anthropic-Cybersecurity-Skills; 0 on the
+   author's own corpus (was already 0 there). 8 new tests (4 compiler-
+   level for `structural_headings` itself, 4 check-level including the
+   negative control and the below-threshold guard).
 3. Re-run both fixes against mukul975/Anthropic-Cybersecurity-Skills AND
-   the author's own corpus, confirm the DESCRIPTION_BODY_GAP count drops
-   as predicted without flipping any check that should stay CANDIDATE
-   (e.g. a skill with real RFC-2119 rules and zero steps of either kind
-   must still be flagged).
-4. Full regression + mutation-gate pass before considering this closed,
-   same discipline as every other fix this session.
+   the author's own corpus — **DONE**, see result above; no other check
+   that should stay CANDIDATE was flipped.
+4. Full regression + mutation-gate pass — **DONE**, both green.
 
 This is expected to take real time and surface its own bugs along the
 way (per Anna's own expectation going in) — not a one-session fix like
@@ -198,15 +216,16 @@ Accepted now:
   correctly flags a deliberately empty fixture.
 - `docs/evidence/2026-10-02-mukul975-corpus-audit/dbg_classification.json`
   exists for independent re-verification of the classification.
-- Option B is the chosen direction; the implementation plan above (Step-N
-  heading recognition, then the non-boilerplate heading-count signal) is
-  the committed design, not yet implemented.
+- Option B is the chosen direction; both parts of the implementation plan
+  (Step-N heading recognition, then the non-boilerplate heading-count
+  signal) are implemented, tested, and verified against the real corpus.
+  `DESCRIPTION_BODY_GAP` went 177 -> 40 -> 0 on mukul975/Anthropic-
+  Cybersecurity-Skills across the two parts; 0 on the author's own corpus
+  throughout.
 
-Deferred, pending implementation:
-- The actual code change to `_extract_procedural_steps` and its test
-  suite/negative controls.
+Deferred:
 - Applying the same structural-signal classification method to the other
   remaining large CANDIDATE classes on this corpus (MISSING_FAILURE_MODE
-  53, SCOPE_TRIGGER_MISMATCH 54, CHECK_WITHOUT_ORACLE 27, the remaining 34
-  REQUIREMENT_WITHOUT_CHECK post-Finding-0b) to check whether they share
-  the same style-driven false-positive pattern.
+  61, SCOPE_TRIGGER_MISMATCH 54, CHECK_WITHOUT_ORACLE 27, REQUIREMENT_
+  WITHOUT_CHECK 34) to check whether they share the same style-driven
+  false-positive pattern. Not started.

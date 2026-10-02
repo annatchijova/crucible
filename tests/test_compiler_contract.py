@@ -621,3 +621,75 @@ def test_a_genuine_action_verb_bullet_is_still_extracted_as_a_step(tmp_path: Pat
     assert artifact["skills"][0]["checks"] == []
     step_texts = [s["text"] for s in artifact["skills"][0]["procedural_steps"]]
     assert step_texts == ["Deploy the configuration to all nodes."]
+
+
+# ---------------------------------------------------------------------------
+# structural_headings (ADR-0019 Option B, part 2)
+# ---------------------------------------------------------------------------
+
+def test_structural_headings_excludes_boilerplate_sections(tmp_path: Path) -> None:
+    """Overview/When to Use/Prerequisites/References/Key Concepts are
+    universal boilerplate in this corpus style and must not count as
+    structural content on their own."""
+    _write_skill(
+        tmp_path,
+        "boilerplate-only",
+        "---\nname: boilerplate-only\ndescription: Exercises the boilerplate exclusion list.\n---\n\n"
+        "## Overview\n\ntext\n\n## When to Use\n\ntext\n\n"
+        "## Prerequisites\n\ntext\n\n## References\n\ntext\n\n## Key Concepts\n\ntext\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    assert artifact["skills"][0]["structural_headings"] == []
+
+
+def test_structural_headings_excludes_the_document_title(tmp_path: Path) -> None:
+    """The level-1 heading names the skill, not a content section, and is
+    present even on a skill with zero real body structure -- it must not
+    count toward the non-boilerplate heading signal."""
+    _write_skill(
+        tmp_path,
+        "titled",
+        "---\nname: titled\ndescription: Exercises the title-heading exclusion.\n---\n\n"
+        "# Titled Skill\n\n## Overview\n\ntext\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    assert artifact["skills"][0]["structural_headings"] == []
+
+
+def test_structural_headings_collects_non_boilerplate_sections(tmp_path: Path) -> None:
+    """A real, domain-specific section heading is collected, lowercased,
+    in document order, with duplicates collapsed."""
+    _write_skill(
+        tmp_path,
+        "real-structure",
+        "---\nname: real-structure\ndescription: Exercises real structural headings.\n---\n\n"
+        "# Real Structure\n\n## Overview\n\ntext\n\n"
+        "## Running Hindsight\n\ntext\n\n## Key Artifact Files\n\ntext\n\n"
+        "## Running Hindsight\n\nrepeated section\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    assert artifact["skills"][0]["structural_headings"] == [
+        "running hindsight",
+        "key artifact files",
+    ]
+
+
+def test_structural_headings_excludes_code_fence_lines(tmp_path: Path) -> None:
+    """A shell comment inside a code fence must not be misread as a
+    structural heading, same exclusion _section_ranges already applies."""
+    _write_skill(
+        tmp_path,
+        "fenced",
+        "---\nname: fenced\ndescription: Exercises the code-fence exclusion.\n---\n\n"
+        "## Real Section\n\n```bash\n# Not a heading\n```\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    assert artifact["skills"][0]["structural_headings"] == ["real section"]
