@@ -55,11 +55,27 @@ _IMPERATIVE_STARTER = re.compile(
     re.IGNORECASE,
 )
 
+# The single canonical list of verification/command verbs, shared by
+# _VERIFICATION_STARTER (decides whether a line becomes a check at all)
+# and _ORACLE_PATTERNS's "command" oracle_kind (decides, for a check that
+# already exists, how it can be verified). ADR-0015 fixed this exact list
+# as the canonical command-oracle vocabulary; _VERIFICATION_STARTER had
+# drifted to an older, narrower 7-verb subset that predated that ADR and
+# was never updated to match, so a line starting with "Run", "Query",
+# "Inspect", "Does", "Ensure", or "Validate" -- each already accepted as a
+# valid command-oracle verb -- could never become a check in the first
+# place, regardless of how it would have been classified. Defining the
+# list once here prevents the two from drifting apart again.
+_VERIFICATION_VERBS = (
+    "verify", "assert", "run", "check", "confirm", "test", "query",
+    "inspect", "does", "ensure", "prove", "validate", "demonstrate",
+)
+_VERIFICATION_VERB_ALTERNATION = "|".join(_VERIFICATION_VERBS)
+
 # Verification starter — lines that start with a verification verb.
 # Used to extract checks from anywhere in the body, not just Checks sections.
 _VERIFICATION_STARTER = re.compile(
-    r"^\s*(?:[-*+]\s+)?(?:\d+\.\s+)?"
-    r"(?:verify|check|test|assert|confirm|demonstrate|prove)\b",
+    rf"^\s*(?:[-*+]\s+)?(?:\d+\.\s+)?(?:{_VERIFICATION_VERB_ALTERNATION})\b",
     re.IGNORECASE,
 )
 
@@ -908,7 +924,7 @@ def _extract_checks(
 _ORACLE_PATTERNS = [
     (re.compile(r"\?\s*$"), "question"),
     (re.compile(r"^\s*\[\s*[xX ]\s*\]"), "checkbox"),
-    (re.compile(r"\b(?:verify|assert|run|check|confirm|test|query|inspect|does|ensure|prove|validate|demonstrate)\b", re.IGNORECASE), "command"),
+    (re.compile(rf"\b(?:{_VERIFICATION_VERB_ALTERNATION})\b", re.IGNORECASE), "command"),
 ]
 
 

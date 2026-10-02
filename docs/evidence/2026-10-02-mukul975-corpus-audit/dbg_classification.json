@@ -1,5 +1,5 @@
 {
-  "total": 188,
+  "total": 177,
   "results": [
     {
       "skill": "acquiring-disk-image-with-dd-and-dcfldd",
@@ -58,14 +58,6 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "analyzing-ethereum-smart-contract-vulnerabilities",
-      "body_chars": 2379,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "analyzing-golang-malware-with-ghidra",
       "body_chars": 10539,
       "heading_count": 12,
@@ -87,14 +79,6 @@
       "heading_count": 13,
       "real_section_count": 3,
       "step_section_count": 7,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "analyzing-linux-kernel-rootkits",
-      "body_chars": 4797,
-      "heading_count": 10,
-      "real_section_count": 3,
-      "step_section_count": 4,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -530,14 +514,6 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "exploiting-http-request-smuggling",
-      "body_chars": 10210,
-      "heading_count": 22,
-      "real_section_count": 13,
-      "step_section_count": 6,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "exploiting-idor-vulnerabilities",
       "body_chars": 11083,
       "heading_count": 22,
@@ -730,14 +706,6 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "implementing-endpoint-detection-with-wazuh",
-      "body_chars": 1484,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "implementing-endpoint-dlp-controls",
       "body_chars": 5017,
       "heading_count": 11,
@@ -850,14 +818,6 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "implementing-runtime-application-self-protection",
-      "body_chars": 2324,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "implementing-soar-automation-with-phantom",
       "body_chars": 13816,
       "heading_count": 13,
@@ -926,14 +886,6 @@
       "body_chars": 9438,
       "heading_count": 14,
       "real_section_count": 6,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "implementing-zero-trust-with-beyondcorp",
-      "body_chars": 2136,
-      "heading_count": 9,
-      "real_section_count": 2,
       "step_section_count": 4,
       "classification": "procedural_structured_false_positive"
     },
@@ -1034,14 +986,6 @@
       "classification": "procedural_structured_false_positive"
     },
     {
-      "skill": "performing-container-security-scanning-with-trivy",
-      "body_chars": 2283,
-      "heading_count": 9,
-      "real_section_count": 2,
-      "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
       "skill": "performing-directory-traversal-testing",
       "body_chars": 10649,
       "heading_count": 22,
@@ -1079,14 +1023,6 @@
       "heading_count": 23,
       "real_section_count": 19,
       "step_section_count": 0,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-file-carving-with-foremost",
-      "body_chars": 11853,
-      "heading_count": 12,
-      "real_section_count": 4,
-      "step_section_count": 5,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -1151,14 +1087,6 @@
       "heading_count": 14,
       "real_section_count": 5,
       "step_section_count": 4,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-memory-forensics-with-volatility3",
-      "body_chars": 11187,
-      "heading_count": 14,
-      "real_section_count": 4,
-      "step_section_count": 7,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -1239,14 +1167,6 @@
       "heading_count": 8,
       "real_section_count": 3,
       "step_section_count": 2,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "performing-purple-team-exercise",
-      "body_chars": 12194,
-      "heading_count": 13,
-      "real_section_count": 4,
-      "step_section_count": 6,
       "classification": "procedural_structured_false_positive"
     },
     {
@@ -1390,14 +1310,6 @@
       "body_chars": 6321,
       "heading_count": 11,
       "real_section_count": 3,
-      "step_section_count": 5,
-      "classification": "procedural_structured_false_positive"
-    },
-    {
-      "skill": "recovering-deleted-files-with-photorec",
-      "body_chars": 8508,
-      "heading_count": 12,
-      "real_section_count": 4,
       "step_section_count": 5,
       "classification": "procedural_structured_false_positive"
     },

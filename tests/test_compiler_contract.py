@@ -446,3 +446,40 @@ def test_numbered_comment_inside_code_fence_in_a_steps_section_is_not_a_step(
 
     step_texts = [s["text"] for s in artifact["skills"][0]["procedural_steps"]]
     assert step_texts == ["Run the initial scan", "Review the results"]
+
+
+def test_verification_starter_recognizes_the_full_oracle_command_verb_list(tmp_path: Path) -> None:
+    """Regression: _VERIFICATION_STARTER (decides whether prose becomes a
+    check at all) had drifted to a 7-verb subset of the 13-verb canonical
+    list ADR-0015 fixed for oracle_kind "command" classification. A real
+    skill from mukul975/Anthropic-Cybersecurity-Skills had a standalone
+    sentence "Validate false positive rate by running against 7 days of
+    production data..." that never became a check at all because "validate"
+    was missing from the starter list, even though oracle_kind's command
+    pattern already recognized it -- the check simply never existed to be
+    classified. 36/70 (51%) of that corpus's REQUIREMENT_WITHOUT_CHECK
+    findings had this exact shape. Both lists now come from one shared
+    tuple so they cannot drift apart again."""
+    _write_skill(
+        tmp_path,
+        "missing-verbs",
+        "---\nname: missing-verbs\ndescription: Exercises every previously-missing verification verb.\n---\n\n"
+        "## Workflow\n\n"
+        "Run the scanner against the target host.\n"
+        "Query the results database for matching entries.\n"
+        "Inspect the output for anomalies.\n"
+        "Does the output match the expected baseline.\n"
+        "Ensure the baseline file has not been modified.\n"
+        "Validate the scan completed without errors.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    check_texts = [c["text"] for c in artifact["skills"][0]["checks"]]
+    assert len(check_texts) == 6
+    for expected_starter in ("Run", "Query", "Inspect", "Does", "Ensure", "Validate"):
+        assert any(text.startswith(expected_starter) for text in check_texts), (
+            f"expected a check starting with {expected_starter!r}, got {check_texts!r}"
+        )
+    for check in artifact["skills"][0]["checks"]:
+        assert check["oracle_kind"] == "command"

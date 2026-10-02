@@ -50,8 +50,8 @@ compiler alone). See `src/crucible/compiler.py` and
 
 ## Finding 0 (CONFIRMED BY INDUCTION): a shell comment inside a code fence was silently corrupting section extraction corpus-wide
 
-Spot-checking `CHECK_WITHOUT_ORACLE` findings (see Finding 2 below)
-surfaced something much larger than a calibration question: 40+ "checks"
+Spot-checking `CHECK_WITHOUT_ORACLE` findings surfaced something much
+larger than a calibration question: 40+ "checks"
 on `analyzing-bootkit-and-rootkit-samples` turned out to be bash comments
 like `# Check for known UEFI malware patterns` inside a ` ```bash ` fence,
 misread as a real Markdown heading.
@@ -92,36 +92,72 @@ a code block, and the same exclusion for procedural-step extraction.
 mutants introduced). See `src/crucible/compiler.py` and
 `tests/test_compiler_contract.py`.
 
-This is why every finding count below is reported post-fix; the pre-fix
-audit (committed 2026-10-02 as the first pass) is superseded by this one
-and should not be cited as the corpus's real finding distribution.
+## Finding 0b (CONFIRMED BY INDUCTION): the check-extraction "starter verb" list had drifted from the canonical oracle-verb list
 
-## Audit: 497 findings across 818 real skills (post-fix)
+Spot-checking `REQUIREMENT_WITHOUT_CHECK` found a second, independent
+compiler bug, same family as Finding 0 (a mismatch between two things
+meant to describe the same concept) but in a different function.
+
+**Root cause**: `_VERIFICATION_STARTER` (decides whether a line of prose
+becomes a check at all) matched only 7 verbs (`verify, check, test,
+assert, confirm, demonstrate, prove`). `_ORACLE_PATTERNS`'s "command" rule
+(decides, for a check that already exists, how it's verified) matched 13
+verbs — ADR-0015 fixed that exact 13-verb list as canonical. The two were
+clearly meant to be the same vocabulary, but `_VERIFICATION_STARTER`
+predated ADR-0015 and was never updated to match it: a line starting with
+`run`, `query`, `inspect`, `does`, `ensure`, or `validate` — each already
+an accepted command-oracle verb — could never become a check in the first
+place, so it could never even reach oracle_kind classification.
+
+**Measured**: `building-detection-rules-with-sigma` has one normative rule
+("Validate false positive rate by running against 7 days of production
+data...") and was flagged REQUIREMENT_WITHOUT_CHECK — but the skill does
+have real, checkable content; "validate" just wasn't in the starter list.
+Scanning all 70 (pre-fix) REQUIREMENT_WITHOUT_CHECK findings for a line
+starting with one of the six missing verbs found **36/70 (51%)** had this
+exact shape.
+
+**Fix**: both lists now come from one shared tuple
+(`_VERIFICATION_VERBS`), so they cannot drift apart again. Verified by
+induction: re-compiling the Sigma skill now extracts the check with
+`oracle_kind: command`. One existing test
+(`test_verification_starter_outside_checks_section`) had a fixture line
+("Run the analysis.") deliberately chosen to *not* match the old 7-verb
+list, used to assert the negative case — it now correctly becomes a check
+too, and the test was updated to assert that instead of silently loosened.
+A new regression test exercises all six previously-missing verbs
+explicitly. 683/683 tests pass; mutation-lab kill rate held 6/6.
+
+This is why every finding count below is reported post-both-fixes; the two
+earlier audit passes (committed 2026-10-02) are both superseded and should
+not be cited as the corpus's real finding distribution.
+
+## Audit: 446 findings across 818 real skills (post both compiler fixes)
 
 ```
-CHECK_WITHOUT_ORACLE            27   (was 91 pre-fix -- 70% was the bug above)
+CHECK_WITHOUT_ORACLE            27   (91 before Finding 0; unchanged by Finding 0b)
 CLAIM_WITHOUT_PROVENANCE         3
-DESCRIPTION_BODY_GAP           188   (was 179 -- skills that lost fake checks correctly gained this finding)
+DESCRIPTION_BODY_GAP           177   (179 before Finding 0 -> 188 after Finding 0 -> 177 after Finding 0b)
 IRREVERSIBLE_WITHOUT_REVIEW     49
-METHODOLOGICAL_VACUITY           5   (was 3)
-MISSING_FAILURE_MODE            55   (was 57)
+METHODOLOGICAL_VACUITY           1   (3 before Finding 0 -> 5 after Finding 0 -> 1 after Finding 0b)
+MISSING_FAILURE_MODE            55
 NON_DETERMINISTIC_INSTRUCTION   20
 OVERCLAIM                        1
-REQUIREMENT_WITHOUT_CHECK       70   (was 67)
+REQUIREMENT_WITHOUT_CHECK       34   (70 before Finding 0b -- 51% was this bug)
 SCOPE_TRIGGER_MISMATCH          54
 SECRET_IN_OUTPUT                 1
 SEMANTIC_REDUNDANCY              1
 UNBOUNDED_RESOURCE               1
 UNBOUNDED_RETRY                  4
-UNPINNED_DEPENDENCY             16   (was 19)
+UNPINNED_DEPENDENCY             16
 UNVALIDATED_EXTERNAL_INPUT       2
 ```
 
 All `CANDIDATE` (none of this corpus's skills compose with each other or
 self-reference, so no natively-`CONFIRMED` findings exist). Full audit
-artifact: `audit.json` in this directory (overwritten post-fix; the
-pre-fix version is recoverable from git history of this file if needed
-for comparison). Compile+audit over all 818 skills takes ~3.3s.
+artifact: `audit.json` in this directory (overwritten after each fix;
+earlier versions are recoverable from this file's git history for
+comparison). Compile+audit over all 818 skills takes ~3.4s.
 
 ## Finding 1 (CONFIRMED BY INDUCTION): SEMANTIC_REDUNDANCY is well-calibrated, not under-triggering
 
@@ -149,7 +185,7 @@ count is not evidence of a false-negative gap.**
 
 ## Finding 2 (CONFIRMED BY INDUCTION): DESCRIPTION_BODY_GAP has a real false-positive pattern — procedural/workflow-style skills
 
-`DESCRIPTION_BODY_GAP` is the single largest category (188/497, 38%). Its
+`DESCRIPTION_BODY_GAP` is the single largest category (177/446, 40%). Its
 own docstring already states the honest limitation: the L1 rule extractor
 is lexical, looking only for RFC-2119 modals (MUST/SHOULD/MAY) and a
 narrow set of imperative/absoluteness patterns, so a skill using normative
@@ -168,7 +204,7 @@ with...", "Manual XOR Decryption of..."), a perfectly legitimate and
 common style for a procedural skill that this extractor's RFC-2119-centric
 pattern set does not recognize as normative structure at all.
 
-**Quantified 2026-10-02: 188/188 (100%) of DESCRIPTION_BODY_GAP hits on
+**Quantified 2026-10-02: 177/177 (100%) of DESCRIPTION_BODY_GAP hits on
 this corpus are this false-positive pattern. Zero are genuinely thin.**
 
 Method: for every flagged skill, count Markdown section headings in the
@@ -181,7 +217,7 @@ Files`, `Validation Criteria`) or >=2 numbered Step sections.
 
 | Classification | Count |
 |---|---|
-| Structured (procedural/workflow content, false positive) | 188 |
+| Structured (procedural/workflow content, false positive) | 177 |
 | Genuinely thin (<300 chars of body, no real content) | 0 |
 | Unclassified / needs individual review | 0 |
 
@@ -227,12 +263,16 @@ for L2/L10.
 
 - Deciding and implementing the DESCRIPTION_BODY_GAP scope/extension
   question above.
-- Spot-checking the other finding classes (`REQUIREMENT_WITHOUT_CHECK` 70,
-  `MISSING_FAILURE_MODE` 55, `SCOPE_TRIGGER_MISMATCH` 54,
-  `CHECK_WITHOUT_ORACLE` 27 post-fix — the next-largest categories) for
-  the same kind of style-driven false positive. Given DESCRIPTION_BODY_GAP's
-  100% false-positive rate on this corpus's dominant style, these are now
-  a real priority, not a formality.
+- `REQUIREMENT_WITHOUT_CHECK` investigated (Finding 0b above): turned out
+  to be a second real compiler bug (verb-list drift), not a calibration
+  question, and is now fixed — 70 -> 34. Remaining 34 not yet individually
+  classified as genuine gaps vs. a different false-positive pattern.
+- Spot-checking the remaining large finding classes (`MISSING_FAILURE_MODE`
+  55, `SCOPE_TRIGGER_MISMATCH` 54, `CHECK_WITHOUT_ORACLE` 27, and the
+  remaining 34 `REQUIREMENT_WITHOUT_CHECK`) for the same kind of
+  style-driven false positive or compiler bug. Given that two of the first
+  three categories checked this way turned out to be real compiler bugs,
+  not calibration questions, this is a high-value check, not a formality.
 - Running L2.5/L12 confirmation and L15 recommendation/narration against
   this corpus (would cost real Nebius calls across potentially hundreds of
   candidates; not run here).

@@ -321,9 +321,15 @@ def test_numbered_list_outside_steps_section_extracted(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 def test_verification_starter_outside_checks_section(tmp_path: Path) -> None:
-    """Invariant: a line starting with a verification verb (verify,
-    check, test, assert, confirm, demonstrate, prove) outside a Checks
-    section is extracted as a check."""
+    """Invariant: a line starting with a verification verb outside a
+    Checks section is extracted as a check. The starter verb list is the
+    same canonical list ADR-0015 fixed for oracle_kind "command"
+    classification (verify, assert, run, check, confirm, test, query,
+    inspect, does, ensure, prove, validate, demonstrate) -- the two lists
+    are defined from one shared tuple specifically so they cannot drift
+    apart again, as they previously had (a corpus-stress-test finding:
+    "Run"/"Validate"/"Ensure" prose never became a check at all, so it
+    could never even reach oracle_kind classification)."""
     _write_skill(
         tmp_path,
         "verify-prose",
@@ -334,9 +340,10 @@ def test_verification_starter_outside_checks_section(tmp_path: Path) -> None:
     )
     artifact = _compile(tmp_path)
     checks = artifact["skills"][0]["checks"]
-    assert len(checks) == 2
-    assert "Verify the results are consistent" in checks[0]["text"]
-    assert "Confirm the output matches expectations" in checks[1]["text"]
+    assert len(checks) == 3
+    assert "Run the analysis" in checks[0]["text"]
+    assert "Verify the results are consistent" in checks[1]["text"]
+    assert "Confirm the output matches expectations" in checks[2]["text"]
 
 
 def test_verification_starter_with_bullet_marker(tmp_path: Path) -> None:
