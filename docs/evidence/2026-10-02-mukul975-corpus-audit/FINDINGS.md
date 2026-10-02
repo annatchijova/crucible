@@ -119,25 +119,71 @@ with...", "Manual XOR Decryption of..."), a perfectly legitimate and
 common style for a procedural skill that this extractor's RFC-2119-centric
 pattern set does not recognize as normative structure at all.
 
-**This is the concrete gap behind Anna's original framing** ("categories
-that look fine but could be grouped/rewritten/improved"): the check is not
-wrong to flag a real absence of RFC-2119 structure, but a large fraction of
-its 179 hits on this corpus are likely this same procedural-style pattern,
-not skills that are actually empty or low-quality. Not yet quantified how
-many of the 179 are this pattern vs. genuinely thin skills — that is the
-natural next step before deciding whether/how to extend L1's extractor to
-recognize numbered-step-plus-code-block structure as a form of procedural
-content, distinct from (and not a replacement for) RFC-2119 rule
-extraction.
+**Quantified 2026-10-02: 179/179 (100%) of DESCRIPTION_BODY_GAP hits on
+this corpus are this false-positive pattern. Zero are genuinely thin.**
+
+Method: for every flagged skill, count Markdown section headings in the
+body beyond the corpus's universal boilerplate (`Overview`, `When to Use`,
+`Prerequisites`, `References`, `Key Concepts` — present in nearly every
+skill regardless of quality) and separately count `### Step N:`-style
+headings. A skill counts as "structured" if it has either >=2 non-
+boilerplate content sections (e.g. `Running Hindsight`, `Key Artifact
+Files`, `Validation Criteria`) or >=2 numbered Step sections.
+
+| Classification | Count |
+|---|---|
+| Structured (procedural/workflow content, false positive) | 179 |
+| Genuinely thin (<300 chars of body, no real content) | 0 |
+| Unclassified / needs individual review | 0 |
+
+First pass used a narrower rule (Step headings + a fenced code block) and
+left 34 skills unclassified; manually reading several of those (e.g.
+`analyzing-browser-forensics-with-hindsight`, 10KB body with Prerequisites,
+a browser-profile-path reference table, a `## Running Hindsight` section
+with real CLI examples) showed they were structured too, just organized
+around domain-specific headings instead of `Step N:` — the classifier was
+too narrow, not the underlying finding. Broadening to "any 2+ non-
+boilerplate headings" (not just Step-shaped ones) closed the gap to 0
+unclassified. Full per-skill classification saved in this directory
+(`dbg_classification.json`) for independent review.
+
+**Root cause, stated precisely**: `_check_description_body_gap` in
+`auditor.py` only treats RFC-2119 modals (MUST/SHOULD/MAY) and a narrow
+set of imperative/absoluteness starters as "normative structure." This
+corpus's dominant style — numbered `### Step N:` procedures, reference
+tables, runnable code blocks, a `Validation Criteria` checklist — carries
+real, auditable structure that a human or an LLM would immediately
+recognize as substantive, but none of it is phrased with RFC-2119
+vocabulary, so the L1 extractor sees it as empty every time. This is **the
+concrete gap behind Anna's original framing** ("categories that look fine
+but could be grouped/rewritten/improved") — not a bug in the check's logic
+(it is accurately reporting "no RFC-2119 structure found"), but a scope gap
+in what L1 recognizes as structure at all.
+
+**Engineering proposal (not yet implemented)**: before touching L1's
+extractor, decide whether DESCRIPTION_BODY_GAP should (a) stay scoped
+exactly as documented — a strict RFC-2119-structure check, with the
+corpus-level false-positive rate documented as a known limitation of
+*this check against this style of corpus*, or (b) be extended with a
+second, independently-justified structural signal (numbered steps /
+section headings beyond boilerplate / fenced code blocks) that promotes a
+skill out of CANDIDATE when it has real procedural structure the current
+extractor can't see. Option (b) is the more useful fix but changes what
+the check means; it should not be done as a quiet patch to the existing
+rule. Recommend raising this as its own decision record before writing
+code, same discipline as this project's existing `docs/decisions/` entries
+for L2/L10.
 
 ## Not yet done
 
-- Quantifying the real false-positive rate of `DESCRIPTION_BODY_GAP`
-  across all 179 hits (only one was read in full).
-- Spot-checking the other finding classes (`CHECK_WITHOUT_ORACLE`,
-  `REQUIREMENT_WITHOUT_CHECK`, `MISSING_FAILURE_MODE`, `SCOPE_TRIGGER_MISMATCH`
-  — the next-largest categories) for the same kind of style-driven false
-  positive.
+- Deciding and implementing the DESCRIPTION_BODY_GAP scope/extension
+  question above.
+- Spot-checking the other finding classes (`CHECK_WITHOUT_ORACLE` 91,
+  `REQUIREMENT_WITHOUT_CHECK` 67, `MISSING_FAILURE_MODE` 57,
+  `SCOPE_TRIGGER_MISMATCH` 54 — the next-largest categories) for the same
+  kind of style-driven false positive. Given DESCRIPTION_BODY_GAP's 100%
+  false-positive rate on this corpus's dominant style, these are now a
+  real priority, not a formality.
 - Running L2.5/L12 confirmation and L15 recommendation/narration against
   this corpus (would cost real Nebius calls across potentially hundreds of
   candidates; not run here).
