@@ -31,6 +31,7 @@ verificado cross-process, y sellado SHA-256:
 | R2/R3 | Replay bundle (acquisition/export + offline oracle replay) | Completo — agregado 2026-10-01, ver docs/REPLAY_BUNDLE.md |
 | R4 | Private repair evidence capture | Una corrida live del fixture aceptada; accuracy y estabilidad aún sin evaluar — ver docs/REPAIR_EVIDENCE.md |
 | L15 | Recomendación determinística + narrador LLM + reporte final MD/HTML/PDF | Completo y corrido en vivo contra Nebius 2026-10-01 (incluyendo los 3 formatos de salida) — ver docs/red-team/2026-10-01-l15-recommendation-narrator-review.md y docs/evidence/2026-10-01-l15-render-live-run/ |
+| L16 | Workflow de consolidación de skills (cluster → LLM propone fusión → gate determinista) | Completo (local, sin NEBIUS_API_KEY corrido real) — ver docs/decisions/0020-l16-consolidation-scope.md |
 
 Red team L11 completado: 5 hallazgos encontrados y arreglados (RT-01 a RT-05),
 1 hipótesis falsificada (RT-06), invariantes verificados (RT-07).
@@ -49,6 +50,22 @@ medidos. Rompió ~20 tests en 7 archivos que usaban el idiom "Verify X" sin
 backtick como relleno de "check válido" en sus fixtures; todos corregidos
 haciendo esos checks concretos (con `` `scripts/...` ``) en vez de debilitar
 el check nuevo.
+
+Actualización 2026-10-03 (2): se agregó L16, el workflow de consolidación
+de skills (`consolidation.py`), a pedido del usuario: cuando varios skills
+son redundantes entre sí (no solo un par), un LLM propone UN skill
+fusionado que los reemplaza, con el mismo principio arquitectónico de
+siempre (el LLM propone, lo determinista decide). Agrupa pares
+`SEMANTIC_REDUNDANCY` ya CONFIRMADOS (L2.5) en clusters vía componentes
+conexas; si algún skill fuera del cluster lo referencia por nombre,
+rechaza la fusión entera (decisión del usuario: no reescribir referencias
+externas en este incremento); verifica cobertura (cada regla/check
+original debe tener contenido equivalente en la fusión, Jaccard ≥ 1/2,
+umbral propio y distinto del 2/3 que ya usa el detector de duplicados); y
+NO tiene gate conductual (L5 no generaliza a contenido arbitrario, así que
+cada reporte lo dice explícitamente en vez de omitirlo). 8 tests nuevos,
+suite completa en verde. Detalle completo en
+docs/decisions/0020-l16-consolidation-scope.md.
 
 ---
 

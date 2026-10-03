@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 from typing import Any
 
 from .auditor import audit_corpus
@@ -16,6 +17,7 @@ from .confirm import (
     confirm_candidates,
     confirm_semantic_redundancy,
 )
+from .consolidation import LLMConsolidationProposer, run_consolidation
 from .final_report import build_final_report
 from .final_report_render import (
     render_final_report_html,
@@ -105,6 +107,21 @@ def main() -> int:
         "--mock-confirm",
         action="store_true",
         help="use the deterministic mock executor for the confirmation layer (for testing)",
+    )
+    parser.add_argument(
+        "--consolidate",
+        action="store_true",
+        help="run the L16 consolidation workflow: cluster CONFIRMED "
+             "SEMANTIC_REDUNDANCY pairs and have an LLM propose one merged "
+             "skill per cluster, gated deterministically (no behavioral "
+             "check -- see consolidation.py)",
+    )
+    parser.add_argument(
+        "--cluster-index",
+        type=int,
+        default=None,
+        help="which redundancy cluster to consolidate, 0-indexed "
+             "(default: 0; used with --consolidate)",
     )
     parser.add_argument(
         "--narrate",
@@ -314,6 +331,33 @@ def main() -> int:
             executor = NebiusConfirmExecutor()
         confirmation = confirm_candidates(audit, artifact, executor)
         print(json.dumps(confirmation, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0
+
+    if args.consolidate:
+        if not args.root:
+            parser.error("root is required with --consolidate")
+        artifact = compile_corpus(args.root)
+        audit = audit_corpus(artifact)
+        root_path = Path(args.root).resolve()
+        corpus = {
+            skill["identity"]["name"]: (
+                root_path / skill["identity"]["source_path"]
+            ).read_text(encoding="utf-8")
+            for skill in artifact["skills"]
+        }
+        confirm_executor: Any = (
+            MockConfirmExecutor() if args.mock_confirm else NebiusConfirmExecutor()
+        )
+        confirmation = confirm_candidates(
+            audit, artifact, confirm_executor, classes=["SEMANTIC_REDUNDANCY"]
+        )
+        report = run_consolidation(
+            corpus=corpus,
+            confirmation=confirmation,
+            cluster_index=args.cluster_index or 0,
+            proposer=LLMConsolidationProposer(),
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
 
     if args.narrate or args.mock_narrate:
