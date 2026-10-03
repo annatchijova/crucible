@@ -30,6 +30,17 @@ explicit, falsifiable answer here rather than a silent assumption:
    _COVERAGE_THRESHOLD), that every original rule and check has matching
    content somewhere in the proposed merge.
 
+`run_consolidation` acts on one cluster at a time (CLI: --consolidate
+--cluster-index N). `run_consolidation_batch` (CLI: --consolidate-all)
+processes every cluster found in one confirmation pass, applying each
+accepted merge before moving to the next; a rejected or blocked cluster
+is left unmerged and does not block the rest -- a batch of independent
+attempts, not a transaction. Clusters are computed once, upfront, since
+they are disjoint connected components; each cluster's gate still runs
+against a freshly re-audited corpus so that an earlier merge's
+corpus-wide ripple effects (if any) are caught by the next cluster's
+novelty check too.
+
 What this module deliberately does NOT do: run a behavioral regression
 gate. The L5 property oracle (behavioral.py) is hand-built for one
 synthetic retry-budget fixture and does not generalize to arbitrary skill
@@ -500,16 +511,11 @@ def run_consolidation(
     1. Compile and audit the corpus.
     2. Cluster CONFIRMED SEMANTIC_REDUNDANCY pairs (requires ``confirmation``
        -- without it, there are no clusters to act on).
-    3. Select the cluster at ``cluster_index``.
-    4. Refuse the merge if any skill outside the cluster references a
-       cluster member by name (EXTERNAL_REFERENCE_BLOCK).
-    5. The proposer proposes one merged skill.
-    6. Crucible recompiles and re-audits the corpus with the cluster
-       replaced by the merged skill.
-    7. Accept iff: no targeted redundancy persists, coverage is complete,
-       and no finding is new beyond what the cluster or the rest of the
-       corpus already had. There is no behavioral gate -- see module
-       docstring.
+    3. Select the cluster at ``cluster_index`` and run the gate (see
+       ``_run_gate_for_cluster``).
+
+    For every cluster found by one confirmation pass in one call, see
+    ``run_consolidation_batch``.
     """
     if corpus is None:
         corpus = CONSOLIDATION_FIXTURE
@@ -533,7 +539,39 @@ def run_consolidation(
             ),
         )
     cluster = clusters[cluster_index]
+    context = {"cluster_index": cluster_index, "total_clusters": len(clusters)}
+    return _run_gate_for_cluster(corpus, ir, audit, cluster, proposer, context)
 
+
+def _run_gate_for_cluster(
+    corpus: dict[str, str],
+    ir: dict[str, Any],
+    audit: dict[str, Any],
+    cluster: list[str],
+    proposer: ConsolidationProposer,
+    context: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Run the external-reference precondition, proposal, and acceptance
+    gate for one already-resolved cluster against the given (ir, audit)
+    of the current corpus state.
+
+    1. Refuse the merge if any skill outside the cluster references a
+       cluster member by name (EXTERNAL_REFERENCE_BLOCK).
+    2. The proposer proposes one merged skill.
+    3. Crucible recompiles and re-audits the corpus with the cluster
+       replaced by the merged skill.
+    4. Accept iff: no targeted redundancy persists, coverage is complete,
+       and no finding is new beyond what the cluster or the rest of the
+       corpus already had. There is no behavioral gate -- see module
+       docstring.
+
+    Takes ``ir``/``audit`` already computed for ``corpus`` (rather than
+    recompiling) so that batch mode can call this once per cluster against
+    a corpus that evolves between clusters without re-deriving clusters
+    from a confirmation artifact whose finding ids go stale the moment the
+    corpus changes.
+    """
+    base_audit_digest = audit["audit_digest"]
     graph_artifact = build_composition_graph(ir, audit)
     external_refs = find_external_references(graph_artifact, cluster)
     if external_refs:
@@ -548,7 +586,8 @@ def run_consolidation(
         f for f in audit["findings"]
         if f.get("class") == "SEMANTIC_REDUNDANCY" and f.get("skill") in cluster
     ]
-    context = {"cluster_index": cluster_index, "total_clusters": len(clusters)}
+    context = dict(context or {})
+    context["cluster_size"] = len(cluster)
 
     try:
         proposal = proposer.propose_merge(cluster_skills, evidence, context)
@@ -627,6 +666,101 @@ def run_consolidation(
         rejection_reason=None, cluster=cluster, proposal=proposal,
         repaired_audit_digest=repaired_audit_digest,
     )
+
+
+# ---------------------------------------------------------------------------
+# Batch workflow runner
+# ---------------------------------------------------------------------------
+
+CONSOLIDATION_BATCH_VERSION = "crucible-consolidation-batch/v1"
+
+BATCH_STATUS_NO_CLUSTERS = "NO_CLUSTERS"
+BATCH_STATUS_COMPLETED = "COMPLETED"
+
+
+def run_consolidation_batch(
+    corpus: dict[str, str] | None = None,
+    confirmation: dict[str, Any] | None = None,
+    proposer: ConsolidationProposer | None = None,
+) -> dict[str, Any]:
+    """Run the consolidation workflow on every redundancy cluster, in one
+    call, applying accepted merges before moving to the next cluster.
+
+    Clusters are computed ONCE, upfront, from the initial corpus -- they
+    are disjoint connected components, so merging one cluster cannot add
+    or remove members from another. A confirmation artifact's finding ids
+    are only valid against the audit they were confirmed from, so after
+    each merge the corpus is re-audited fresh and the gate for the next
+    cluster runs against that fresh (ir, audit) rather than re-deriving
+    clusters from the now-stale confirmation.
+
+    A cluster whose merge is REJECTED/BLOCKED/ERROR is left alone (its
+    members stay in the corpus unmerged) and the batch continues to the
+    next cluster -- one rejected merge must not block the others. This is
+    a batch of independent attempts, not a transaction.
+
+    ``batch_status`` answers "did we attempt every cluster", not "did
+    every merge succeed" -- individual outcomes are in ``reports``.
+    """
+    if corpus is None:
+        corpus = CONSOLIDATION_FIXTURE
+    if proposer is None:
+        proposer = LLMConsolidationProposer()
+
+    ir0, audit0 = _compile_ir_and_audit(corpus)
+    base_audit_digest = audit0["audit_digest"]
+    clusters = find_redundancy_clusters(audit0, confirmation)
+
+    if not clusters:
+        payload: dict[str, Any] = {
+            "consolidation_batch_version": CONSOLIDATION_BATCH_VERSION,
+            "base_audit_digest": base_audit_digest,
+            "batch_status": BATCH_STATUS_NO_CLUSTERS,
+            "total_clusters": 0,
+            "reports": [],
+            "accepted_count": 0,
+            "rejected_count": 0,
+            "blocked_count": 0,
+            "error_count": 0,
+            "final_skill_names": sorted(corpus.keys()),
+        }
+        payload["batch_digest"] = digest_payload(payload)
+        return payload
+
+    evolving_corpus = dict(corpus)
+    reports: list[dict[str, Any]] = []
+    for index, cluster in enumerate(clusters):
+        ir, audit = _compile_ir_and_audit(evolving_corpus)
+        context = {"cluster_index": index, "total_clusters": len(clusters)}
+        report = _run_gate_for_cluster(
+            evolving_corpus, ir, audit, cluster, proposer, context
+        )
+        reports.append(report)
+        if report["outcome"] == OUTCOME_ACCEPTED:
+            proposed_name = report["proposal"]["proposed_name"]
+            proposed_text = report["proposal"]["proposed_text"]
+            for name in cluster:
+                del evolving_corpus[name]
+            evolving_corpus[proposed_name] = proposed_text
+
+    counts = {"ACCEPTED": 0, "REJECTED": 0, "BLOCKED": 0, "ERROR": 0}
+    for report in reports:
+        counts[report["outcome"]] = counts.get(report["outcome"], 0) + 1
+
+    payload = {
+        "consolidation_batch_version": CONSOLIDATION_BATCH_VERSION,
+        "base_audit_digest": base_audit_digest,
+        "batch_status": BATCH_STATUS_COMPLETED,
+        "total_clusters": len(clusters),
+        "reports": reports,
+        "accepted_count": counts["ACCEPTED"],
+        "rejected_count": counts["REJECTED"],
+        "blocked_count": counts["BLOCKED"],
+        "error_count": counts["ERROR"],
+        "final_skill_names": sorted(evolving_corpus.keys()),
+    }
+    payload["batch_digest"] = digest_payload(payload)
+    return payload
 
 
 def _report(

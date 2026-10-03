@@ -142,7 +142,39 @@ Accepted now:
 
 Deferred:
 - Auto-rewrite of external references.
-- Batch consolidation across every cluster in one invocation.
 - Running `LLMConsolidationProposer` against a real Nebius API key and
   measuring the coverage threshold against real near-duplicate corpora
   (1/2 is a reasoned starting point, not a measured one yet).
+
+## Addendum 2026-10-03: batch mode
+
+Added `run_consolidation_batch` / `--consolidate-all`, the batch mode
+deferred above. Clusters are computed once, upfront (they are disjoint
+connected components, so merging one cannot add or remove members from
+another), but each cluster's gate still runs against a *freshly
+re-audited* corpus rather than reusing the first pass's `(ir, audit)` --
+a confirmation artifact's `finding_id`s are only valid against the audit
+they were confirmed from, and go stale the moment an earlier merge
+changes the corpus. The gate logic itself was extracted into
+`_run_gate_for_cluster(corpus, ir, audit, cluster, proposer, context)` so
+both `run_consolidation` (single, resolves `cluster_index` via
+confirmation) and `run_consolidation_batch` (loops, already knows each
+`cluster`) share the exact same acceptance criteria -- no duplicated gate
+logic between the two entry points.
+
+A rejected, blocked, or errored cluster is left unmerged and does **not**
+block the rest of the batch: this is a batch of independent attempts, not
+a transaction. `batch_status` (`NO_CLUSTERS` / `COMPLETED`) answers "did
+we attempt every cluster", not "did every merge succeed" -- per-cluster
+outcomes are in `reports`.
+
+Found and fixed one real bug while wiring this in: `--cluster-index`'s
+`None`-default fix from the single-cluster CLI flag did not need
+revisiting, but `--consolidate-all` (a plain `store_true`, default
+`False`) needed the same scrutiny against the replay-mode mutual-
+exclusivity check in `cli.py` -- confirmed safe since `False` is excluded
+by that check's `value is not False` test.
+
+4 new falsifiable tests: two independent clusters both merge, one
+rejected cluster doesn't block the other, no-clusters status, batch
+determinism. Full suite green (738 tests), no regressions.

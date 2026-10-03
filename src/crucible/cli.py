@@ -17,7 +17,11 @@ from .confirm import (
     confirm_candidates,
     confirm_semantic_redundancy,
 )
-from .consolidation import LLMConsolidationProposer, run_consolidation
+from .consolidation import (
+    LLMConsolidationProposer,
+    run_consolidation,
+    run_consolidation_batch,
+)
 from .final_report import build_final_report
 from .final_report_render import (
     render_final_report_html,
@@ -122,6 +126,15 @@ def main() -> int:
         default=None,
         help="which redundancy cluster to consolidate, 0-indexed "
              "(default: 0; used with --consolidate)",
+    )
+    parser.add_argument(
+        "--consolidate-all",
+        action="store_true",
+        help="run --consolidate over every redundancy cluster in one call, "
+             "applying each accepted merge before moving to the next "
+             "cluster; a rejected/blocked cluster is left unmerged and "
+             "does not block the rest (mutually exclusive with "
+             "--consolidate/--cluster-index)",
     )
     parser.add_argument(
         "--narrate",
@@ -333,9 +346,11 @@ def main() -> int:
         print(json.dumps(confirmation, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
 
-    if args.consolidate:
+    if args.consolidate or args.consolidate_all:
+        if args.consolidate and args.consolidate_all:
+            parser.error("--consolidate and --consolidate-all are mutually exclusive")
         if not args.root:
-            parser.error("root is required with --consolidate")
+            parser.error("root is required with --consolidate/--consolidate-all")
         artifact = compile_corpus(args.root)
         audit = audit_corpus(artifact)
         root_path = Path(args.root).resolve()
@@ -351,12 +366,19 @@ def main() -> int:
         confirmation = confirm_candidates(
             audit, artifact, confirm_executor, classes=["SEMANTIC_REDUNDANCY"]
         )
-        report = run_consolidation(
-            corpus=corpus,
-            confirmation=confirmation,
-            cluster_index=args.cluster_index or 0,
-            proposer=LLMConsolidationProposer(),
-        )
+        if args.consolidate_all:
+            report = run_consolidation_batch(
+                corpus=corpus,
+                confirmation=confirmation,
+                proposer=LLMConsolidationProposer(),
+            )
+        else:
+            report = run_consolidation(
+                corpus=corpus,
+                confirmation=confirmation,
+                cluster_index=args.cluster_index or 0,
+                proposer=LLMConsolidationProposer(),
+            )
         print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
 

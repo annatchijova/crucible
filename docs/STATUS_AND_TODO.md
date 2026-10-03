@@ -67,6 +67,20 @@ cada reporte lo dice explícitamente en vez de omitirlo). 8 tests nuevos,
 suite completa en verde. Detalle completo en
 docs/decisions/0020-l16-consolidation-scope.md.
 
+Actualización 2026-10-03 (3): se agregó el modo batch (`run_consolidation_batch`,
+CLI `--consolidate-all`) — procesa todos los clusters de una sola corrida en
+vez de uno por vez. Los clusters se calculan una sola vez al principio (son
+componentes conexas disjuntas), pero cada fusión corre contra una auditoría
+recién recalculada del corpus (los `finding_id` de la confirmación quedan
+viejos en cuanto una fusión anterior cambia el corpus). Un cluster
+rechazado/bloqueado queda sin fusionar y NO frena al resto — es un lote de
+intentos independientes, no una transacción. De paso encontré y arreglé un
+bug real: el mismo patrón que rompió `--cluster-index` (default `0`
+confundido con "flag seteado" en el chequeo de exclusión mutua de replay)
+había que revisarlo también para `--consolidate-all`; resultó inofensivo
+porque es `store_true` con default `False`, pero valía la pena confirmarlo
+en vez de asumirlo. 4 tests nuevos, 738 tests totales, todo en verde.
+
 ---
 
 ## Lo que falta — por prioridad
