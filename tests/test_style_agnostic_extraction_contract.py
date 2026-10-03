@@ -361,6 +361,100 @@ def test_verification_starter_with_bullet_marker(tmp_path: Path) -> None:
     assert len(checks) == 2
 
 
+# ---------------------------------------------------------------------------
+# Multi-line bullet/rule joining (ADR-0023, third finding)
+# ---------------------------------------------------------------------------
+
+def test_wrapped_bulleted_question_check_is_classified_as_question(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a bulleted check whose question mark lands on a wrapped
+    SECOND physical line is joined into one check and classified
+    oracle_kind "question" -- not "command" from an incidental verb-like
+    word on the truncated first line alone. Confirmed against a real
+    installed skill (see ADR-0023); this fixture is a synthetic
+    reconstruction of the same shape, not a quote from it.
+    Mutation: read only the first physical line of a bullet -> red (the
+    question mark is lost, oracle_kind falls back to "command")."""
+    _write_skill(
+        tmp_path,
+        "wrapped-question",
+        "---\nname: wrapped-question\ndescription: W.\n---\n\n"
+        "## Checks\n\n"
+        "- Where does a single successful authentication grant broad access for a\n"
+        "  long session?\n",
+    )
+    artifact = _compile(tmp_path)
+    checks = artifact["skills"][0]["checks"]
+    assert len(checks) == 1
+    assert checks[0]["text"] == (
+        "Where does a single successful authentication grant broad access "
+        "for a long session?"
+    )
+    assert checks[0]["oracle_kind"] == "question"
+
+
+def test_wrapped_bulleted_check_stops_at_the_next_bullet(tmp_path: Path) -> None:
+    """Invariant: joining a wrapped bullet does not swallow the next,
+    separate bullet item -- the join stops exactly at the next marker.
+    Mutation: join until a blank line only, ignoring new markers -> red
+    (two checks collapse into one)."""
+    _write_skill(
+        tmp_path,
+        "two-wrapped",
+        "---\nname: two-wrapped\ndescription: T.\n---\n\n"
+        "## Checks\n\n"
+        "- Confirmed exposed -- reachable, reached, preconditions hold. Patch by\n"
+        "  impact.\n"
+        "- Present, not exposed -- reachable but not reached.\n",
+    )
+    artifact = _compile(tmp_path)
+    checks = artifact["skills"][0]["checks"]
+    assert len(checks) == 2
+    assert checks[0]["text"] == (
+        "Confirmed exposed -- reachable, reached, preconditions hold. "
+        "Patch by impact."
+    )
+    assert checks[1]["text"] == "Present, not exposed -- reachable but not reached."
+
+
+def test_wrapped_rfc2119_rule_joins_the_continuation(tmp_path: Path) -> None:
+    """Invariant: an RFC-2119 rule whose exception clause wraps onto a
+    second physical line is joined into one rule's text, not truncated
+    at the line break.
+    Mutation: use line.strip() alone for rule text -> red (the exception
+    clause disappears from the rule's text/conditions)."""
+    _write_skill(
+        tmp_path,
+        "wrapped-rule",
+        "---\nname: wrapped-rule\ndescription: R.\n---\n\n"
+        "Retries MUST have a finite budget, except for operations that are\n"
+        "known to be side-effect-free and safe to repeat without limit.\n",
+    )
+    artifact = _compile(tmp_path)
+    rules = artifact["skills"][0]["rules"]
+    assert len(rules) == 1
+    assert "side-effect-free and safe to repeat" in rules[0]["text"]
+
+
+def test_wrapped_numbered_step_joins_the_continuation(tmp_path: Path) -> None:
+    """Invariant: a numbered procedural step whose text wraps across two
+    physical lines is joined into one step.
+    Mutation: read only the first physical line -> red."""
+    _write_skill(
+        tmp_path,
+        "wrapped-step",
+        "---\nname: wrapped-step\ndescription: S.\n---\n\n"
+        "## Steps\n\n"
+        "1. Run the full migration against a staging copy of the database\n"
+        "   before touching production data.\n",
+    )
+    artifact = _compile(tmp_path)
+    steps = artifact["skills"][0]["procedural_steps"]
+    assert len(steps) == 1
+    assert "before touching production data" in steps[0]["text"]
+
+
 def test_bare_verb_continuation_line_is_not_a_check(tmp_path: Path) -> None:
     """Invariant: a hand-wrapped continuation line of a longer sentence
     (indented, no bullet marker, previous line has no sentence-ending

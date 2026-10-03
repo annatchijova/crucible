@@ -2,8 +2,8 @@
 
 **Status:** Accepted
 **Date:** 2026-10-03
-**Reversibility:** high; both fixes narrow over-extraction, no schema
-change, no new finding class
+**Reversibility:** high; all three fixes narrow over-extraction or
+recover truncated text, no schema change, no new finding class
 
 ## Context
 
@@ -141,6 +141,55 @@ Accepted now:
   counterpart, explicit-marker bypass, and the indented-fence case. Full
   suite green, no regressions.
 
-Deferred, tracked explicitly, not closed:
+Deferred at first, then closed the same day per direct user request
+("sí, con el fix"):
 - Multi-line bullet/rule text joining across rules, checks, and
   relations extraction (the third finding above).
+
+## Addendum 2026-10-03: the third finding, fixed
+
+Two shared join helpers, used by every per-line extractor that needed
+one: `_join_marked_continuation` (an explicit bullet/number marker --
+joins until a blank line, heading, code fence, or the next marker;
+multiple complete sentences within one item are all kept, since a
+marked item has no sentence-boundary stopping rule) and
+`_join_unmarked_sentence` (a bare modal/imperative/verification-verb
+line with no marker -- joins only until the accumulated text reaches a
+real sentence boundary, so that several independent one-line sentences
+in a row, each already complete, are never merged into one).
+
+Wired into `_extract_rules` (all three styles: RFC-2119 modals, negative
+starters, imperative starters), `_extract_checks` (both the
+Checks-section-bullet mechanism, bounded by the section's own end, and
+the anywhere-in-body verification-starter mechanism), and
+`_extract_procedural_steps` (numbered lists in and outside dedicated
+sections, and action-verb bullets). `_extract_relations`
+(`composes_with`/`delegates_to`) was deliberately left untouched: its
+bullet values are short skill-name identifiers, not prose, so wrapping
+is not a real-world case there.
+
+Measured again on the same real ~100-skill collection:
+`COMMAND_ORACLE_WITHOUT_ARTIFACT` dropped further, 35 → 31 — the
+remaining real cases from ADR-0023's measurement (bulleted questions
+whose `?` landed on a wrapped second line, previously truncated before
+the question mark) now correctly join and reclassify as `oracle_kind:
+"question"` instead of `"command"`, confirmed directly against the real
+IR output. Several other checks' counts moved too
+(`IRREVERSIBLE_WITHOUT_REVIEW` 18→22, `OVERCLAIM` 4→9,
+`NON_DETERMINISTIC_INSTRUCTION` 2→5, `LLM_IN_DECISION_PATH` 0→2) because
+those checks now see each item's COMPLETE text instead of a
+first-line-only truncation. Spot-checked one `LLM_IN_DECISION_PATH` case
+by hand against the real source: the join itself is correct (it is one
+bullet's real continuation, not two unrelated bullets merged) — whether
+that check's own text-matching heuristic is well-calibrated against
+mentions of "LLM" in sentences that actually describe keeping the LLM
+*out* of a decision is a separate, pre-existing question this fix did
+not introduce and did not attempt to resolve.
+
+4 new falsifiable tests (synthetic fixtures): a wrapped bulleted
+question reclassifies correctly, a wrapped bullet does not swallow the
+next sibling bullet, a wrapped RFC-2119 rule's exception clause is kept,
+a wrapped numbered step is kept. All 757 pre-existing tests passed
+UNCHANGED (no fixture needed updating) -- the join logic's stopping
+rules were conservative enough not to alter any previously-correct
+extraction. Full suite green at 765 tests.

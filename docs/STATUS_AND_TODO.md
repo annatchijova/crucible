@@ -217,23 +217,23 @@ están implementados. Falta:
 - Corpus NVIDIA verified skills (interoperabilidad)
 - Documentar licencias de cada corpus
 
-**4b. Multi-line bullet/rule wrapping — NUEVO 2026-10-03, sin arreglar**
+**4b. Multi-line bullet/rule wrapping — RESUELTO 2026-10-03 (mismo día, a pedido del usuario)**
 
-Encontrado al validar contra la colección real de ~100 skills del
-usuario (ver actualización (7) arriba y
-docs/decisions/0023-verification-starter-continuation-lines.md): un
-check o rule con bullet explícito cuyo texto envuelve en 2+ líneas
-físicas pierde todo lo que está después de la primera línea — el
-extractor (`_BULLET`, usado también por `_extract_rules` y las
-relaciones `composes_with`/`delegates_to`) lee línea por línea, no por
-unidad lógica. Un caso concreto real: un bullet que es una pregunta
-("¿Dónde X otorga Y?") envuelto en 2 líneas pierde el "?" final y
-termina clasificado como oracle_kind "command" en vez de "question".
-Arreglarlo necesita un paso de preprocesamiento compartido (decidir
-dónde termina una continuación: línea en blanco, nuevo marcador,
-heading, dedent, code fence) usado consistentemente por los tres
-extractores — más grande que los dos bugs ya cerrados en ADR-0023, no
-se intentó en la misma pasada a propósito (disciplina de alcance).
+Encontrado y arreglado el mismo día (ver actualización (7) arriba y el
+addendum de docs/decisions/0023-verification-starter-continuation-lines.md).
+Dos helpers de join compartidos (`_join_marked_continuation` para
+bullets/números explícitos — junta hasta línea en blanco/heading/code
+fence/próximo marcador; `_join_unmarked_sentence` para oraciones sin
+marcador — junta solo hasta el primer límite de oración real, para no
+fusionar varias oraciones de una sola línea cada una) conectados en
+`_extract_rules`, `_extract_checks` (las dos vías), y
+`_extract_procedural_steps`. `_extract_relations` quedó sin tocar a
+propósito (son nombres de skill cortos, no prosa). Medido de nuevo
+contra la misma colección real: `COMMAND_ORACLE_WITHOUT_ARTIFACT` bajó
+más, de 35 a 31 — las preguntas con bullet que envolvían el "?" a una
+segunda línea ahora se reclasifican bien como "question". Los 757 tests
+preexistentes pasaron sin tocar ninguno; 4 tests nuevos. Suite completa
+en 765 tests, todo verde.
 
 **5. Política de CI gate**
 

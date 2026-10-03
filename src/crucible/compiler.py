@@ -133,6 +133,80 @@ _EXPLICIT_LIST_MARKER = re.compile(r"^\s*(?:[-*+]\s+|\d+\.\s+)")
 # docs/decisions/0023-verification-starter-continuation-lines.md.
 _SENTENCE_BOUNDARY = re.compile(r"[.!?:][\"'*_`)\]]*\s*$")
 
+
+def _join_marked_continuation(
+    lines: list[str], start_index: int, code_lines: set[int],
+    limit: int | None = None,
+) -> tuple[str, int]:
+    """Join an explicitly-marked bullet/numbered item with any wrapped
+    continuation lines.
+
+    A marked item (its own leading ``-``/``*``/``+``/``N.``) can span
+    multiple complete sentences before it ends -- unlike an unmarked
+    sentence (see _join_unmarked_sentence), there is no sentence-boundary
+    stopping rule here. The item ends at a blank line, a heading, a code
+    fence, or the next bullet/numbered marker (a sibling item), whichever
+    comes first; ``limit`` additionally bounds the join to a section's
+    own end so it cannot run into the next heading's content. Confirmed
+    against a real installed skill: a bulleted check ending in a
+    question mark on its SECOND physical line was, before this join,
+    classified by oracle_kind as "command" (the first line alone
+    contained an incidental verb-like word) instead of "question". See
+    docs/decisions/0023-verification-starter-continuation-lines.md.
+
+    Returns (joined_text, last_consumed_line_index).
+    """
+    end = limit if limit is not None else len(lines)
+    first = lines[start_index].strip()
+    parts = [re.sub(r"^\s*(?:[-*+]\s+|\d+\.\s+)", "", first)]
+    last = start_index
+    index = start_index + 1
+    while index < end:
+        if index in code_lines:
+            break
+        line = lines[index]
+        if not line.strip() or _HEADING.match(line) or _BULLET.match(line) or _NUMBERED.match(line):
+            break
+        parts.append(line.strip())
+        last = index
+        index += 1
+    return " ".join(parts), last
+
+
+def _join_unmarked_sentence(
+    lines: list[str], start_index: int, code_lines: set[int],
+) -> tuple[str, int]:
+    """Join an unmarked prose sentence (a bare modal/imperative/
+    verification-verb line, no bullet/number marker) with any wrapped
+    continuation lines, stopping as soon as the accumulated text reaches
+    a real sentence boundary.
+
+    This is deliberately the opposite stopping rule from
+    _join_marked_continuation: an unmarked line could itself be one of
+    several independent, complete one-line sentences in a row (see
+    test_verification_starter_outside_checks_section) -- joining past
+    the first sentence boundary would silently merge unrelated sentences
+    into one rule/check. A line that already ends at a boundary (the
+    common case: a complete sentence on one physical line) is returned
+    unchanged, with zero extra lines consumed.
+
+    Returns (joined_text, last_consumed_line_index).
+    """
+    text = lines[start_index].strip()
+    last = start_index
+    index = start_index + 1
+    while not _SENTENCE_BOUNDARY.search(text) and index < len(lines):
+        if index in code_lines:
+            break
+        line = lines[index]
+        if not line.strip() or _HEADING.match(line) or _BULLET.match(line) or _NUMBERED.match(line):
+            break
+        text = text + " " + line.strip()
+        last = index
+        index += 1
+    return text, last
+
+
 # Action verbs — first word of a bullet that indicates a procedural step
 # (rather than an explanatory or descriptive bullet). These are concrete
 # doing-words, distinct from the normative constraint verbs above. A
@@ -621,8 +695,9 @@ def _extract_rules(lines: list[str], body_start: int) -> list[dict[str, Any]]:
     """
     rules: list[dict[str, Any]] = []
     code_lines = _code_block_lines(lines, body_start)
+    consumed: set[int] = set()
     for index in range(body_start, len(lines)):
-        if index in code_lines:
+        if index in code_lines or index in consumed:
             continue
         line = lines[index]
         if _HEADING.match(line):
@@ -632,7 +707,8 @@ def _extract_rules(lines: list[str], body_start: int) -> list[dict[str, Any]]:
         if match:
             raw_modality = match.group(1)
             modality = raw_modality.replace(" ", "_").upper()
-            text = line.strip()
+            text, last = _join_unmarked_sentence(lines, index, code_lines)
+            consumed.update(range(index + 1, last + 1))
             subject = _extract_subject(text, raw_modality)
             conditions = _extract_conditions(text)
             claims = _extract_claims(text)
@@ -651,7 +727,8 @@ def _extract_rules(lines: list[str], body_start: int) -> list[dict[str, Any]]:
         neg_matched = False
         for pattern, neg_modality in _NORMATIVE_STARTERS:
             if pattern.match(line):
-                text = line.strip()
+                text, last = _join_unmarked_sentence(lines, index, code_lines)
+                consumed.update(range(index + 1, last + 1))
                 conditions = _extract_conditions(text)
                 claims = _extract_claims(text)
                 rules.append({
@@ -670,7 +747,8 @@ def _extract_rules(lines: list[str], body_start: int) -> list[dict[str, Any]]:
             continue
         # 3. Imperative starters (normative constraint verbs).
         if _IMPERATIVE_STARTER.match(line):
-            text = line.strip()
+            text, last = _join_unmarked_sentence(lines, index, code_lines)
+            consumed.update(range(index + 1, last + 1))
             conditions = _extract_conditions(text)
             claims = _extract_claims(text)
             rules.append({
@@ -843,22 +921,24 @@ def _extract_procedural_steps(
             # Numbered list
             num_match = _NUMBERED.match(lines[index])
             if num_match:
+                text, last = _join_marked_continuation(lines, index, code_lines, limit=end)
                 steps.append({
                     "id": f"step-{len(steps) + 1:04d}",
-                    "text": num_match.group("value"),
+                    "text": text,
                     "source_span": {"line": index + 1, "column": 1},
                 })
-                seen_lines.add(index)
+                seen_lines.update(range(index, last + 1))
                 continue
             # Bullet list
             bullet_match = _BULLET.match(lines[index])
             if bullet_match:
+                text, last = _join_marked_continuation(lines, index, code_lines, limit=end)
                 steps.append({
                     "id": f"step-{len(steps) + 1:04d}",
-                    "text": bullet_match.group("value"),
+                    "text": text,
                     "source_span": {"line": index + 1, "column": 1},
                 })
-                seen_lines.add(index)
+                seen_lines.update(range(index, last + 1))
 
     # 2. Extract numbered lists from anywhere in the body.
     for index in range(body_start, len(lines)):
@@ -866,12 +946,13 @@ def _extract_procedural_steps(
             continue
         num_match = _NUMBERED.match(lines[index])
         if num_match:
+            text, last = _join_marked_continuation(lines, index, code_lines)
             steps.append({
                 "id": f"step-{len(steps) + 1:04d}",
-                "text": num_match.group("value"),
+                "text": text,
                 "source_span": {"line": index + 1, "column": 1},
             })
-            seen_lines.add(index)
+            seen_lines.update(range(index, last + 1))
 
     # 3. Extract action-verb bullets from non-procedural sections
     #    (prose-embedded steps). This catches skills that embed their
@@ -908,15 +989,15 @@ def _extract_procedural_steps(
             # _extract_checks) and a step (here) -- confirmed on 250/818
             # (31%) of mukul975/Anthropic-Cybersecurity-Skills.
             continue
-        text = bullet_match.group("value")
-        first_word = text.split(" ", 1)[0].lower().strip(".,;:()")
+        first_word = bullet_match.group("value").split(" ", 1)[0].lower().strip(".,;:()")
         if first_word in _ACTION_VERBS:
+            text, last = _join_marked_continuation(lines, index, code_lines)
             steps.append({
                 "id": f"step-{len(steps) + 1:04d}",
                 "text": text,
                 "source_span": {"line": index + 1, "column": 1},
             })
-            seen_lines.add(index)
+            seen_lines.update(range(index, last + 1))
 
     # 4. Extract "Step N: Title" headings as one procedural step each
     #    (ADR-0019 Option B, part 1). The heading's own title is the
@@ -1025,18 +1106,18 @@ def _extract_checks(
         if not any(k in title for k in ("check", "verification", "validation")):
             continue
         for index in range(start, end):
-            if index in code_lines:
+            if index in code_lines or index in seen_lines:
                 continue
             match = _BULLET.match(lines[index])
             if match:
-                text = match.group("value")
+                text, last = _join_marked_continuation(lines, index, code_lines, limit=end)
                 checks.append({
                     "id": f"check-{len(checks) + 1:04d}",
                     "text": text,
                     "oracle_kind": _extract_oracle_kind(text),
                     "source_span": {"line": index + 1, "column": 1},
                 })
-                seen_lines.add(index)
+                seen_lines.update(range(index, last + 1))
 
     # 2. Extract verification-starter lines from anywhere in the body.
     for index in range(body_start, len(lines)):
@@ -1047,7 +1128,8 @@ def _extract_checks(
             continue
         if not _VERIFICATION_STARTER.match(line):
             continue
-        if not _EXPLICIT_LIST_MARKER.match(line):
+        has_marker = _EXPLICIT_LIST_MARKER.match(line)
+        if not has_marker:
             # A bare verb at the start of a line, with no bullet/number
             # marker, is only a new check if the previous line marks a
             # real sentence/paragraph boundary -- otherwise this is a
@@ -1060,16 +1142,17 @@ def _extract_checks(
                 prev_line = lines[prev_index].strip()
                 if prev_line and not _SENTENCE_BOUNDARY.search(prev_line):
                     continue
-        # Strip leading bullet/number markers for the check text.
-        text = line.strip()
-        text = re.sub(r"^\s*(?:[-*+]\s+|\d+\.\s+)", "", text)
+        if has_marker:
+            text, last = _join_marked_continuation(lines, index, code_lines)
+        else:
+            text, last = _join_unmarked_sentence(lines, index, code_lines)
         checks.append({
             "id": f"check-{len(checks) + 1:04d}",
             "text": text,
             "oracle_kind": _extract_oracle_kind(text),
             "source_span": {"line": index + 1, "column": 1},
         })
-        seen_lines.add(index)
+        seen_lines.update(range(index, last + 1))
 
     return checks
 
