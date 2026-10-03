@@ -202,18 +202,21 @@ El CI corre tests y genera el reporte, pero no bloquea merges. Falta definir:
 - ¿Findings CANDIDATE bloquean? ¿Solo CONFIRMED?
 - ¿Mutation kill rate mínimo?
 
-**6. Feedback sobre tools/models**
+**6. Feedback sobre tools/models — RESUELTO 2026-10-03**
 
-Requisito del hackathon. Documento dedicado todavía no existe, pero hay
-datos parciales reales: 3 corridas de L16 contra Nemotron (2026-10-03,
-docs/L16_NEBIUS_LIVE_RUN_EVIDENCE.md) — latencia ~5s por propuesta,
-formato de salida JSON `{"name", "text"}` respetado sin fallas de parseo
-en las 3 llamadas, calidad razonable (no dropeó contenido distinto entre
-dos skills con checks genuinamente diferentes). Falta consolidar esto con
-las corridas anteriores (L1-L7, docs/NEBIUS_LIVE_RUN_EVIDENCE.md) en un
-solo documento de feedback. Notas operativas honestas que faltan todavía:
-- Token Factory API (errores, rate limits) — no observado en ninguna sesión
-- Diferencia entre local executor y Nemotron real en términos de calidad
+Requisito del hackathon. Documento completo en `docs/FEEDBACK.md`,
+consolidando los hallazgos reales de todas las sesiones con key real
+(2026-09-30 a 2026-10-03): los 4 hallazgos del red team del 2026-09-30
+sobre Nemotron (`content: null`, truncamiento con presupuestos de tokens
+bajos, contexto pasivo no es causal — el hallazgo más importante — y
+tipografía real rompiendo oráculos lexicales), latencia observada en L16
+(~5s por propuesta), nada de errores de autenticación ni rate limits
+observados en ninguna sesión (el código de reintento en 429 existe pero
+nunca se disparó), y la diferencia real entre el executor local y
+Nemotron real (el hallazgo de contexto pasivo solo pudo encontrarse
+contra el modelo real; el mock de confirmación y el detector real de
+redundancia no siempre coinciden en el mismo par). Actualizada también
+la fila correspondiente de `docs/NVIDIA_INTEGRATION.md` (PLANNED → DONE).
 
 **7. Pre-existing project disclosure**
 
@@ -271,7 +274,7 @@ El diverse corpus (L13) es un sustituto parcial del corpus OSS.
 
 ```
 P0 (bloquea submission):  NEBIUS_API_KEY, video, demo URL
-P1 (calidad):              corpus externo, CI gate, feedback, disclosure
+P1 (calidad):              corpus externo, CI gate, disclosure (feedback RESUELTO 2026-10-03)
 P2 (mejoras técnicas):     mutation survivors, TUI, traces, cross-version
 P3 (deferido):             firmas, viewer pulido, corpus completo
 ```

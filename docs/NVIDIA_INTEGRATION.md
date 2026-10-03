@@ -30,7 +30,7 @@ Sources: [hackathon overview](https://nebiusglobalaihackathon.devpost.com/), [of
 | Public repository with open-source license | Overview/rules | Apache-2.0 repository | VERIFIED | `LICENSE` at repository root |
 | README setup instructions | Overview | README and technical docs | VERIFIED | Fresh-clone instructions tested before submission |
 | Explain NVIDIA/Nebius usage | Overview | `NVIDIA_INTEGRATION.md` and final README | CODE + L5 RUN | Saved four-way differential; broader repair evidence pending |
-| Feedback on tools/models | Overview | Submission notes | PLANNED | Recorded, honest operational feedback |
+| Feedback on tools/models | Overview | [`docs/FEEDBACK.md`](FEEDBACK.md) | DONE | Recorded, honest operational feedback across every live session (2026-09-30 through 2026-10-03) |
 | Pre-existing project disclosure | Overview | Submission delta note | PLANNED | Written explanation of hackathon-period changes |
 | English submission materials | Rules | README/docs in English plus Spanish companion | VERIFIED | English primary materials |
 | Complete product experience | Judging criteria | CLI/artifact + optional viewer | PLANNED | Judges can run the workflow and inspect evidence |
