@@ -178,3 +178,49 @@ by that check's `value is not False` test.
 4 new falsifiable tests: two independent clusters both merge, one
 rejected cluster doesn't block the other, no-clusters status, batch
 determinism. Full suite green (738 tests), no regressions.
+
+## Addendum 2026-10-03 (2): auto-rewrite external references
+
+Revisits the "refuse vs. auto-rewrite" decision above, per direct user
+request to implement the deferred alternative. The original concern
+stands for free prose, but turned out not to apply to the other half of
+`find_external_references`'s edges:
+
+- **Section-heading relations** (`## Composes with` / `## Delegates
+  to`): a `resolved: true` edge means the referencing skill's text
+  contains a bullet whose entire value is, verbatim, the target skill's
+  name (`auditor.py::_check_broken_references` joins on that exact
+  string against `name_set`). Rewriting this is a precise, anchored line
+  match -- `_rewrite_section_heading_bullet` requires the bullet's value
+  to be *exactly* the old name with nothing else on the line, so it
+  cannot misfire on a line that merely shares a name prefix (e.g.
+  `- retry-a-extended` does not match a rewrite targeting `retry-a`).
+  This case is now auto-rewritten by default; `rewrite_external_references`
+  returns the rewritten corpus plus a `{source, old_target, new_target}`
+  record per bullet actually changed, surfaced in every report as
+  `rewritten_external_references`.
+- **Description-text relations** (free prose inside the YAML
+  `description:` field, e.g. "pairs with retry-a"): the target name is
+  still matched by an exact word-boundary regex (`graph.py::
+  _extract_targets`), so *finding* it is just as precise -- but *rewriting*
+  it means re-serializing a YAML scalar in place, not a line match. That
+  is a materially different, harder problem (quoting, escaping, a
+  frontmatter parser this project already treats as a "bounded subset",
+  not full YAML semantics -- ADR-0002). This half keeps the original
+  decision: any such reference still blocks the merge outright with
+  `EXTERNAL_REFERENCE_BLOCK`, and the report names exactly which edges
+  blocked it (only the unrewritable ones, so a mix of one rewritable and
+  one unrewritable reference is reported accurately, not conflated).
+
+No new CLI flag: the safe rewrite is the new default behavior of
+`--consolidate`/`--consolidate-all`, since it is strictly more capable
+than before (previously: any external reference refused the merge; now:
+only an unrewritable one does) and the risk this ADR originally flagged
+does not apply to the case being enabled.
+
+4 new falsifiable tests: section-heading reference rewritten and
+accepted, description-text reference still blocks, a mixed
+rewritable+unrewritable pair still blocks (a partial rewrite that leaves
+one reference broken is not acceptable), plus the existing external-
+reference test updated to assert the new behavior rather than removed.
+Full suite green, no regressions.

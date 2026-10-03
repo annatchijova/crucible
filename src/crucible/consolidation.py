@@ -20,9 +20,13 @@ explicit, falsifiable answer here rather than a silent assumption:
    name string, with no stable ID (see auditor.py's BROKEN_REFERENCE). If
    another skill outside the cluster references a cluster member by name,
    merging would silently break it. find_external_references() detects
-   this and the workflow refuses the merge outright rather than attempting
-   an auto-rewrite of skills outside the cluster -- that is out of scope
-   for this increment, by deliberate choice (see docs/decisions/0020).
+   this; rewrite_external_references() fixes a "## Composes with" / "##
+   Delegates to" bullet in place (its value is matched verbatim against
+   skill names, so the rewrite is an exact line replace, not a guess).
+   A reference embedded in free prose inside the YAML description field
+   is a materially harder problem (re-serializing a scalar, not a line
+   match) and is NOT rewritten -- it still blocks the merge outright. See
+   docs/decisions/0020 for why the split is drawn exactly there.
 3. Coverage. There is no existing notion of "did the merge keep
    everything." _check_coverage() verifies, by lexical Jaccard overlap
    (the same no-float Fraction primitive auditor.py already uses for
@@ -186,6 +190,63 @@ def find_external_references(
         if edge.get("target") in cluster_set
         and edge.get("source") not in cluster_set
     ]
+
+
+# A section-heading relation's bullet VALUE is matched verbatim against
+# name_set to resolve it (auditor.py::_check_broken_references) -- so a
+# "resolved": true edge from "section-heading" means the referencing
+# skill's text contains a line that is a bullet marker followed by
+# EXACTLY the target skill name and nothing else. That makes the rewrite
+# precise: this pattern cannot match a line like "- retry-a-extended"
+# (the trailing (?:[ \t]*)$ requires nothing else on the line), so it
+# cannot corrupt an unrelated bullet that merely shares a name prefix.
+def _rewrite_section_heading_bullet(text: str, old_name: str, new_name: str) -> str:
+    import re as _re
+
+    pattern = _re.compile(
+        r"^([ \t]*[-*+][ \t]+)" + _re.escape(old_name) + r"([ \t]*)$",
+        _re.MULTILINE,
+    )
+    return pattern.sub(lambda m: m.group(1) + new_name + m.group(2), text)
+
+
+def rewrite_external_references(
+    corpus: dict[str, str],
+    external_refs: list[dict[str, Any]],
+    new_name: str,
+) -> tuple[dict[str, str], list[dict[str, str]]]:
+    """Rewrite section-heading external references to point at the merge.
+
+    Only ``extraction_method == "section-heading"`` edges are rewritten --
+    a "## Composes with" / "## Delegates to" bullet whose value is exactly
+    the old cluster-member name (see _rewrite_section_heading_bullet).
+    Description-text references (free prose inside the YAML
+    ``description:`` field) are deliberately NOT rewritten here: safely
+    editing that field means re-serializing a YAML scalar, not a line
+    match, and is a materially different, harder problem -- any such edge
+    must still block the merge; callers are expected to have filtered
+    ``external_refs`` down to only the rewritable ones before calling
+    this (see docs/decisions/0020-l16-consolidation-scope.md).
+
+    Returns the rewritten corpus (a new dict; the input is not mutated)
+    and a list of ``{source, old_target, new_target}`` records, one per
+    bullet actually changed, for the report.
+    """
+    rewritten_corpus = dict(corpus)
+    rewrites: list[dict[str, str]] = []
+    for edge in external_refs:
+        source = edge.get("source")
+        old_target = edge.get("target")
+        if source not in rewritten_corpus or old_target is None:
+            continue
+        text = rewritten_corpus[source]
+        new_text = _rewrite_section_heading_bullet(text, old_target, new_name)
+        if new_text != text:
+            rewritten_corpus[source] = new_text
+            rewrites.append({
+                "source": source, "old_target": old_target, "new_target": new_name,
+            })
+    return rewritten_corpus, rewrites
 
 
 # ---------------------------------------------------------------------------
@@ -555,15 +616,22 @@ def _run_gate_for_cluster(
     gate for one already-resolved cluster against the given (ir, audit)
     of the current corpus state.
 
-    1. Refuse the merge if any skill outside the cluster references a
-       cluster member by name (EXTERNAL_REFERENCE_BLOCK).
+    1. If any skill outside the cluster references a member by a
+       section-heading relation ("## Composes with" / "## Delegates to"),
+       that reference is rewritten to point at the merged skill's new
+       name (see rewrite_external_references). A reference via free prose
+       in the description field is NOT rewritten -- re-serializing a YAML
+       scalar safely is a harder problem than a line match -- and still
+       blocks the merge (EXTERNAL_REFERENCE_BLOCK).
     2. The proposer proposes one merged skill.
     3. Crucible recompiles and re-audits the corpus with the cluster
-       replaced by the merged skill.
+       replaced by the merged skill and any rewritten referrers updated.
     4. Accept iff: no targeted redundancy persists, coverage is complete,
        and no finding is new beyond what the cluster or the rest of the
-       corpus already had. There is no behavioral gate -- see module
-       docstring.
+       corpus already had (this already covers a rewritten referrer: its
+       name does not change, so any new finding on it -- e.g. a newly
+       introduced cycle -- is caught by the exact (class, skill) pair
+       comparison). There is no behavioral gate -- see module docstring.
 
     Takes ``ir``/``audit`` already computed for ``corpus`` (rather than
     recompiling) so that batch mode can call this once per cluster against
@@ -574,11 +642,17 @@ def _run_gate_for_cluster(
     base_audit_digest = audit["audit_digest"]
     graph_artifact = build_composition_graph(ir, audit)
     external_refs = find_external_references(graph_artifact, cluster)
-    if external_refs:
+    rewritable_refs = [
+        e for e in external_refs if e.get("extraction_method") == "section-heading"
+    ]
+    unrewritable_refs = [
+        e for e in external_refs if e.get("extraction_method") != "section-heading"
+    ]
+    if unrewritable_refs:
         return _report(
             base_audit_digest=base_audit_digest, outcome=OUTCOME_REJECTED,
             rejection_reason="EXTERNAL_REFERENCE_BLOCK", cluster=cluster,
-            external_references=external_refs,
+            external_references=unrewritable_refs,
         )
 
     cluster_skills = [{"name": n, "text": corpus[n]} for n in cluster]
@@ -611,6 +685,9 @@ def _run_gate_for_cluster(
 
     repaired_corpus = {k: v for k, v in corpus.items() if k not in cluster}
     repaired_corpus[proposed_name] = proposed_text
+    repaired_corpus, rewritten_refs = rewrite_external_references(
+        repaired_corpus, rewritable_refs, proposed_name
+    )
 
     try:
         repaired_ir, repaired_audit = _compile_ir_and_audit(repaired_corpus)
@@ -618,6 +695,7 @@ def _run_gate_for_cluster(
         return _report(
             base_audit_digest=base_audit_digest, outcome=OUTCOME_REJECTED,
             rejection_reason="COMPILE_ERROR", cluster=cluster, proposal=proposal,
+            rewritten_external_references=rewritten_refs,
         )
 
     repaired_audit_digest = repaired_audit["audit_digest"]
@@ -632,6 +710,7 @@ def _run_gate_for_cluster(
             base_audit_digest=base_audit_digest, outcome=OUTCOME_REJECTED,
             rejection_reason="REDUNDANCY_PERSISTS", cluster=cluster,
             proposal=proposal, repaired_audit_digest=repaired_audit_digest,
+            rewritten_external_references=rewritten_refs,
         )
 
     # Coverage.
@@ -647,6 +726,7 @@ def _run_gate_for_cluster(
             rejection_reason="COVERAGE_GAP", cluster=cluster, proposal=proposal,
             repaired_audit_digest=repaired_audit_digest,
             coverage_gaps=coverage_gaps,
+            rewritten_external_references=rewritten_refs,
         )
 
     # Novelty.
@@ -659,12 +739,14 @@ def _run_gate_for_cluster(
             rejection_reason="NEW_FINDINGS", cluster=cluster, proposal=proposal,
             repaired_audit_digest=repaired_audit_digest,
             new_findings=[f["class"] for f in new_findings],
+            rewritten_external_references=rewritten_refs,
         )
 
     return _report(
         base_audit_digest=base_audit_digest, outcome=OUTCOME_ACCEPTED,
         rejection_reason=None, cluster=cluster, proposal=proposal,
         repaired_audit_digest=repaired_audit_digest,
+        rewritten_external_references=rewritten_refs,
     )
 
 
@@ -774,6 +856,7 @@ def _report(
     repaired_audit_digest: str | None = None,
     coverage_gaps: list[dict[str, Any]] | None = None,
     new_findings: list[str] | None = None,
+    rewritten_external_references: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     report: dict[str, Any] = {
         "consolidation_version": CONSOLIDATION_VERSION,
@@ -781,6 +864,7 @@ def _report(
         "repaired_audit_digest": repaired_audit_digest,
         "cluster": cluster or [],
         "external_references": external_references or [],
+        "rewritten_external_references": rewritten_external_references or [],
         "proposal": proposal,
         "outcome": outcome,
         "rejection_reason": rejection_reason,

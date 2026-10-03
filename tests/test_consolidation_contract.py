@@ -186,11 +186,13 @@ def test_no_confirmation_means_no_clusters() -> None:
 # External reference precondition
 # ---------------------------------------------------------------------------
 
-def test_external_reference_blocks_merge() -> None:
-    """Invariant: a skill outside the cluster referencing a cluster member
-    by name blocks the whole merge.
-    Mutation: skip the precondition check -> red (would silently merge and
-    break external-caller's reference)."""
+def test_section_heading_external_reference_is_rewritten_and_accepted() -> None:
+    """Invariant: a "## Composes with" reference from a skill outside the
+    cluster is rewritten to the merged skill's new name, and the merge
+    proceeds -- this is the exact, structurally-unambiguous case (the
+    bullet's value equals the old name verbatim).
+    Mutation: block on any external reference regardless of kind -> red
+    (would refuse a safe, precise rewrite)."""
     corpus = dict(CONSOLIDATION_FIXTURE)
     corpus["external-caller"] = (
         "---\nname: external-caller\n"
@@ -205,13 +207,74 @@ def test_external_reference_blocks_merge() -> None:
     report = run_consolidation(
         corpus=corpus, confirmation=confirmation, proposer=NaiveConcatProposer()
     )
+    assert report["outcome"] == OUTCOME_ACCEPTED
+    assert report["rejection_reason"] is None
+    assert report["external_references"] == []
+    assert report["rewritten_external_references"] == [
+        {"source": "external-caller", "old_target": "retry-a", "new_target": "retry-merged"}
+    ]
+
+
+def test_description_text_external_reference_still_blocks_merge() -> None:
+    """Invariant: a reference embedded in free prose inside the YAML
+    description field is NOT rewritten and still blocks the merge --
+    re-serializing a YAML scalar safely is a harder problem than a line
+    match (see docs/decisions/0020).
+    Mutation: rewrite description-text references too -> red (risks
+    corrupting YAML frontmatter it cannot safely edit)."""
+    corpus = dict(CONSOLIDATION_FIXTURE)
+    corpus["external-caller"] = (
+        "---\nname: external-caller\n"
+        "description: Calls into the retry skill; pairs with retry-a for validation.\n"
+        "license: Apache-2.0\n---\n\n"
+        "# External caller\n\n"
+        "Calls MUST be bounded.\n"
+    )
+    ir, audit = _compile_ir_and_audit(corpus)
+    confirmation = _confirmed(audit)
+    report = run_consolidation(
+        corpus=corpus, confirmation=confirmation, proposer=NaiveConcatProposer()
+    )
     assert report["outcome"] == OUTCOME_REJECTED
     assert report["rejection_reason"] == "EXTERNAL_REFERENCE_BLOCK"
     assert len(report["external_references"]) == 1
     assert report["external_references"][0]["source"] == "external-caller"
     assert report["external_references"][0]["target"] == "retry-a"
+    assert report["external_references"][0]["extraction_method"] == "description"
     # No proposal should even be attempted once blocked.
     assert report["proposal"] is None
+
+
+def test_mixed_rewritable_and_unrewritable_references_still_blocks() -> None:
+    """Invariant: if a cluster has BOTH a rewritable and an unrewritable
+    external reference, the merge is blocked -- a partial rewrite that
+    still leaves one reference broken is not an acceptable outcome.
+    Mutation: accept as long as at least one reference is rewritable ->
+    red (would leave the unrewritable referrer broken)."""
+    corpus = dict(CONSOLIDATION_FIXTURE)
+    corpus["structural-caller"] = (
+        "---\nname: structural-caller\n"
+        "description: Calls into the retry skill.\n"
+        "license: Apache-2.0\n---\n\n"
+        "# Structural caller\n\n"
+        "Calls MUST be bounded.\n\n"
+        "## Composes with\n\n- retry-a\n"
+    )
+    corpus["prose-caller"] = (
+        "---\nname: prose-caller\n"
+        "description: Also pairs with retry-b for its own validation.\n"
+        "license: Apache-2.0\n---\n\n"
+        "# Prose caller\n\n"
+        "Calls MUST be bounded.\n"
+    )
+    ir, audit = _compile_ir_and_audit(corpus)
+    confirmation = _confirmed(audit)
+    report = run_consolidation(
+        corpus=corpus, confirmation=confirmation, proposer=NaiveConcatProposer()
+    )
+    assert report["outcome"] == OUTCOME_REJECTED
+    assert report["rejection_reason"] == "EXTERNAL_REFERENCE_BLOCK"
+    assert report["external_references"][0]["source"] == "prose-caller"
 
 
 # ---------------------------------------------------------------------------

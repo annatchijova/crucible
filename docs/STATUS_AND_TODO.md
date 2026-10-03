@@ -81,6 +81,22 @@ había que revisarlo también para `--consolidate-all`; resultó inofensivo
 porque es `store_true` con default `False`, pero valía la pena confirmarlo
 en vez de asumirlo. 4 tests nuevos, 738 tests totales, todo en verde.
 
+Actualización 2026-10-03 (4): se implementó la auto-reescritura de
+referencias externas que ADR-0020 había dejado afuera por riesgo. Resultó
+que el riesgo real solo aplica a la mitad del problema: una referencia
+"## Composes with"/"## Delegates to" tiene como valor del bullet
+exactamente el nombre del skill (así es como el auditor la resuelve), así
+que reescribirla es un replace de línea preciso, sin ambigüedad — eso ya
+se auto-reescribe por default. Una referencia en prosa libre dentro del
+campo `description:` del YAML sigue bloqueando la fusión entera, porque
+reescribirla significaría re-serializar un escalar YAML, no un match de
+línea — un problema distinto y más difícil, no resuelto en este
+incremento. Un cluster con una mezcla de ambos tipos sigue bloqueando
+(una reescritura parcial que deja una referencia rota no es un resultado
+aceptable). 4 tests nuevos (uno reemplaza al que afirmaba el bloqueo
+incondicional viejo), 740 tests totales, todo en verde. Detalle en el
+addendum 2 de docs/decisions/0020-l16-consolidation-scope.md.
+
 ---
 
 ## Lo que falta — por prioridad
