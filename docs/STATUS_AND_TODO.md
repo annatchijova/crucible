@@ -225,15 +225,20 @@ Hay que escribir qué se hizo durante el hackathon vs. qué preexistía.
 
 ### P2 — Mejoras técnicas conocidas
 
-**8. Mutation survivors — cerrar los 2 que sobrevivieron**
+**8. Mutation survivors — RESUELTO 2026-09-25 (esta nota quedó vieja)**
 
-L4 tiene 2 mutaciones que sobreviven (SURVIVED):
-- `EXCEPTION_REMOVAL`: la IR no extrae excepciones (INSUFFICIENT_REPRESENTATION)
-- `EDGE_REMOVAL`: el auditor detecta edges rotos pero no faltantes
-  (INSUFFICIENT_DETECTOR)
-
-Cerrarlos requiere extender la IR (extraer excepciones) o agregar un check
-de edges faltantes. Ambos son cambios no triviales al compiler y al auditor.
+Esta entrada decía que `EXCEPTION_REMOVAL` y `EDGE_REMOVAL` sobrevivían.
+Verificado contra el código real el 2026-10-03 (`run_mutation_lab()`):
+las 8 mutaciones de L4 dan `kill_rate: "6/6"`, 0 SURVIVED — ya se habían
+cerrado en el commit `539b5d9c` (2026-09-25, "kill both mutation
+survivors, add CI gates, project disclosure"), antes de la última
+actualización de esta tabla. `EXCEPTION_REMOVAL` lo cerró el check
+`OVERGENERALIZATION` (usa las condiciones de excepción que la IR ya
+extraía, pero que ningún check consumía); `EDGE_REMOVAL` lo cerró
+conectar la spec de la mutación con la propiedad `ISOLATED_SKILL` que el
+grafo (L3) ya emitía. No hizo falta ningún cambio nuevo — la nota de
+abajo ("ambos son cambios no triviales") describía un estado que ya no
+era cierto.
 
 **9. TUI pulida**
 
@@ -275,7 +280,7 @@ El diverse corpus (L13) es un sustituto parcial del corpus OSS.
 ```
 P0 (bloquea submission):  NEBIUS_API_KEY, video, demo URL
 P1 (calidad):              corpus externo, CI gate, disclosure (feedback RESUELTO 2026-10-03)
-P2 (mejoras técnicas):     mutation survivors, TUI, traces, cross-version
+P2 (mejoras técnicas):     TUI, traces, cross-version (mutation survivors RESUELTO 2026-09-25)
 P3 (deferido):             firmas, viewer pulido, corpus completo
 ```
 
