@@ -361,6 +361,70 @@ def test_verification_starter_with_bullet_marker(tmp_path: Path) -> None:
     assert len(checks) == 2
 
 
+def test_bare_verb_continuation_line_is_not_a_check(tmp_path: Path) -> None:
+    """Invariant: a hand-wrapped continuation line of a longer sentence
+    (indented, no bullet marker, previous line has no sentence-ending
+    punctuation) is NOT extracted as a standalone check just because it
+    starts with a verification verb. Confirmed against a real installed
+    skill: a numbered list item's text wraps onto a second physical line
+    that happens to start with "does:",
+    which was extracted as a bogus check before this fix.
+    Mutation: drop the previous-line-boundary guard -> red (the fragment
+    reappears as a check)."""
+    _write_skill(
+        tmp_path,
+        "wrapped",
+        "---\nname: wrapped\ndescription: W.\n---\n\n"
+        "# W\n\n"
+        "9. Privilege gained by transition. No single step escalates, the sequence\n"
+        "   does: invite yourself, accept, transfer ownership, remove the other owner.\n",
+    )
+    artifact = _compile(tmp_path)
+    checks = [c["text"] for c in artifact["skills"][0]["checks"]]
+    assert not any("invite yourself" in t for t in checks)
+
+
+def test_bare_verb_after_sentence_boundary_is_still_a_check(tmp_path: Path) -> None:
+    """Invariant: a bare verification verb IS still a check when the
+    previous line ends at a real sentence boundary -- the fix narrows the
+    false-positive continuation case without losing the legitimate one
+    test_verification_starter_outside_checks_section already covers.
+    Mutation: require an explicit bullet marker unconditionally -> red
+    (loses standalone-sentence checks that were never bulleted)."""
+    _write_skill(
+        tmp_path,
+        "boundary",
+        "---\nname: boundary\ndescription: B.\n---\n\n"
+        "# B\n\n"
+        "Finish the setup step first.\n"
+        "Verify the output matches the expected digest.\n",
+    )
+    artifact = _compile(tmp_path)
+    checks = [c["text"] for c in artifact["skills"][0]["checks"]]
+    assert any("Verify the output matches" in t for t in checks)
+
+
+def test_explicit_bullet_bare_verb_is_a_check_regardless_of_previous_line(
+    tmp_path: Path,
+) -> None:
+    """Invariant: an explicit bullet/number marker on the matched line
+    itself is unambiguous -- it is a check regardless of what the
+    previous line looked like, even mid-paragraph.
+    Mutation: apply the continuation guard to explicitly-marked lines too
+    -> red (would lose real bulleted checks following unrelated prose)."""
+    _write_skill(
+        tmp_path,
+        "explicit",
+        "---\nname: explicit\ndescription: E.\n---\n\n"
+        "# E\n\n"
+        "Some unrelated prose that trails off without a period\n"
+        "- Verify the seal is present\n",
+    )
+    artifact = _compile(tmp_path)
+    checks = [c["text"] for c in artifact["skills"][0]["checks"]]
+    assert any("Verify the seal is present" in t for t in checks)
+
+
 def test_code_block_not_extracted_as_check(tmp_path: Path) -> None:
     """Invariant: lines inside fenced code blocks are not extracted as
     checks, even if they start with a verification verb."""

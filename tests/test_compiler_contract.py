@@ -430,6 +430,34 @@ def test_real_checks_section_containing_a_code_block_only_extracts_bullets_outsi
     ]
 
 
+def test_indented_fenced_code_block_is_not_extracted_as_prose(tmp_path: Path) -> None:
+    """A fenced code block nested inside a list item is conventionally
+    indented to match the item's content (CommonMark) -- _CODE_FENCE must
+    recognize an indented ``` the same as a column-0 one. Confirmed
+    against a real installed skill: an indented ```yaml
+    block under a numbered step was previously invisible to code-block
+    detection, letting its "run: |" YAML key leak into check extraction.
+    Mutation: require the fence at column 0 -> red (the YAML key
+    reappears as a bogus check)."""
+    _write_skill(
+        tmp_path,
+        "indented-fence",
+        "---\nname: indented-fence\ndescription: Has an indented fenced block.\n---\n\n"
+        "1. Do the step.\n"
+        "   ```yaml\n"
+        "   run: |\n"
+        "     echo hi\n"
+        "   ```\n"
+        "2. Verify the real check outside the fence.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    check_texts = [c["text"] for c in artifact["skills"][0]["checks"]]
+    assert not any("run: |" in t for t in check_texts)
+    assert any("Verify the real check" in t for t in check_texts)
+
+
 def test_validation_criteria_section_is_extracted_as_checks(tmp_path: Path) -> None:
     """A "## Validation Criteria" section (and the "Validation"/
     "Validation and Testing" variants) is a real checklist convention in

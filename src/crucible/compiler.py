@@ -58,8 +58,15 @@ _STEP_HEADING = re.compile(
     re.IGNORECASE,
 )
 
-# Code fence detection for skipping code blocks during extraction.
-_CODE_FENCE = re.compile(r"^```")
+# Code fence detection for skipping code blocks during extraction. Leading
+# whitespace is allowed: a fenced block nested inside a list item is
+# conventionally indented to match the item's content (CommonMark), and an
+# anchored-at-column-0 pattern missed that case entirely -- confirmed
+# against a real installed skill where a ```yaml fence indented under a
+# numbered step was never recognized as code, letting a "run: |" YAML key
+# leak into body-text check extraction. See
+# docs/decisions/0023-verification-starter-continuation-lines.md.
+_CODE_FENCE = re.compile(r"^\s*```")
 
 # Normative imperative verbs — verbs that, when at the start of a line
 # (after stripping markdown), indicate a normative constraint. These are
@@ -111,6 +118,20 @@ _VERIFICATION_STARTER = re.compile(
     rf"^\s*(?:[-*+]\s+)?(?:\d+\.\s+)?(?:{_VERIFICATION_VERB_ALTERNATION})\b",
     re.IGNORECASE,
 )
+
+# An explicit bullet/number marker on the matched line itself -- when
+# present, the line is unambiguously the start of a new list item
+# regardless of what the previous line looked like.
+_EXPLICIT_LIST_MARKER = re.compile(r"^\s*(?:[-*+]\s+|\d+\.\s+)")
+
+# A previous line ending in sentence-terminating punctuation (optionally
+# followed by a markdown closer like `**`/`_`/`` ` ``/quotes) marks a real
+# sentence/paragraph boundary. Without an explicit marker on the current
+# line, a verification-verb match is only treated as the start of a new
+# check if the line before it looks like a boundary -- otherwise it is a
+# wrapped continuation of a longer, unrelated sentence. See
+# docs/decisions/0023-verification-starter-continuation-lines.md.
+_SENTENCE_BOUNDARY = re.compile(r"[.!?:][\"'*_`)\]]*\s*$")
 
 # Action verbs — first word of a bullet that indicates a procedural step
 # (rather than an explanatory or descriptive bullet). These are concrete
@@ -1026,6 +1047,19 @@ def _extract_checks(
             continue
         if not _VERIFICATION_STARTER.match(line):
             continue
+        if not _EXPLICIT_LIST_MARKER.match(line):
+            # A bare verb at the start of a line, with no bullet/number
+            # marker, is only a new check if the previous line marks a
+            # real sentence/paragraph boundary -- otherwise this is a
+            # hand-wrapped continuation line of a longer, unrelated
+            # sentence (e.g. a numbered list item's text wrapped across
+            # several physical lines), not a new check. A blank or
+            # absent previous line is itself a boundary.
+            prev_index = index - 1
+            if prev_index >= body_start:
+                prev_line = lines[prev_index].strip()
+                if prev_line and not _SENTENCE_BOUNDARY.search(prev_line):
+                    continue
         # Strip leading bullet/number markers for the check text.
         text = line.strip()
         text = re.sub(r"^\s*(?:[-*+]\s+|\d+\.\s+)", "", text)

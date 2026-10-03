@@ -126,6 +126,28 @@ documentado para no confundir un `NO_CLUSTERS` de calibración del mock
 con que el detector real no encontró nada. Detalle y JSON en los runs 4 y
 5 de docs/L16_NEBIUS_LIVE_RUN_EVIDENCE.md.
 
+Actualización 2026-10-03 (7): el usuario pidió frenar el ritmo — quedan
+27 días, la prioridad es que el escaneo de 1 skill / 1 repo / instalados
+funcione bien de verdad, no sumar features. Corrí `--scan-installed`
+contra la colección real de ~100 skills del usuario (no un fixture
+sintético) y encontré 2 bugs reales de extracción, preexistentes (no
+introducidos esta sesión): (1) `_VERIFICATION_STARTER` no distinguía una
+oración nueva de una línea de **continuación** envuelta a mano — un
+fragmento de oración que arranca con "does"/"confirm"/etc. se extraía
+como check falso; (2) `_CODE_FENCE` no reconocía bloques \`\`\` con
+indentación (anidados en una lista), dejando pasar YAML embebido como
+prosa. Medido, no asumido: `COMMAND_ORACLE_WITHOUT_ARTIFACT` bajó de 58 a
+35 findings (-40%) sobre la misma colección real, y `REQUIREMENT_WITHOUT_CHECK`
+subió de 16 a 24 — los fragmentos basura estaban tapando skills que de
+verdad no tienen checks. 4 tests nuevos (fixtures sintéticos, no texto
+real del usuario). Al revisar los 35 que quedaron encontré un tercer
+problema, más grande, **sin arreglar todavía**: varios checks/rules con
+bullet explícito que envuelven en 2+ líneas físicas pierden el resto del
+texto (el extractor solo lee la primera línea) — afecta no solo checks
+sino también rules y relations, mismo patrón en los tres. Queda como
+pendiente nuevo (ver abajo), no cerrado. Detalle completo en
+docs/decisions/0023-verification-starter-continuation-lines.md.
+
 ---
 
 ## Lo que falta — por prioridad
@@ -194,6 +216,24 @@ están implementados. Falta:
   licenciar explícitamente para uso como demo pública.
 - Corpus NVIDIA verified skills (interoperabilidad)
 - Documentar licencias de cada corpus
+
+**4b. Multi-line bullet/rule wrapping — NUEVO 2026-10-03, sin arreglar**
+
+Encontrado al validar contra la colección real de ~100 skills del
+usuario (ver actualización (7) arriba y
+docs/decisions/0023-verification-starter-continuation-lines.md): un
+check o rule con bullet explícito cuyo texto envuelve en 2+ líneas
+físicas pierde todo lo que está después de la primera línea — el
+extractor (`_BULLET`, usado también por `_extract_rules` y las
+relaciones `composes_with`/`delegates_to`) lee línea por línea, no por
+unidad lógica. Un caso concreto real: un bullet que es una pregunta
+("¿Dónde X otorga Y?") envuelto en 2 líneas pierde el "?" final y
+termina clasificado como oracle_kind "command" en vez de "question".
+Arreglarlo necesita un paso de preprocesamiento compartido (decidir
+dónde termina una continuación: línea en blanco, nuevo marcador,
+heading, dedent, code fence) usado consistentemente por los tres
+extractores — más grande que los dos bugs ya cerrados en ADR-0023, no
+se intentó en la misma pasada a propósito (disciplina de alcance).
 
 **5. Política de CI gate**
 
