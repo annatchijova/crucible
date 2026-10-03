@@ -240,10 +240,23 @@ grafo (L3) ya emitía. No hizo falta ningún cambio nuevo — la nota de
 abajo ("ambos son cambios no triviales") describía un estado que ya no
 era cierto.
 
-**9. TUI pulida**
+**9. TUI pulida — RESUELTO 2026-10-03 (alcance acotado, sin TUI interactiva)**
 
-El viewer HTML existe y es read-only, pero no hay TUI interactiva. El CLI
-es funcional pero produce JSON crudo. Un TUI mejoraría la demo.
+Preguntado directamente: TUI interactiva real (textual/rich, dependencia
+nueva) vs. salida legible sin agregar dependencias — se eligió lo
+segundo, consistente con que el proyecto es deliberadamente
+stdlib-only en todo lo demás. Nuevo flag `--human`: un solo helper
+(`_emit`) reemplaza los ~17 `print(json.dumps(...))` del CLI, y un
+dispatcher (`human_output.py`) detecta el tipo de reporte (audit,
+mutation, behavioral, graph, confirmation, bob/repair-loop/
+consolidation, consolidation batch) y lo renderiza como texto legible
+con color ANSI (solo si hay terminal real — `isatty()` — nunca al
+redirigir o hacer pipe). Cualquier forma no reconocida cae a JSON sin
+cambios: `--human` nunca es un downgrade. De yapa, muestra en vivo las
+activation traces del punto 10. El viewer HTML read-only sigue como
+está — esto no lo reemplaza, es presentación de CLI. 13 tests nuevos.
+Detalle en docs/decisions/0022-human-readable-cli-output.md. Una TUI
+interactiva de verdad queda fuera de alcance, explícitamente.
 
 **10. Runtime activation traces — RESUELTO 2026-10-03**
 
@@ -262,10 +275,20 @@ muestra esta evidencia como tooltip. Es un trace léxico determinista, no
 una prueba de qué "razonó" el modelo — documentado así explícitamente.
 4 tests nuevos. Detalle en docs/decisions/0021-l5-activation-traces.md.
 
-**11. Model/provider integration — estabilidad cross-version**
+**11. Model/provider integration — estabilidad cross-version — NO VERIFICABLE con el acceso actual (2026-10-03)**
 
-No se verificó que las observaciones conductuales sean estables across
-versiones del modelo. El plan lo lista como limitación conocida.
+Preguntado directamente: el único acceso real disponible vía Nebius
+Token Factory es `nvidia/nemotron-3-super-120b-a12b` — no hay una
+segunda versión/tag de Nemotron para comparar. Medir estabilidad
+cross-version requiere correr el mismo experimento L5 (mismo task, mismo
+fixture) contra al menos dos versiones reales del modelo y comparar
+observaciones; con una sola versión disponible, cualquier intento de
+"medir" esto sería simulación, no evidencia. Se deja documentado como
+limitación honesta y no verificable con el acceso actual, no como
+pendiente de implementación — no hay código que escribir acá hasta que
+exista una segunda versión real contra la que comparar. Ya está
+declarado así en `docs/NVIDIA_INTEGRATION.md` ("We have not verified
+that every planned behavioral task is stable across model versions").
 
 ### P3 — Deferido explícitamente (no bloquea submission)
 
@@ -291,7 +314,7 @@ El diverse corpus (L13) es un sustituto parcial del corpus OSS.
 ```
 P0 (bloquea submission):  NEBIUS_API_KEY, video, demo URL
 P1 (calidad):              corpus externo, CI gate, disclosure (feedback RESUELTO 2026-10-03)
-P2 (mejoras técnicas):     TUI, cross-version (mutation survivors RESUELTO 2026-09-25, traces RESUELTO 2026-10-03)
+P2 (mejoras técnicas):     TODOS RESUELTOS O NO VERIFICABLES — mutation survivors RESUELTO 2026-09-25, TUI/traces RESUELTOS 2026-10-03 (alcance acotado), cross-version NO VERIFICABLE con el acceso actual
 P3 (deferido):             firmas, viewer pulido, corpus completo
 ```
 

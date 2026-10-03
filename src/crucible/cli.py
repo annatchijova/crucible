@@ -29,12 +29,26 @@ from .final_report_render import (
     render_final_report_pdf,
 )
 from .graph import build_composition_graph
+from .human_output import format_human
 from .mutation import run_mutation_lab
 from .narrator import MockNarrationExecutor, NebiusNarrationExecutor
 from .repair_loop import run_repair_loop
 from .repair_evidence import run_captured_repair
 from .report import run_full_report
 from .viewer import render_artifact_html
+
+
+def _emit(data: Any, human: bool) -> None:
+    """Print a report either as human-readable text or as JSON.
+
+    The JSON path is byte-for-byte unchanged from before --human existed
+    (same ensure_ascii/indent/sort_keys); --human renders the identical
+    data, never a recomputation, through human_output.format_human.
+    """
+    if human:
+        print(format_human(data))
+    else:
+        print(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True))
 
 
 def main() -> int:
@@ -51,6 +65,13 @@ def main() -> int:
         "--compile-only",
         action="store_true",
         help="emit the L1 Skill IR without auditing or graph analysis",
+    )
+    parser.add_argument(
+        "--human",
+        action="store_true",
+        help="render the report as human-readable terminal text instead "
+             "of JSON (same report data, no new dependency; falls back "
+             "to JSON for any shape it doesn't recognize)",
     )
     parser.add_argument(
         "--no-graph",
@@ -223,9 +244,9 @@ def main() -> int:
         try:
             result = scan_installed_collection()
         except (ValueError, OSError) as exc:
-            print(json.dumps({'status': 'ERROR', 'error': str(exc)}, sort_keys=True))
+            _emit({'status': 'ERROR', 'error': str(exc)}, args.human)
             return 1
-        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(result, args.human)
         return 0 if result['status'] == 'COMPLETE' else 1
 
     if args.view:
@@ -252,7 +273,7 @@ def main() -> int:
         except ValueError as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
-        print(json.dumps(result["audit"], ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(result["audit"], args.human)
         return 0
 
     if args.scan_installed:
@@ -260,7 +281,7 @@ def main() -> int:
         from .api import scan_installed_skills
         result = scan_installed_skills()
         if result.get("error"):
-            print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+            _emit(result, args.human)
             return 1
         coverage = result.get('coverage')
         if coverage and coverage['status'] == 'PARTIAL':
@@ -272,12 +293,12 @@ def main() -> int:
         output = result['audit']
         if args.include_coverage:
             output = {'audit': result['audit'], 'coverage': coverage}
-        print(json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(output, args.human)
         return 0
 
     if args.mutate:
         report = run_mutation_lab()
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(report, args.human)
         return 0
 
     if args.behave:
@@ -286,7 +307,7 @@ def main() -> int:
         else:
             executor = NebiusExecutor()
         report = run_behavioral_differential(executor=executor)
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(report, args.human)
         return 0
 
     if args.bob:
@@ -295,7 +316,7 @@ def main() -> int:
         else:
             proposer = RuleBasedProposer()
         report = run_bob_workflow(proposer=proposer)
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(report, args.human)
         return 0
 
     if args.repair_loop:
@@ -303,14 +324,14 @@ def main() -> int:
             if not args.llm_proposer or args.local_executor:
                 parser.error("--repair-evidence requires --llm-proposer and cannot use --local-executor")
             bundle = run_captured_repair(args.repair_evidence)
-            print(json.dumps({
+            _emit({
                 "evidence_dir": args.repair_evidence,
                 "schema_version": bundle["schema_version"],
                 "bundle_digest": bundle["bundle_digest"],
                 "outcome": bundle["report"].get("outcome"),
                 "rejection_reason": bundle["report"].get("rejection_reason"),
                 "captured_events": len(bundle["events"]),
-            }, ensure_ascii=False, indent=2, sort_keys=True))
+            }, args.human)
             return 0
         if args.llm_proposer:
             proposer = LLMProposer()
@@ -321,7 +342,7 @@ def main() -> int:
         else:
             executor = None  # let the loop decide (Nebius or LocalExecutor fallback)
         report = run_repair_loop(proposer=proposer, executor=executor)
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(report, args.human)
         return 0
 
     if args.report:
@@ -330,7 +351,7 @@ def main() -> int:
         else:
             executor = None  # let the report decide (Nebius or LocalExecutor fallback)
         report = run_full_report(corpus_root=args.root, executor=executor)
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(report, args.human)
         return 0
 
     if args.confirm:
@@ -343,7 +364,7 @@ def main() -> int:
         else:
             executor = NebiusConfirmExecutor()
         confirmation = confirm_candidates(audit, artifact, executor)
-        print(json.dumps(confirmation, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(confirmation, args.human)
         return 0
 
     if args.consolidate or args.consolidate_all:
@@ -379,7 +400,7 @@ def main() -> int:
                 cluster_index=args.cluster_index or 0,
                 proposer=LLMConsolidationProposer(),
             )
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(report, args.human)
         return 0
 
     if args.narrate or args.mock_narrate:
@@ -392,7 +413,7 @@ def main() -> int:
             confirm_executor = NebiusConfirmExecutor()
             narration_executor = NebiusNarrationExecutor()
         final_report = build_final_report(args.root, confirm_executor, narration_executor)
-        print(json.dumps(final_report, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(final_report, args.human)
         return 0
 
     if args.render_report:
@@ -422,16 +443,16 @@ def main() -> int:
 
     artifact = compile_corpus(args.root)
     if args.compile_only:
-        print(json.dumps(artifact, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(artifact, args.human)
         return 0
 
     audit = audit_corpus(artifact)
     if args.no_graph:
-        print(json.dumps(audit, ensure_ascii=False, indent=2, sort_keys=True))
+        _emit(audit, args.human)
         return 0
 
     graph = build_composition_graph(artifact, audit)
-    print(json.dumps(graph, ensure_ascii=False, indent=2, sort_keys=True))
+    _emit(graph, args.human)
     return 0
 
 

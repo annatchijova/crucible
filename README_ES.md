@@ -89,6 +89,7 @@ Necesitás Python 3.11 o posterior.
 ```bash
 pip install -e ".[test]"
 PYTHONPATH=src python3 -m crucible.cli tests/fixtures/readme-demo --no-graph
+PYTHONPATH=src python3 -m crucible.cli tests/fixtures/readme-demo --no-graph --human
 PYTHONPATH=src python3 -m crucible.cli --scan-skill < tests/fixtures/readme-demo/SKILL.md
 PYTHONPATH=src python3 -m crucible.cli --report --local-executor > crucible-report.json
 PYTHONPATH=src python3 -m crucible.cli --view crucible-report.json > crucible-report.html
@@ -97,10 +98,13 @@ PYTHONPATH=src python3 -m crucible.cli --scan-installed-collection
 PYTHONPATH=src python3 -m pytest -q
 ```
 
-El primer comando después de instalar audita el corpus de ejemplo; el siguiente
-lee la misma skill por stdin. Sin ruta de corpus, `--report` ejecuta fixtures
-locales L4–L7; agregá una ruta para incluir L1–L3. `--local-executor` mantiene local
-también la confirmación aunque exista una API key del proveedor.
+El primer comando después de instalar audita el corpus de ejemplo; agregando
+`--human` la misma auditoría se renderiza como texto legible en vez de JSON
+(cualquier comando lo acepta; un reporte sin formato reconocido cae de vuelta
+a JSON sin cambios). El siguiente comando lee la misma skill por stdin. Sin
+ruta de corpus, `--report` ejecuta fixtures locales L4–L7; agregá una ruta
+para incluir L1–L3. `--local-executor` mantiene local también la confirmación
+aunque exista una API key del proveedor.
 
 El escaneo de colecciones instaladas audita cada paquete por separado y conserva
 skills homónimas; no evalúa composición entre paquetes. La cobertura parcial o

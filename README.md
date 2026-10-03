@@ -90,6 +90,7 @@ Python 3.11 or newer is required.
 ```bash
 pip install -e ".[test]"
 PYTHONPATH=src python3 -m crucible.cli tests/fixtures/readme-demo --no-graph
+PYTHONPATH=src python3 -m crucible.cli tests/fixtures/readme-demo --no-graph --human
 PYTHONPATH=src python3 -m crucible.cli --scan-skill < tests/fixtures/readme-demo/SKILL.md
 PYTHONPATH=src python3 -m crucible.cli --report --local-executor > crucible-report.json
 PYTHONPATH=src python3 -m crucible.cli --view crucible-report.json > crucible-report.html
@@ -98,10 +99,12 @@ PYTHONPATH=src python3 -m crucible.cli --scan-installed-collection
 PYTHONPATH=src python3 -m pytest -q
 ```
 
-The first command after installation audits the example corpus; the next scans
-the same skill through stdin. Without a corpus path, `--report` runs local L4–L7
-fixtures; add a corpus path to include L1–L3. Explicit `--local-executor` keeps
-confirmation local even if a provider API key exists.
+The first command after installation audits the example corpus; adding `--human`
+renders the same audit as scannable terminal text instead of JSON (any command
+accepts it; an unrecognized report shape falls back to JSON unchanged). The next
+command scans the same skill through stdin. Without a corpus path, `--report` runs
+local L4–L7 fixtures; add a corpus path to include L1–L3. Explicit `--local-executor`
+keeps confirmation local even if a provider API key exists.
 
 Installed collection scanning audits packages independently, retaining homonymous
 skills; it does not evaluate cross-package composition. Partial or empty coverage
