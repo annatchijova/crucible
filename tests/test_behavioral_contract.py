@@ -564,3 +564,61 @@ def test_d4_p4_accepts_idempotency_noun_form() -> None:
     )
     p4 = next(o for o in observations if o["property_id"] == "P4-mentions-idempotency")
     assert p4["status"] == "PASS"
+
+
+# ---------------------------------------------------------------------------
+# Activation trace: evidence names the real matched keyword and snippet
+# ---------------------------------------------------------------------------
+
+def test_evidence_names_the_matched_keyword_on_pass() -> None:
+    """Invariant: a PASS observation's evidence names which keyword
+    actually matched in the real output, not a static restatement of the
+    property description. Mutation: revert to `f"output checked for: "
+    f"{description}"` -> red (same string regardless of outcome)."""
+    observations = run_property_oracle(
+        "Retries MUST have a finite budget.", TASK_FIXTURE["properties"]
+    )
+    p1 = next(o for o in observations if o["property_id"] == "P1-mentions-budget")
+    assert p1["status"] == "PASS"
+    assert "finite" in p1["evidence"]
+    assert "matched" in p1["evidence"]
+
+
+def test_evidence_names_what_was_searched_on_fail() -> None:
+    """Invariant: a FAIL observation's evidence lists which keywords were
+    searched and found absent, not a static sentence.
+    Mutation: return the same evidence text for PASS and FAIL -> red."""
+    observations = run_property_oracle(
+        "This output mentions nothing relevant.", TASK_FIXTURE["properties"]
+    )
+    p4 = next(o for o in observations if o["property_id"] == "P4-mentions-idempotency")
+    assert p4["status"] == "FAIL"
+    assert "idempotent" in p4["evidence"]
+    assert "none of" in p4["evidence"]
+
+
+def test_evidence_is_plain_text_for_the_capture_bundle_contract() -> None:
+    """Invariant: evidence stays a plain, non-empty string -- the sealed
+    capture-bundle contract (replay.py, R2/R3) requires each observation
+    to have exactly {property_id, status, evidence} with evidence as str.
+    Mutation: return a dict/structured value for evidence -> red (breaks
+    replay.py's validate_bundle via _text/_fields)."""
+    observations = run_property_oracle(
+        "Retries MUST have a finite budget.", TASK_FIXTURE["properties"]
+    )
+    for obs in observations:
+        assert isinstance(obs["evidence"], str)
+        assert obs["evidence"] != ""
+
+
+def test_evidence_differs_between_distinct_real_outputs() -> None:
+    """Invariant: two outputs that pass the same property via different
+    keywords produce different evidence text, proving the trace reflects
+    the real output rather than a fixed per-property string.
+    Mutation: ignore which keyword matched -> red."""
+    obs_a = run_property_oracle("Use a bounded retry.", TASK_FIXTURE["properties"])
+    obs_b = run_property_oracle("Use a finite retry.", TASK_FIXTURE["properties"])
+    p1_a = next(o for o in obs_a if o["property_id"] == "P1-mentions-budget")
+    p1_b = next(o for o in obs_b if o["property_id"] == "P1-mentions-budget")
+    assert p1_a["status"] == p1_b["status"] == "PASS"
+    assert p1_a["evidence"] != p1_b["evidence"]

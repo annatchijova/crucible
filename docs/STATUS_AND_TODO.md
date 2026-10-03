@@ -245,11 +245,22 @@ era cierto.
 El viewer HTML existe y es read-only, pero no hay TUI interactiva. El CLI
 es funcional pero produce JSON crudo. Un TUI mejoraría la demo.
 
-**10. Runtime activation traces**
+**10. Runtime activation traces — RESUELTO 2026-10-03**
 
-No hay traces de qué skill se activó en qué momento durante el behavioral
-differential. El reporte dice qué variante corrió pero no cómo el modelo
-interpretó la skill.
+Cada observación de propiedad en L5 ahora trae un trace de activación
+real en `evidence`: qué palabra clave matcheó en el output real del
+modelo (y en qué fragmento), o la lista completa de palabras buscadas y
+no encontradas — ya no una frase estática idéntica sin importar el
+resultado. `evidence` se mantiene como `str` (no se cambió a dict ni se
+agregó un campo nuevo) porque el validador del bundle sellado de replay
+(`replay.py`, R2/R3) exige exactamente `{property_id, status, evidence}`
+con `evidence` como texto — ensanchar ese contrato para que entre un
+campo nuevo hubiera sido debilitar una validación deliberadamente
+estricta, así que la traza más rica se renderiza como un string
+descriptivo en vez de como un campo separado. El viewer HTML también
+muestra esta evidencia como tooltip. Es un trace léxico determinista, no
+una prueba de qué "razonó" el modelo — documentado así explícitamente.
+4 tests nuevos. Detalle en docs/decisions/0021-l5-activation-traces.md.
 
 **11. Model/provider integration — estabilidad cross-version**
 
@@ -280,7 +291,7 @@ El diverse corpus (L13) es un sustituto parcial del corpus OSS.
 ```
 P0 (bloquea submission):  NEBIUS_API_KEY, video, demo URL
 P1 (calidad):              corpus externo, CI gate, disclosure (feedback RESUELTO 2026-10-03)
-P2 (mejoras técnicas):     TUI, traces, cross-version (mutation survivors RESUELTO 2026-09-25)
+P2 (mejoras técnicas):     TUI, cross-version (mutation survivors RESUELTO 2026-09-25, traces RESUELTO 2026-10-03)
 P3 (deferido):             firmas, viewer pulido, corpus completo
 ```
 

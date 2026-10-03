@@ -27,6 +27,18 @@ responder for testing the harness without external dependencies.
 
 If the Nebius API key is not available, the Nebius execution is documented
 as BLOCKED, not simulated as verified.
+
+Each property observation carries a structured activation trace in its
+``evidence`` field (which keyword was searched, which one matched the
+real output, and a readable snippet) instead of a static description
+restated as a sentence. This is a deterministic, falsifiable, LEXICAL
+trace of how the model's output relates to each property -- it is not a
+claim about the model's internal reasoning, attention, or whether it
+"used" the skill text in any mechanistic sense; a model could produce a
+matching keyword by coincidence, or phrase an equivalent idea without
+using any searched keyword (an ABSTAINED-worthy gap this oracle cannot
+distinguish from genuine absence). It is bounded, honest observability,
+not a causal activation proof.
 """
 
 from __future__ import annotations
@@ -389,6 +401,20 @@ class LocalExecutor:
 # Property oracle (deterministic)
 # ---------------------------------------------------------------------------
 
+def _snippet(output_original: str, start: int, length: int, window: int = 30) -> str:
+    """A short window of the model's ORIGINAL-case output around a match
+    position, for a human-readable trace. _normalize_oracle_text only
+    lowercases and 1:1-substitutes dash variants, so a position found in
+    the normalized text maps directly to the same index in the original
+    -- the caller passes the pre-normalization output here so the quoted
+    snippet reads naturally instead of all-lowercase."""
+    lo = max(0, start - window)
+    hi = min(len(output_original), start + length + window)
+    prefix = "..." if lo > 0 else ""
+    suffix = "..." if hi < len(output_original) else ""
+    return prefix + output_original[lo:hi].strip() + suffix
+
+
 def _has_negation(output_lower: str, keyword: str) -> bool:
     """Check whether a keyword is negated in the output.
 
@@ -411,7 +437,7 @@ def _has_negation(output_lower: str, keyword: str) -> bool:
     return False
 
 
-def _check_mentions_budget(output: str) -> str:
+def _check_mentions_budget(output: str) -> tuple[str, dict[str, Any]]:
     """P1: The response mentions a finite or bounded retry budget.
 
     Checks for keyword presence with negation detection: "budget is not
@@ -420,12 +446,20 @@ def _check_mentions_budget(output: str) -> str:
     output_lower = _normalize_oracle_text(output)
     keywords = ("finite", "bounded", "budget", "at most")
     for kw in keywords:
-        if kw in output_lower and not _has_negation(output_lower, kw):
-            return "PASS"
-    return "FAIL"
+        pos = output_lower.find(kw)
+        if pos != -1 and not _has_negation(output_lower, kw):
+            return "PASS", {
+                "basis": "keyword_present", "matched_keyword": kw,
+                "snippet": _snippet(output, pos, len(kw)),
+                "keywords_checked": list(keywords),
+            }
+    return "FAIL", {
+        "basis": "no_keyword_or_all_negated", "matched_keyword": None,
+        "snippet": None, "keywords_checked": list(keywords),
+    }
 
 
-def _check_respects_exception(output: str) -> str:
+def _check_respects_exception(output: str) -> tuple[str, dict[str, Any]]:
     """P2: The response acknowledges that some operations may be exempt.
 
     Checks for keyword presence with negation detection: "there is no
@@ -440,16 +474,30 @@ def _check_respects_exception(output: str) -> str:
         "exceptions are not allowed",
         "exceptions are not permitted",
     )
-    if any(denial in output_lower for denial in explicit_denials):
-        return "FAIL"
+    for denial in explicit_denials:
+        pos = output_lower.find(denial)
+        if pos != -1:
+            return "FAIL", {
+                "basis": "explicit_denial", "matched_keyword": denial,
+                "snippet": _snippet(output, pos, len(denial)),
+                "keywords_checked": list(explicit_denials),
+            }
     keywords = ("except", "exempt", "exception", "read-only")
     for kw in keywords:
-        if kw in output_lower:
-            return "PASS"
-    return "FAIL"
+        pos = output_lower.find(kw)
+        if pos != -1:
+            return "PASS", {
+                "basis": "keyword_present", "matched_keyword": kw,
+                "snippet": _snippet(output, pos, len(kw)),
+                "keywords_checked": list(keywords),
+            }
+    return "FAIL", {
+        "basis": "no_keyword_found", "matched_keyword": None,
+        "snippet": None, "keywords_checked": list(keywords),
+    }
 
 
-def _check_no_unbounded_retry(output: str) -> str:
+def _check_no_unbounded_retry(output: str) -> tuple[str, dict[str, Any]]:
     """P3: The response does not recommend retrying without any bound.
 
     A negation pattern ("not be bounded", "no finite budget") fails
@@ -468,12 +516,20 @@ def _check_no_unbounded_retry(output: str) -> str:
         "not bounded by",
     ]
     # If any negation pattern is present, FAIL unconditionally.
-    if any(p in output_lower for p in negation_patterns):
-        return "FAIL"
+    for pattern in negation_patterns:
+        pos = output_lower.find(pattern)
+        if pos != -1:
+            return "FAIL", {
+                "basis": "unbounded_pattern", "matched_keyword": pattern,
+                "snippet": _snippet(output, pos, len(pattern)),
+                "keywords_checked": negation_patterns,
+            }
     # "Continue retrying until" is an unbounded recommendation.
-    has_unbounded_recommendation = "until the operation succeeds" in output_lower
+    unbounded_recommendation_pos = output_lower.find("until the operation succeeds")
+    has_unbounded_recommendation = unbounded_recommendation_pos != -1
     # Positive bound: "budget of N" or "at most N" that is NOT negated.
     has_positive_bound = False
+    bound_match = None
     for match in re.finditer(
         r"(?:budget of|at most|finite budget of)\s+\d+",
         output_lower,
@@ -482,18 +538,45 @@ def _check_no_unbounded_retry(output: str) -> str:
         window = output_lower[window_start:match.start()]
         if not any(neg in window for neg in ("not ", "no ", "without ", "never ")):
             has_positive_bound = True
+            bound_match = match
             break
     if has_unbounded_recommendation and not has_positive_bound:
-        return "FAIL"
-    return "PASS"
+        return "FAIL", {
+            "basis": "unbounded_recommendation_without_positive_bound",
+            "matched_keyword": "until the operation succeeds",
+            "snippet": _snippet(
+                output, unbounded_recommendation_pos,
+                len("until the operation succeeds"),
+            ),
+            "keywords_checked": negation_patterns + ["until the operation succeeds"],
+        }
+    if has_positive_bound:
+        return "PASS", {
+            "basis": "positive_bound_present", "matched_keyword": bound_match.group(),
+            "snippet": _snippet(output, bound_match.start(), len(bound_match.group())),
+            "keywords_checked": negation_patterns,
+        }
+    return "PASS", {
+        "basis": "no_unbounded_pattern_found", "matched_keyword": None,
+        "snippet": None, "keywords_checked": negation_patterns,
+    }
 
 
-def _check_mentions_idempotency(output: str) -> str:
+def _check_mentions_idempotency(output: str) -> tuple[str, dict[str, Any]]:
     """P4: The response mentions idempotency or idempotent operations."""
     output_lower = _normalize_oracle_text(output)
-    if "idempotent" in output_lower or "idempotency" in output_lower:
-        return "PASS"
-    return "FAIL"
+    for kw in ("idempotent", "idempotency"):
+        pos = output_lower.find(kw)
+        if pos != -1:
+            return "PASS", {
+                "basis": "keyword_present", "matched_keyword": kw,
+                "snippet": _snippet(output, pos, len(kw)),
+                "keywords_checked": ["idempotent", "idempotency"],
+            }
+    return "FAIL", {
+        "basis": "no_keyword_found", "matched_keyword": None,
+        "snippet": None, "keywords_checked": ["idempotent", "idempotency"],
+    }
 
 
 def _normalize_oracle_text(output: str) -> str:
@@ -508,7 +591,7 @@ def _normalize_oracle_text(output: str) -> str:
     }))
 
 
-PROPERTY_CHECKS: dict[str, Callable[[str], str]] = {
+PROPERTY_CHECKS: dict[str, Callable[[str], tuple[str, dict[str, Any]]]] = {
     "mentions_budget": _check_mentions_budget,
     "respects_exception": _check_respects_exception,
     "no_unbounded_retry": _check_no_unbounded_retry,
@@ -516,24 +599,58 @@ PROPERTY_CHECKS: dict[str, Callable[[str], str]] = {
 }
 
 
+def _format_evidence(trace: dict[str, Any]) -> str:
+    """Render a check function's trace dict as the sealed ``evidence``
+    string.
+
+    ``evidence`` stays plain text -- replay.py's capture-bundle validator
+    (crucible-capture-bundle/v1, R2/R3) requires each observation to have
+    EXACTLY the fields {property_id, status, evidence} and requires
+    evidence to be ``str`` (``_fields``/``_text`` in replay.py). That is a
+    deliberately closed, sealed contract for tamper-evident replay, not an
+    incidental shape to relax for a new field; the richer trace (matched
+    keyword, snippet, keywords checked) is folded into this one string
+    instead of added as a new dict/field.
+    """
+    if trace["matched_keyword"] is None:
+        checked = ", ".join(repr(k) for k in trace["keywords_checked"])
+        return f"{trace['basis']}: none of [{checked}] found in output"
+    return (
+        f"{trace['basis']}: matched {trace['matched_keyword']!r} "
+        f"in \"{trace['snippet']}\""
+    )
+
+
 def run_property_oracle(
     output: str, properties: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
-    """Run deterministic property checks against the model output."""
+    """Run deterministic property checks against the model output.
+
+    ``evidence`` is now a genuine activation trace rendered as text --
+    which keywords were searched, which one (if any) actually matched in
+    the model's real output, and a readable snippet around that match --
+    instead of a static sentence restating the property description
+    regardless of outcome. This is the deterministic, falsifiable answer
+    to "how did the model's output relate to this property": a lexical
+    trace, not a claim about the model's internal reasoning or attention
+    (see the module docstring's limitations).
+    """
     observations = []
     for prop in properties:
         check_fn = PROPERTY_CHECKS.get(prop["check"])
         if check_fn is None:
             status = "ABSTAINED"
-            evidence = f"check function {prop['check']} not found"
+            trace: dict[str, Any] = {
+                "basis": "check_not_found", "matched_keyword": None,
+                "snippet": None, "keywords_checked": [],
+            }
         else:
-            status = check_fn(output)
-            evidence = f"output checked for: {prop['description']}"
+            status, trace = check_fn(output)
         observations.append({
             "property_id": prop["property_id"],
             "description": prop["description"],
             "status": status,
-            "evidence": evidence,
+            "evidence": _format_evidence(trace),
         })
     return observations
 

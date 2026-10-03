@@ -192,8 +192,9 @@ def _render_behavioral_runs(runs: list[dict[str, Any]]) -> list[str]:
     for r in runs:
         observations = r.get("observations", [])
         props = ", ".join(
+            f'<span title="{html.escape(str(o.get("evidence", "")))}">'
             f'{html.escape(str(o.get("property_id", "")))}='
-            f'{html.escape(str(o.get("status", "")))}'
+            f'{html.escape(str(o.get("status", "")))}</span>'
             for o in observations
         )
         parts.append(
