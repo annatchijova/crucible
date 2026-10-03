@@ -671,6 +671,15 @@ _ENGINEERING_QUESTIONS: dict[str, str] = {
         "Is this actually an unpinned dependency, or is the pin "
         "expressed in vocabulary the patterns missed?"
     ),
+    "COMMAND_ORACLE_WITHOUT_ARTIFACT": (
+        "The deterministic auditor found a check classified as a command "
+        "oracle (verify, check, validate, ...) by a bare verification "
+        "verb alone, naming no concrete command, script path, or inline "
+        "code to run. Is this actually a vague, non-actionable "
+        "verification claim, or does it name a concrete artifact in "
+        "vocabulary the patterns missed (e.g. a plain-text script or "
+        "tool name without backticks)?"
+    ),
 }
 
 

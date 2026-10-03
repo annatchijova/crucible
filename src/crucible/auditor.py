@@ -12,6 +12,7 @@ import re
 from fractions import Fraction
 from typing import Any
 
+from .compiler import _ORACLE_INLINE_CODE
 from .ir import SCHEMA_VERSION, digest_payload
 
 AUDIT_VERSION = "crucible-audit/v1"
@@ -64,6 +65,7 @@ def audit_corpus(artifact: dict[str, Any]) -> dict[str, Any]:
     findings.extend(_check_scope_trigger_mismatch(skills))
     findings.extend(_check_description_body_gap(skills))
     findings.extend(_check_without_oracle(skills))
+    findings.extend(_check_command_oracle_without_artifact(skills))
     findings.extend(_check_claim_without_provenance(skills))
     findings.extend(_check_unbounded_retry(skills))
     findings.extend(_check_llm_in_decision_path(skills))
@@ -1062,6 +1064,103 @@ def _check_without_oracle(
                     "may be verifiable through domain-specific means "
                     "not captured by the patterns; the finding is "
                     "CANDIDATE, not CONFIRMED"
+                ),
+            ))
+    return findings
+
+
+# ---------------------------------------------------------------------------
+# COMMAND_ORACLE_WITHOUT_ARTIFACT
+# ---------------------------------------------------------------------------
+
+def _has_named_artifact(check_text: str, body_text: str) -> bool:
+    """Whether a command-oracle check names a concrete artifact to run.
+
+    True if the check text itself has an inline code span (`` `...` ``),
+    or if it is immediately followed in the skill body by a fenced code
+    block -- the common "Run the server:\\n```bash\\nfastapi dev\\n```"
+    pattern, where the actual command lives one block below the prose
+    line the extractor captured as the check text, not inside it.
+
+    Measured against tests/fixtures/diverse-corpus: without the fenced-
+    block lookahead, 3 of 7 CANDIDATEs on that corpus were exactly this
+    pattern (fastapi x2, antigravity-support x1) -- a false positive, not
+    a vague check. See docs/evidence/ for the measurement this fix is
+    based on.
+    """
+    if _ORACLE_INLINE_CODE.search(check_text):
+        return True
+    idx = body_text.find(check_text)
+    if idx == -1:
+        return False
+    rest = body_text[idx + len(check_text):]
+    for line in rest.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        return stripped.startswith("```")
+    return False
+
+
+def _check_command_oracle_without_artifact(
+    skills: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """A check classified oracle_kind "command" by a bare verification
+    verb alone, naming no concrete command, script, or path to run.
+
+    _extract_oracle_kind assigns "command" through two independent
+    patterns: a verification verb (verify, check, validate, ...) or an
+    inline code span (`` `...` ``). The verb alone proves the author
+    intended a verification step, not that the step is machine-
+    executable as written: "Verify the effect is bounded." has a verb
+    but does not say how; "Run `scripts/validate.py`" does. Both pass
+    CHECK_WITHOUT_ORACLE (oracle_kind != "unknown"), so that check
+    cannot see this gap -- it only distinguishes "no verification intent"
+    from "some verification intent", not "actionable" from "aspirational".
+
+    A check with an inline code span is exempt even when the span names a
+    file rather than a command (test_oracle_kind_command_for_any_
+    backtick_span_documents_real_scope documents this as the accepted,
+    deliberately conservative scope of "command"): naming a concrete
+    token is the signal this check looks for, not runnability of that
+    token. A check immediately followed by a fenced code block is
+    exempt for the same reason -- see _has_named_artifact.
+    """
+    findings: list[dict[str, Any]] = []
+    for skill in skills:
+        body_text = skill.get("body_text", "")
+        for check in skill.get("checks", []):
+            if check.get("oracle_kind") != "command":
+                continue
+            text = check.get("text", "")
+            if _has_named_artifact(text, body_text):
+                continue
+            name = skill["identity"]["name"]
+            source_path = skill["identity"]["source_path"]
+            findings.append(_finding(
+                cls="COMMAND_ORACLE_WITHOUT_ARTIFACT",
+                epistemic_status="CANDIDATE",
+                skill=name,
+                source_path=source_path,
+                source_span=check["source_span"],
+                rule_id=check["id"],
+                evidence=(
+                    f"check {check['id']} has oracle_kind 'command' from a "
+                    f"verification verb alone; the text names no concrete "
+                    f"command, script path, or inline code to run"
+                ),
+                violated_invariant=(
+                    "a command-oracle check should name the artifact that "
+                    "verifies it, not only assert that verification happens"
+                ),
+                limitation=(
+                    "detects the absence of an inline code span or an "
+                    "immediately following fenced code block only; a "
+                    "check may reference an external script or tool by "
+                    "plain-text name, or point to a command further down "
+                    "the body than the next block, which this heuristic "
+                    "cannot distinguish from a genuinely vague claim; the "
+                    "finding is CANDIDATE, not CONFIRMED"
                 ),
             ))
     return findings

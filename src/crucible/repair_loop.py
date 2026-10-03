@@ -587,6 +587,6 @@ LOOP_FIXTURE: dict[str, str] = {
         "# Irreversible action gate\n\n"
         "Irreversible operations MUST have bounded effects.\n\n"
         "## Checks\n\n"
-        "- Verify the effect is bounded.\n"
+        "- Verify the effect is bounded: run `scripts/check_bound.sh`.\n"
     ),
 }

@@ -61,9 +61,11 @@ def test_scan_skill_text_clean_skill_has_no_findings(tmp_path: Path) -> None:
     Mutation: always emit findings -> this test goes red."""
     result = scan_skill_text(
         "---\nname: clean\ndescription: A clean skill.\n---\n\n"
-        "## Steps\n\n1. Validate the input against the schema.\n"
+        "## Steps\n\n1. Validate the input against the schema: "
+        "run `scripts/validate_input.sh`.\n"
         "2. If validation fails, abort and report the error.\n\n"
-        "## Checks\n\n- Verify the input was validated.\n"
+        "## Checks\n\n- Verify the input was validated: "
+        "run `scripts/validate_input.sh`.\n"
     )
     findings = result["audit"]["findings"]
     assert len(findings) == 0

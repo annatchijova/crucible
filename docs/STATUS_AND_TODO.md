@@ -14,7 +14,7 @@ verificado cross-process, y sellado SHA-256:
 | Nivel | Qué hace | Estado |
 |-------|----------|--------|
 | L1 | Compilador de corpus a Skill IR versionada | Completo |
-| L2 | Auditor determinista con 28 checks | Completo |
+| L2 | Auditor determinista con 29 checks | Completo |
 | L2.5 | Capa de confirmación LLM (5 tipos de finding) | Completo (mock) |
 | L3 | Grafo de composición tipado | Completo |
 | L4 | Laboratorio de mutaciones (8 clases) | Completo |
@@ -34,6 +34,21 @@ verificado cross-process, y sellado SHA-256:
 
 Red team L11 completado: 5 hallazgos encontrados y arreglados (RT-01 a RT-05),
 1 hipótesis falsificada (RT-06), invariantes verificados (RT-07).
+
+Actualización 2026-10-03: se agregó el check `COMMAND_ORACLE_WITHOUT_ARTIFACT`
+(L2, check 29), a partir de un insight de investigación externa (artículo de
+Habr sobre diseño de skills: "toda instrucción no verificable por máquina
+tarde o temprano se viola sin que te enteres"). Detecta un check con
+`oracle_kind` "command" que solo tiene un verbo de verificación, sin nombrar
+un comando, script o bloque de código concreto. Medido contra el corpus
+diverso (L13, 10 skills): la primera versión tenía 3/7 falsos positivos
+(casos "Run the server:\n```bash\n...\n```" donde el comando real está en un
+bloque cercado en la línea siguiente, invisible al extractor); corregido
+agregando lookahead de bloque cercado, quedando 0/4 falsos positivos
+medidos. Rompió ~20 tests en 7 archivos que usaban el idiom "Verify X" sin
+backtick como relleno de "check válido" en sus fixtures; todos corregidos
+haciendo esos checks concretos (con `` `scripts/...` ``) en vez de debilitar
+el check nuevo.
 
 ---
 

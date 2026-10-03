@@ -40,8 +40,8 @@ BASE_FIXTURE: dict[str, str] = {
         "Retries MUST have a finite budget, except for read-only operations.\n\n"
         "The operation SHOULD be idempotent before retrying.\n\n"
         "## Checks\n\n"
-        "- Verify the retry budget is present.\n"
-        "- Confirm idempotency before retry.\n\n"
+        "- Verify the retry budget is present: run `scripts/check_budget.sh`.\n"
+        "- Confirm idempotency before retry: run `scripts/check_idempotent.sh`.\n\n"
         "## Composes with\n\n"
         "- irreversible-action-gate\n"
     ),
@@ -54,8 +54,8 @@ BASE_FIXTURE: dict[str, str] = {
         "# Irreversible action gate\n\n"
         "Irreversible operations MUST have bounded, reviewable effects.\n\n"
         "## Checks\n\n"
-        "- Verify the effect is bounded.\n"
-        "- Confirm the review path exists.\n"
+        "- Verify the effect is bounded: run `scripts/check_bound.sh`.\n"
+        "- Confirm the review path exists: run `scripts/check_review_path.sh`.\n"
     ),
 }
 
@@ -142,8 +142,8 @@ def _check_removal(base: dict[str, str]) -> dict[str, str]:
     mutated = dict(base)
     mutated["retrier"] = mutated["retrier"].replace(
         "\n## Checks\n\n"
-        "- Verify the retry budget is present.\n"
-        "- Confirm idempotency before retry.\n",
+        "- Verify the retry budget is present: run `scripts/check_budget.sh`.\n"
+        "- Confirm idempotency before retry: run `scripts/check_idempotent.sh`.\n\n",
         "\n",
     )
     return mutated

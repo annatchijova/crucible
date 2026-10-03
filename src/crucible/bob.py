@@ -151,7 +151,8 @@ class RuleBasedProposer:
         # Insert a Checks section before the end of the skill text.
         check_section = (
             "\n## Checks\n\n"
-            "- Verify the requirement is satisfied before proceeding.\n"
+            "- Verify the requirement is satisfied before proceeding: "
+            "run `scripts/check_requirement.sh`.\n"
         )
         if "## Composes with" in skill_text:
             proposed = skill_text.replace(
@@ -194,7 +195,8 @@ class RuleBasedProposer:
         if "## Checks" not in skill_text:
             check_section = (
                 "\n## Checks\n\n"
-                "- Verify the requirement is satisfied before proceeding.\n"
+                "- Verify the requirement is satisfied before proceeding: "
+                "run `scripts/check_requirement.sh`.\n"
             )
             if "## Composes with" in proposed:
                 proposed = proposed.replace(
@@ -734,6 +736,6 @@ BOB_FIXTURE: dict[str, str] = {
         "# Irreversible action gate\n\n"
         "Irreversible operations MUST have bounded effects.\n\n"
         "## Checks\n\n"
-        "- Verify the effect is bounded.\n"
+        "- Verify the effect is bounded: run `scripts/check_bound.sh`.\n"
     ),
 }

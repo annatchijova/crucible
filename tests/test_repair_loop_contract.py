@@ -104,7 +104,7 @@ def test_behavioral_regression_is_rejected() -> None:
                 "Retries MUST have a finite budget",
                 "Retries MUST NOT have a finite budget",
             )
-            proposed = proposed + "\n## Checks\n\n- Verify.\n"
+            proposed = proposed + "\n## Checks\n\n- Verify: run `scripts/check.sh`.\n"
             return {
                 "proposed_text": proposed,
                 "rationale": "added checks but flipped polarity",
@@ -161,7 +161,7 @@ def test_no_findings_produces_no_findings_report() -> None:
             "license: Apache-2.0\n---\n\n"
             "# Gate\n\n"
             "Operations MUST be bounded.\n\n"
-            "## Checks\n\n- Verify bounded.\n"
+            "## Checks\n\n- Verify bounded: run `scripts/check.sh`.\n"
         ),
     }
     report = run_repair_loop(corpus=corpus, executor=LocalExecutor())
@@ -230,7 +230,9 @@ def test_llm_does_not_affect_outcome() -> None:
 
     class CustomProposer:
         def propose(self, finding, skill_text, context):
-            proposed = skill_text + "\n## Checks\n\n- Verify the requirement.\n"
+            proposed = skill_text + (
+                "\n## Checks\n\n- Verify the requirement: run `scripts/check.sh`.\n"
+            )
             return {
                 "proposed_text": proposed,
                 "rationale": "custom rationale",

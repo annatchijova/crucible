@@ -233,7 +233,7 @@ def test_no_findings_produces_no_findings_report() -> None:
             "# Good skill\n\n"
             "Good MUST be bounded.\n\n"
             "## Checks\n\n"
-            "- Verify goodness is bounded.\n"
+            "- Verify goodness is bounded: run `scripts/check.sh`.\n"
         ),
     }
     report = run_bob_workflow(corpus=clean_corpus)
@@ -253,7 +253,7 @@ def test_decision_path_is_deterministic() -> None:
     class ProposerA:
         def propose(self, finding, skill_text, context):
             return {
-                "proposed_text": skill_text + "\n## Checks\n\n- Verify.\n",
+                "proposed_text": skill_text + "\n## Checks\n\n- Verify: run `scripts/check.sh`.\n",
                 "rationale": "A",
                 "proposer": "A",
             }
@@ -261,7 +261,7 @@ def test_decision_path_is_deterministic() -> None:
     class ProposerB:
         def propose(self, finding, skill_text, context):
             return {
-                "proposed_text": skill_text + "\n## Checks\n\n- Verify.\n",
+                "proposed_text": skill_text + "\n## Checks\n\n- Verify: run `scripts/check.sh`.\n",
                 "rationale": "B",
                 "proposer": "B",
             }
@@ -280,7 +280,7 @@ def test_proposer_does_not_affect_verdict() -> None:
     class GoodProposer:
         def propose(self, finding, skill_text, context):
             return {
-                "proposed_text": skill_text + "\n## Checks\n\n- Verify.\n",
+                "proposed_text": skill_text + "\n## Checks\n\n- Verify: run `scripts/check.sh`.\n",
                 "rationale": "good",
                 "proposer": "good-proposer",
             }
@@ -331,7 +331,7 @@ def test_d1_swap_finding_rejected_by_novelty() -> None:
             "license: Apache-2.0\n---\n\n"
             "# Gate\n\n"
             "Operations MUST be bounded.\n\n"
-            "## Checks\n\n- Verify bounded.\n"
+            "## Checks\n\n- Verify bounded: run `scripts/check.sh`.\n"
             "## Composes with\n\n- retrier\n"
         ),
     }
@@ -341,7 +341,7 @@ def test_d1_swap_finding_rejected_by_novelty() -> None:
             if finding.get("skill") == "retrier":
                 # Add checks (removes REQUIREMENT_WITHOUT_CHECK) but add
                 # self-composition (introduces SELF_COMPOSITION).
-                proposed = skill_text + "\n## Checks\n\n- Verify.\n"
+                proposed = skill_text + "\n## Checks\n\n- Verify: run `scripts/check.sh`.\n"
                 proposed = proposed + "\n## Composes with\n\n- retrier\n"
                 return {
                     "proposed_text": proposed,

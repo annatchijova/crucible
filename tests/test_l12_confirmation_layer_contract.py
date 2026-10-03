@@ -73,6 +73,7 @@ def test_engineering_questions_cover_all_registered() -> None:
         "SILENT_FAILURE", "HARDCODED_CREDENTIAL", "UNBOUNDED_RESOURCE",
         "UNVALIDATED_EXTERNAL_INPUT", "MISSING_TIMEOUT",
         "FLOATING_POINT_IN_DECISION_PATH", "UNPINNED_DEPENDENCY",
+        "COMMAND_ORACLE_WITHOUT_ARTIFACT",
     }
     assert _ENGINEERING_QUESTIONS.keys() == expected
 
