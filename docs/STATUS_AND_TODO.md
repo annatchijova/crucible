@@ -197,10 +197,16 @@ están implementados. Falta:
 
 **5. Política de CI gate**
 
-El CI corre tests y genera el reporte, pero no bloquea merges. Falta definir:
-- ¿Qué pasa = merge bloqueado?
+Verificado el 2026-10-03 (no asumido): `.github/workflows/ci.yml` ya
+tiene 3 jobs reales (test suite, red-team de seguridad, gate de
+mutation kill rate que falla si no es 6/6) — corren en cada push/PR. Pero
+`gh api repos/annatchijova/crucible/branches/main/protection` devuelve
+`404 Branch not protected`: `main` no tiene ninguna regla de protección,
+así que un job en rojo no impide mergear. Falta definir (decisión del
+usuario, no algo que se pueda inferir del código):
+- ¿Se activa branch protection exigiendo estos 3 checks?
 - ¿Findings CANDIDATE bloquean? ¿Solo CONFIRMED?
-- ¿Mutation kill rate mínimo?
+- ¿Mutation kill rate mínimo (ya hay un job que exige 6/6, falta activarlo como requisito)?
 
 **6. Feedback sobre tools/models — RESUELTO 2026-10-03**
 
@@ -218,10 +224,19 @@ contra el modelo real; el mock de confirmación y el detector real de
 redundancia no siempre coinciden en el mismo par). Actualizada también
 la fila correspondiente de `docs/NVIDIA_INTEGRATION.md` (PLANNED → DONE).
 
-**7. Pre-existing project disclosure**
+**7. Pre-existing project disclosure — RESUELTO 2026-10-03 (reescrito, estaba desactualizado)**
 
-Requisito del hackathon si el proyecto existía antes del periodo de submission.
-Hay que escribir qué se hizo durante el hackathon vs. qué preexistía.
+`docs/PRE_EXISTING_PROJECT_DISCLOSURE.md` ya existía pero decía "38
+commits en 2 días" (2026-09-23/24) — mismo patrón de doc vieja que las
+otras entradas de esta tabla. Verificado contra el estado real: **92
+commits en 7 días** (hasta 2026-09-23 a 10-03). Reescrito con la
+cronología completa día por día y una sección "What is NOT complete"
+corregida (varias cosas que decía "pendiente" ya se hicieron — ejecución
+real contra Nebius, corpus externo real de 818 skills — y encontré algo
+nuevo al verificar en vez de asumir: `gh api .../branches/main/protection`
+devuelve `404 Branch not protected` — confirma empíricamente que el CI
+(punto 5 de esta lista) corre pero no bloquea nada, no es solo una
+sospecha).
 
 ### P2 — Mejoras técnicas conocidas
 
