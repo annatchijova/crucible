@@ -110,6 +110,22 @@ sigue siendo "no obviamente mal calibrado para este tipo de entrada", no
 "medido contra una falla real". Evidencia completa (JSON crudo + qué
 establece y qué no) en docs/L16_NEBIUS_LIVE_RUN_EVIDENCE.md.
 
+Actualización 2026-10-03 (6): corrida real del modo batch
+(`run_consolidation_batch` y, aparte, el CLI `--consolidate-all` posta —
+confirmación real + consolidación real, no solo la API de Python).
+Corpus de 5 skills con 2 clusters independientes (retry, format) + una
+referencia externa. `find_redundancy_clusters` separó bien los dos
+clusters (no los mezcló en uno); el batch corrió las dos fusiones reales
+secuencialmente (7.0s total), ambas ACCEPTED, la referencia externa quedó
+reescrita apuntando al nombre nuevo. Hallazgo aparte, real y útil:
+`MockConfirmExecutor` (heurística de solapamiento de líneas, 80%) y el
+check real `SEMANTIC_REDUNDANCY` (Jaccard de tokens, 2/3) NO siempre
+coinciden — mis fixtures cercanas pasaban cómodo el umbral real pero
+fallaban el del mock por las líneas de nombre/heading distintas. Quedó
+documentado para no confundir un `NO_CLUSTERS` de calibración del mock
+con que el detector real no encontró nada. Detalle y JSON en los runs 4 y
+5 de docs/L16_NEBIUS_LIVE_RUN_EVIDENCE.md.
+
 ---
 
 ## Lo que falta — por prioridad
