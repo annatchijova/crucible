@@ -538,7 +538,7 @@ def _compile_error_report(
         "finding": finding,
         "proposal": {
             "proposed_text": proposal.get("proposed_text", ""),
-            "rationale": proposal.get("rationale", ""),
+            "rationale": f"Proposal rejected by compiler: {error}",
             "proposer": proposal.get("proposer", "unknown"),
             "blocked": False,
         },

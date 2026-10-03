@@ -3,6 +3,17 @@
 **Date:** 2026-10-02
 **Corpus:** [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills), 818 skills, cloned read-only, not committed to this repo. This is the corpus chosen for Crucible's own demo and fills `docs/STATUS_AND_TODO.md`'s open "corpus OSS independiente" gap.
 
+**Source snapshot observed for this audit:** commit
+`54a798831d2266a3ca61ce68a7acb80b81160d57`; the local clone's worktree was
+clean when recorded. The repository has a root Apache-2.0 `LICENSE` and 817
+skill-level `LICENSE` files. The root license alone is not evidence that every
+skill can be redistributed under the same terms. Keep source-derived skill
+text and raw artifacts private until the license of each included skill has
+been checked; publish only aggregates or examples cleared for redistribution.
+The [license inventory](license-inventory.json) records the 818 skill
+directories, per-skill license-file presence, and license-file byte digests;
+it does not interpret legal terms or clear redistribution.
+
 This is the first time Crucible's compiler and auditor have been run against
 a large, real, independently-written corpus rather than the author's own
 ~90-skill corpus or small fixtures. It immediately found real defects —

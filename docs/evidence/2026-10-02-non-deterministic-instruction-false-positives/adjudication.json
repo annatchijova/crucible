@@ -1,0 +1,294 @@
+{
+  "adjudication": {
+    "criterion": "A positive requires an instruction that makes the agent's own method or outcome unconstrained and irreproducible. A keyword used to describe a threat, a required cryptographic random value, a named algorithm, or the subject of an audit is not sufficient.",
+    "label_scope": "Finding-level review of emitted findings only. No unflagged examples were sampled, so recall and false-negative rate cannot be estimated.",
+    "provenance": "Labels transcribed from the full manual review documented in FINDINGS.md. A separate assistant pass reviewed all 19 raw source spans with adjacent lines and found no label disagreement; this is model-assisted corroboration, not independent domain-expert ground truth.",
+    "review_reference": "FINDINGS.md"
+  },
+  "corpus": {
+    "audit_artifact_sha256": "sha256:97cc43d9d91d646a8bf365d4015c8ad220e91944e813f163b799608534b73d9a",
+    "audit_digest": "sha256:5fc7b8a335aa36e81e8468b8c586dfcd3e600bb70135357bee435eb86d3cf705",
+    "commit_observed": "54a798831d2266a3ca61ce68a7acb80b81160d57",
+    "finding_manifest": "mukul975_findings.json",
+    "finding_manifest_sha256": "sha256:df389858de28679542aeb81ecbffdba025e1145c65dd58f0d10dd4e823631571",
+    "repository": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills"
+  },
+  "evaluation_id": "non-deterministic-instruction-mukul975-2026-10-02",
+  "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+  "labels": [
+    {
+      "finding_id": "finding-0185",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "required-cryptographic-randomness",
+      "rule_id": "step-0005",
+      "skill": "configuring-oauth2-authorization-flow",
+      "source_file_sha256": "sha256:4ee89fdccefbdf1fed04e80ab53c7af6a0f47584ba7b7766deb7620685e870ae",
+      "source_path": "skills/configuring-oauth2-authorization-flow/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 94
+      },
+      "source_text_sha256": "sha256:2184d026722efe01fe32186703047397df255e8e7b8417786e0956efc9f56604"
+    },
+    {
+      "finding_id": "finding-0186",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "required-cryptographic-randomness",
+      "rule_id": "step-0010",
+      "skill": "configuring-oauth2-authorization-flow",
+      "source_file_sha256": "sha256:4ee89fdccefbdf1fed04e80ab53c7af6a0f47584ba7b7766deb7620685e870ae",
+      "source_path": "skills/configuring-oauth2-authorization-flow/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 108
+      },
+      "source_text_sha256": "sha256:165551e999094b2940134a0b90a8000353a7ede3cb22772a284edd54fac05243"
+    },
+    {
+      "finding_id": "finding-0187",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "proper-name-random-forest",
+      "rule_id": "step-0011",
+      "skill": "detecting-command-and-control-over-dns",
+      "source_file_sha256": "sha256:c9450818f993889af2ea0f20f1c09abb444398fcc6c9925370c6007dd6be8bea",
+      "source_path": "skills/detecting-command-and-control-over-dns/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 1304
+      },
+      "source_text_sha256": "sha256:4abab59fd127d81a11e26cce360d246810b73af734f7102a1444db23826a2817"
+    },
+    {
+      "finding_id": "finding-0188",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "descriptive-adversary-capability",
+      "rule_id": "step-0004",
+      "skill": "detecting-golden-ticket-attacks-in-kerberos-logs",
+      "source_file_sha256": "sha256:813a942a84b78a9c19549c229eb92e54cad82c6599309261ed5255feac2c0fb3",
+      "source_path": "skills/detecting-golden-ticket-attacks-in-kerberos-logs/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 55
+      },
+      "source_text_sha256": "sha256:2c9bf69f21ac2305f37bd52486370ae9a7cbc740c1a7a4b9fdd1c33502b7347f"
+    },
+    {
+      "finding_id": "finding-0189",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "descriptive-adversary-capability",
+      "rule_id": "step-0009",
+      "skill": "detecting-t1548-abuse-elevation-control-mechanism",
+      "source_file_sha256": "sha256:4c65fc6c7964971488b0f53870ccc6e63b61918c1c9fcb8adcf5c582d6fce08f",
+      "source_path": "skills/detecting-t1548-abuse-elevation-control-mechanism/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 128
+      },
+      "source_text_sha256": "sha256:04a41bf891c004b196d3dc90bfecc0caa8254cac2133b67e0d6edf22b430a868"
+    },
+    {
+      "finding_id": "finding-0190",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "descriptive-vulnerability-capability",
+      "rule_id": "step-0004",
+      "skill": "escaping-containers-to-host",
+      "source_file_sha256": "sha256:a19ce2a1725033274a5d7cd3defa2d8f0ac1ba706c1968720debef073c50ff62",
+      "source_path": "skills/escaping-containers-to-host/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 43
+      },
+      "source_text_sha256": "sha256:fcffb1c416512e9e9f479b30e0c77d6e5553fd3c00ab3811fe0da8d119d43be9"
+    },
+    {
+      "finding_id": "finding-0191",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "randomness-is-the-mitigation",
+      "rule_id": "step-0001",
+      "skill": "exploiting-kerberoasting-with-impacket",
+      "source_file_sha256": "sha256:1ad70aef540e01c947ab3380ff9db5eae9ffd9b81cdbe8c0cf397523c3873253",
+      "source_path": "skills/exploiting-kerberoasting-with-impacket/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 220
+      },
+      "source_text_sha256": "sha256:a1ab489f89c967562b65bd6037e13f11dd580d02764ee868ff2a4a05960ff154"
+    },
+    {
+      "finding_id": "finding-0192",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "descriptive-vulnerability-capability",
+      "rule_id": "step-0002",
+      "skill": "exploiting-prototype-pollution-in-javascript",
+      "source_file_sha256": "sha256:0b1fd5ef31b752fe0ba7975c86250f6b1c56e85aaacbc40d1a1ce0f40e8c0dac",
+      "source_path": "skills/exploiting-prototype-pollution-in-javascript/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 215
+      },
+      "source_text_sha256": "sha256:39264d93f34cf52dd572ad9348acf0a7181bbd10b2420ccd4522815a756e9211"
+    },
+    {
+      "finding_id": "finding-0193",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "descriptive-adversary-capability",
+      "rule_id": "step-0011",
+      "skill": "hunting-for-command-and-control-beaconing",
+      "source_file_sha256": "sha256:52ae196df47447d6e73a0c063b77109319f0197cff315d0cb3c68ff4457f34ba",
+      "source_path": "skills/hunting-for-command-and-control-beaconing/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 100
+      },
+      "source_text_sha256": "sha256:c81287039315b0960c367a1b621f21d24ca796aa0170af204e3bae3add175bc9"
+    },
+    {
+      "finding_id": "finding-0194",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "required-cryptographic-randomness",
+      "rule_id": "step-0003",
+      "skill": "implementing-aes-encryption-for-data-at-rest",
+      "source_file_sha256": "sha256:e7eb3b1a4433e8e306e8458c30edde791b38f20f69d106a90b55f19c235fbd75",
+      "source_path": "skills/implementing-aes-encryption-for-data-at-rest/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 83
+      },
+      "source_text_sha256": "sha256:0d28b71590355b8e8c576e8b9d445460ea553ef022ffde77e12481afd6a22b3c"
+    },
+    {
+      "finding_id": "finding-0195",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "required-cryptographic-randomness",
+      "rule_id": "step-0003",
+      "skill": "implementing-zero-knowledge-proof-for-authentication",
+      "source_file_sha256": "sha256:d6fb53922f03e6d3cb4974e75dcaa76e187af509b4f3dedcf4df56cb383a96bd",
+      "source_path": "skills/implementing-zero-knowledge-proof-for-authentication/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 67
+      },
+      "source_text_sha256": "sha256:9e095aec88e11a7dad118bfa98e1a8dafa2ad3b2b1602233637aaf952c43096e"
+    },
+    {
+      "finding_id": "finding-0196",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "required-cryptographic-randomness",
+      "rule_id": "step-0004",
+      "skill": "implementing-zero-knowledge-proof-for-authentication",
+      "source_file_sha256": "sha256:d6fb53922f03e6d3cb4974e75dcaa76e187af509b4f3dedcf4df56cb383a96bd",
+      "source_path": "skills/implementing-zero-knowledge-proof-for-authentication/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 68
+      },
+      "source_text_sha256": "sha256:dab37c3f8221a475efba53ce64933995ce154715fc6b2b70ed85d1ec1c867a5b"
+    },
+    {
+      "finding_id": "finding-0197",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "random-cache-buster-probe",
+      "rule_id": "step-0005",
+      "skill": "performing-api-rate-limiting-bypass",
+      "source_file_sha256": "sha256:1d6004343a9cd9794f3feca8f5b716fd84190cc548e1be99bfe0ec8e9a469382",
+      "source_path": "skills/performing-api-rate-limiting-bypass/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 370
+      },
+      "source_text_sha256": "sha256:098883247ed1a8d4fa4b0d37e87a4e290c5a8e8d3416efbf58d8aed57a781ec8"
+    },
+    {
+      "finding_id": "finding-0198",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "randomness-is-audit-subject",
+      "rule_id": "rule-0001",
+      "skill": "performing-cryptographic-audit-of-application",
+      "source_file_sha256": "sha256:c39ca781b08e121cb8f439090078bacff3cfb629cbe524c40e2de203aa4f86f9",
+      "source_path": "skills/performing-cryptographic-audit-of-application/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 77
+      },
+      "source_text_sha256": "sha256:2dbf38a99e2404c024e8a135735155ad88abdc47fa2c1734f978dee1f3bd6ee2"
+    },
+    {
+      "finding_id": "finding-0199",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "any-order-means-any-record",
+      "rule_id": "step-0003",
+      "skill": "performing-web-application-penetration-test",
+      "source_file_sha256": "sha256:0c1f45f85bdd2ce34bfa2a476cbda205fa2746e41bf50acce9a06d9543ceed99",
+      "source_path": "skills/performing-web-application-penetration-test/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 157
+      },
+      "source_text_sha256": "sha256:634ad7c5fdd647ad85a52d8842a7b4507ffe5df727b61ee914ea7727c5bfe54a"
+    },
+    {
+      "finding_id": "finding-0200",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "arbitrary-means-configurable",
+      "rule_id": "step-0019",
+      "skill": "red-teaming-llms-with-garak",
+      "source_file_sha256": "sha256:313dce0a1ce1bba2296bf1ee9e3991f0088be6d6fe46036ff668023332dd2a39",
+      "source_path": "skills/red-teaming-llms-with-garak/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 68
+      },
+      "source_text_sha256": "sha256:ad86d77d33d4add134745327009b10cacabe8c1d8ceca44c98b6518f1f128431"
+    },
+    {
+      "finding_id": "finding-0201",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "any-order-means-any-record",
+      "rule_id": "step-0014",
+      "skill": "testing-api-for-broken-object-level-authorization",
+      "source_file_sha256": "sha256:ba403342c7cae18411a0b12fde05ce3a9441dcfaf341cd845d00537c99250886",
+      "source_path": "skills/testing-api-for-broken-object-level-authorization/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 341
+      },
+      "source_text_sha256": "sha256:c8cac6d52c50fa9053e2fd895283e1803c08700d4e39b52674d9d2fc9f270822"
+    },
+    {
+      "finding_id": "finding-0202",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "descriptive-adversary-capability",
+      "rule_id": "step-0002",
+      "skill": "testing-for-json-web-token-vulnerabilities",
+      "source_file_sha256": "sha256:980a30a4b83f2ca001d768a7da4fa7e51ec6acb8b4a74ce74c4250455f561da2",
+      "source_path": "skills/testing-for-json-web-token-vulnerabilities/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 218
+      },
+      "source_text_sha256": "sha256:f5da63c3d7eb7bfc4945cc7f0b4f94c6c16f41315314787fa2cd5804e583484e"
+    },
+    {
+      "finding_id": "finding-0203",
+      "label": "FALSE_POSITIVE",
+      "mechanism": "descriptive-adversary-capability",
+      "rule_id": "step-0004",
+      "skill": "testing-for-json-web-token-vulnerabilities",
+      "source_file_sha256": "sha256:980a30a4b83f2ca001d768a7da4fa7e51ec6acb8b4a74ce74c4250455f561da2",
+      "source_path": "skills/testing-for-json-web-token-vulnerabilities/SKILL.md",
+      "source_span": {
+        "column": 1,
+        "line": 220
+      },
+      "source_text_sha256": "sha256:36a1aac518e8cdf03dd7507bcd0a39d9f1b8e685cbd5f0e1d4420c2b63f155b1"
+    }
+  ],
+  "schema_version": "crucible-finding-adjudication/v1",
+  "summary": {
+    "false_positives": 19,
+    "recall_estimated": false,
+    "reviewed_findings": 19,
+    "true_positives": 0,
+    "unresolved": 0
+  }
+}

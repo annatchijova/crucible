@@ -1,6 +1,6 @@
 # Crucible Skills — Estado y Pendientes
 
-**Fecha original:** 2026-09-24 (actualizado 2026-10-01, ver nota abajo)
+**Fecha original:** 2026-09-24 (actualizado 2026-10-02, ver notas abajo)
 **Base:** main @ 1fe6361
 **Tests:** 411 pasan originalmente — **655 pasan al 2026-10-01** (R3, R4, y L15 se agregaron después de esta fecha; ver TECHNICAL.md para el estado nivel por nivel actualizado, esta tabla quedó vieja)
 
@@ -29,7 +29,7 @@ verificado cross-process, y sellado SHA-256:
 | L13 | Validación corpus-agnóstico (10 skills, 7 fuentes) | Completo |
 | L14 | Real-runtime boundary (L5) | Completo — agregado después de esta fecha, ver TECHNICAL.md |
 | R2/R3 | Replay bundle (acquisition/export + offline oracle replay) | Completo — agregado 2026-10-01, ver docs/REPLAY_BUNDLE.md |
-| R4 | Private repair evidence capture | Core implementado, corrida en vivo pendiente — ver docs/REPAIR_EVIDENCE.md |
+| R4 | Private repair evidence capture | Una corrida live del fixture aceptada; accuracy y estabilidad aún sin evaluar — ver docs/REPAIR_EVIDENCE.md |
 | L15 | Recomendación determinística + narrador LLM + reporte final MD/HTML/PDF | Completo y corrido en vivo contra Nebius 2026-10-01 (incluyendo los 3 formatos de salida) — ver docs/red-team/2026-10-01-l15-recommendation-narrator-review.md y docs/evidence/2026-10-01-l15-render-live-run/ |
 
 Red team L11 completado: 5 hallazgos encontrados y arreglados (RT-01 a RT-05),
@@ -57,12 +57,20 @@ establece y qué no) en `docs/NEBIUS_LIVE_RUN_EVIDENCE.md`. No se re-corrió
 `--bob`/`--repair-loop`/`--repair-evidence` contra la API real en esta
 sesión — queda pendiente si se quiere esa cobertura también documentada.
 
-Componentes afectados (ya probados contra Nebius real salvo lo anotado
-arriba):
+Componentes afectados (estado original al 2026-10-01):
 - L5 behavioral differential (NebiusExecutor) — probado
 - L2.5/L12 confirmation layer (NebiusConfirmExecutor) — probado
 - L6 Bob LLM proposer (LLMProposer) — NO probado en esta sesión
 - L7 repair loop (NebiusExecutor + LLMProposer) — NO probado en esta sesión
+
+Actualización 2026-10-02: se capturaron dos corridas de L7 con el fixture
+sintético integrado. La primera fue `REJECTED / NO_PROPOSAL` por truncamiento
+al límite de 1.000 tokens; la segunda, tras elevar el límite a 3.000, fue
+`ACCEPTED` por reauditoría determinista y replay conductual. Ambas capturas
+privadas y sus digests están descritos en `docs/REPAIR_EVIDENCE.md`. Esto cubre
+el camino L7 contra el proveedor en una tarea sintética; no mide precisión,
+generalización ni estabilidad. Los tres comandos de arriba y la afirmación
+“no se re-corrió” mantienen su alcance histórico del 2026-10-01.
 
 **2. Video de demo (≤3 minutos)**
 

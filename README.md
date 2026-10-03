@@ -40,7 +40,10 @@ same task → no skill / original skill / deliberate mutant / candidate repair
 
 The model generates behavior; deterministic property oracles inspect that output.
 A repair proposal must pass re-audit and the configured behavioral gate.
-Local repair workflows exist; real LLM end-to-end repair evidence remains pending.
+One real LLM repair-loop run on the built-in synthetic fixture has been
+captured and accepted; this demonstrates the path, not general repair accuracy.
+The [private evidence record](docs/REPAIR_EVIDENCE.md) preserves the run's scope
+and limitations.
 
 | Question | Evidence Crucible exposes |
 |---|---|
@@ -70,8 +73,10 @@ See the [comparison scope](docs/COMPETITIVE_BOUNDARY.md) and
   while preserving v1 support. An optional private journal retains committed
   captures across tested process interruptions. The CLI can acquire, inspect and
   export these journals under [local contract tests](tests/test_replay_cli.py).
-  Offline oracle execution and real repair evidence remain pending; the
-  [active execution checkpoint](docs/NEXT_LEVELS.md) governs that work.
+  Offline oracle replay is implemented and locally verified. One private,
+  captured L7 run completed repair, re-audit and behavioral replay on the
+  built-in fixture; the [execution checkpoint](docs/NEXT_LEVELS.md) distinguishes
+  this demonstration from held-out evaluation and release readiness.
 
 The behavioral experiment uses NVIDIA Nemotron through Nebius Token Factory.
 Model observations remain separate from deterministic audit authority; the

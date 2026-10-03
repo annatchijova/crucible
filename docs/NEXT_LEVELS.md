@@ -1,10 +1,12 @@
 # Next construction levels
 
+The time-bounded execution sequence is in [the 27-day build plan](27_DAY_BUILD_PLAN.md).
+
 This is a sequence of acceptance gates, not a declaration of completed levels.
 Existing implementations and runtime evidence must pass their gates before a
 level is called complete. Scheduling remains separate from technical readiness.
 
-## Execution checkpoint — 2026-10-01
+## Execution checkpoint — 2026-10-02
 
 Destination remains methodology verification and engineering: evidence-backed
 findings, compositional analysis, seeded falsifiers, behavioral comparison and
@@ -20,7 +22,7 @@ for methodological accuracy or release readiness.
 | Product outcome | Evidence now | Remaining exit evidence | Work state |
 |---|---|---|---|
 | Audit one skill, a repository or installed packages with honest scope | Local APIs/CLI, sealed independent collection, ingestion regression cases | Shared cross-mode coverage contract, explicit roots, missing-context reporting, equivalence fixtures | Implemented in part; gate open |
-| Inspect and replay a bounded model experiment without recontacting the provider | Saved real L5 run; v2 bundles with source/oracle links; journal, export, pinned replay and explicit re-evaluation | R4 retained real repair evidence plus integrated release verification | **R1–R3 locally closed; R4 next** |
+| Inspect and replay a bounded model experiment without recontacting the provider | Saved real L5 run; v2 bundles with source/oracle links; journal, export, pinned replay and explicit re-evaluation | Integrated release verification; repeated/held-out repair evaluation | **R1–R4 exercised locally/live; one R4 fixture run accepted** |
 | Justify findings and repair decisions independently | Seeded mutations, external-corpus fixtures, local repair loop | Held-out adjudication, class-level denominators, repeated pinned experiments, real repair evidence | Gate open; not benchmarked |
 | Use and publish the complete workflow | CLI, API and read-only viewer | End-to-end user tasks, accessibility, deployment/privacy review and release evidence | Gate open; not release-ready |
 
@@ -64,10 +66,15 @@ changing the bundle. The [R3 review and negative controls](red-team/2026-10-01-r
 close local R3 verification under its stated trust assumptions. Replay reports
 per-property decision agreement and does not reconstruct L7 repair acceptance.
 R4's private capture path and local negative controls are implemented in
-`repair_evidence.py` and `tests/test_repair_evidence.py`. The live run is
-authorized but currently blocked because `NEBIUS_API_KEY` is not configured in
-this environment; no provider request was made. No historical-artifact
-conversion is claimed. See the [L7 evidence contract](REPAIR_EVIDENCE.md).
+`repair_evidence.py`. On 2026-10-02, the first live fixture response ended with
+`finish_reason=length` at the 1,000-token cap and was retained as
+`REJECTED / NO_PROPOSAL`. After increasing the shared cap to 3,000, a second
+capture returned `ACCEPTED`: the targeted finding disappeared, no new findings
+appeared, and the seeded behavioral property changed from FAIL to PASS. Both
+bundles verify offline; raw captures match their journal events. This is one
+synthetic task and one provider session, not evidence of general repair
+accuracy or stability. Integrated release verification remains open. See the
+[L7 evidence contract](REPAIR_EVIDENCE.md) and [27-day plan](27_DAY_BUILD_PLAN.md).
 
 ### Selection and closure discipline
 

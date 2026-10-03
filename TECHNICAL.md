@@ -2,7 +2,7 @@
 
 # Crucible — Technical README
 
-**Status: L5 has saved real Nebius/Nemotron evidence.** A real confirmation run completed 14 responses (2 confirmed, 12 rejected), but its full artifact was not retained. Real LLM proposal/repair-loop evidence remains pending. Implementation labels below do not establish cross-run stability.
+**Status: L5 has saved real Nebius/Nemotron evidence; L7 has one privately captured, accepted synthetic-fixture run.** A real confirmation run completed 14 responses (2 confirmed, 12 rejected), but its full artifact was not retained. The L7 run verifies one proposal, deterministic re-audit and seeded behavioral replay; it does not establish repair accuracy or stability. Implementation labels below do not establish cross-run stability.
 
 ![Crucible logo](visual/logo.png)
 
@@ -91,8 +91,8 @@ The levels are coherent product states, not technical departments. Security, det
 | L3 | Typed composition graph | **Implemented:** the graph extracts typed relation edges from L1 section headings and description text (sibling of, pairs with, composes with, member of the family, companion to), classifies them into composition/reinforcement/delegation, and detects hubs, broken edges, disconnected components, and isolated skills. A historical corpus run produced 83 edges, 12 hubs and 4 components; these counts are not a current corpus guarantee. Three semantic checks are abstained (conditional contradiction, semantic redundancy, producer/consumer typing). |
 | L4 | Mutation laboratory | **Implemented:** the lab seeds 8 defect classes (polarity inversion, exception removal, reference break, check removal, trigger widening, edge removal, cycle introduction, capability duplication) against a known-good base fixture, runs the full pipeline, and classifies results as KILLED / SURVIVED / ABSTAINED. Current result: 6/6 killed in scope, 2 abstained as OUT_OF_SCOPE, 0 survived. |
 | L5 | Behavioral differential harness | **Executed locally and on Nebius:** four skill variants and four lexical properties; the saved real run distinguishes the mutant on P3 with no truncation. Single-run evidence does not establish generalization. |
-| L6 | Bob engineering workflow | **Implemented:** proposal, compilation and deterministic re-audit gate. Rule-based path verified; real LLM proposal evidence pending. |
-| L7 | Closed repair loop | **Implemented:** deterministic re-audit followed by behavioral replay; regressions reject the repair. Rule-based/local path verified; real LLM end-to-end evidence pending. |
+| L6 | Bob engineering workflow | **Implemented:** proposal, compilation and deterministic re-audit gate. Rule-based path verified; real LLM proposal was exercised through the captured L7 path, but standalone L6 evidence remains pending. |
+| L7 | Closed repair loop | **Implemented and exercised live once:** a captured synthetic-fixture run passed deterministic re-audit and seeded behavioral replay. This is path evidence only; repair accuracy and cross-run stability remain unevaluated. See [captured repair evidence](docs/REPAIR_EVIDENCE.md). |
 | L8 | Repository/CI integration and read-only viewer | **Implemented:** a composite report generator runs the full L1-L7 pipeline and seals a `crucible-report/v1` artifact with all level digests. A read-only HTML viewer renders any sealed artifact JSON as a self-contained page (no `<script>`, no computation, only `html`/`json`/`typing` imports). A GitHub Actions CI workflow runs tests, generates the report, renders HTML, and uploads both as artifacts. No consumer has independent decision logic. |
 | L9 | Style-agnostic extraction | **Implemented:** extraction accepts equivalent methodology expressed through varied Markdown styles while preserving source evidence and deterministic IR output. |
 | L10 | Engineering defect taxonomy | **Implemented:** eight engineering checks cover secrets, silent failures, credentials, resource bounds, input validation, timeouts, floating-point decision paths, and dependency pinning. |
@@ -393,8 +393,11 @@ offline pinned-oracle replay and explicit re-evaluation as separate sealed
 results. These compare property statuses and do not authenticate providers or
 replay L7 repair acceptance. R3 is locally verified for observation replay;
 its adversarial review and negative-control evidence are recorded in
-[the review log](docs/red-team/2026-10-01-r3-replay-code-review.md). R4 real
-repair evidence remains pending under the [active plan](docs/NEXT_LEVELS.md).
+[the review log](docs/red-team/2026-10-01-r3-replay-code-review.md). R4 now has
+one privately captured live fixture run, including an accepted outcome and the
+earlier truncated attempt; neither bundle authenticates provider identity or
+proves general repair quality. The [active plan](docs/NEXT_LEVELS.md) keeps
+held-out evaluation and integrated release verification open.
 
 ## 17. Runtime and API operations
 
