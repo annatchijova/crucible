@@ -97,6 +97,19 @@ aceptable). 4 tests nuevos (uno reemplaza al que afirmaba el bloqueo
 incondicional viejo), 740 tests totales, todo en verde. Detalle en el
 addendum 2 de docs/decisions/0020-l16-consolidation-scope.md.
 
+Actualización 2026-10-03 (5): primera corrida real de L16 contra Nemotron
+(la key de `~/Downloads/token_nvidia.txt` seguía vigente en `.env`, la
+misma de la corrida L1-L7 del 2026-10-01). 3 escenarios reales: fusión de
+2 skills (ACCEPTED, 4.9s), fusión de 3 skills + reescritura de referencia
+externa real (ACCEPTED, la referencia quedó resuelta sin
+`BROKEN_REFERENCE`), y un caso diseñado para medir el umbral de cobertura
+con contenido genuinamente distinto entre los dos skills — Nemotron
+conservó los dos checks distintos, 0 gaps. No se encontró ningún caso real
+donde el modelo dropeara contenido en esta sesión, así que el umbral 1/2
+sigue siendo "no obviamente mal calibrado para este tipo de entrada", no
+"medido contra una falla real". Evidencia completa (JSON crudo + qué
+establece y qué no) en docs/L16_NEBIUS_LIVE_RUN_EVIDENCE.md.
+
 ---
 
 ## Lo que falta — por prioridad
@@ -175,10 +188,16 @@ El CI corre tests y genera el reporte, pero no bloquea merges. Falta definir:
 
 **6. Feedback sobre tools/models**
 
-Requisito del hackathon. No existe. Notas operativas honestas sobre:
-- Nemotron en la práctica (latencia, estabilidad, calidad)
-- Token Factory API (errores, rate limits)
-- Diferencia entre local executor y Nemotron real
+Requisito del hackathon. Documento dedicado todavía no existe, pero hay
+datos parciales reales: 3 corridas de L16 contra Nemotron (2026-10-03,
+docs/L16_NEBIUS_LIVE_RUN_EVIDENCE.md) — latencia ~5s por propuesta,
+formato de salida JSON `{"name", "text"}` respetado sin fallas de parseo
+en las 3 llamadas, calidad razonable (no dropeó contenido distinto entre
+dos skills con checks genuinamente diferentes). Falta consolidar esto con
+las corridas anteriores (L1-L7, docs/NEBIUS_LIVE_RUN_EVIDENCE.md) en un
+solo documento de feedback. Notas operativas honestas que faltan todavía:
+- Token Factory API (errores, rate limits) — no observado en ninguna sesión
+- Diferencia entre local executor y Nemotron real en términos de calidad
 
 **7. Pre-existing project disclosure**
 
