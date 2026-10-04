@@ -182,12 +182,67 @@ the parallel session's own fixes produced: a skill that looked like it
 had checks (via the now-excluded Example-section extraction) correctly
 surfaces as lacking them. Full suite and mutation gate green.
 
-## What this does and does not resolve
+## Update, same date: METHODOLOGICAL_VACUITY audited, and a much larger root cause found and fixed
 
-No code changed by this investigation. Mechanism E (substring
-collision) looks like a narrow, well-evidenced, high-value fix: require
-the section title to be substantially about checks/verification/
-validation (e.g. the title IS "checks"/"verification"/"validation
-criteria"/etc., not merely contains the word), rather than a bare
-substring test. This is Anna's call, same discipline as every other
-fix this session -- not implemented ad hoc here.
+Anna's own framing for continuing this work: "pulir que nuestro escanear
+haga las cosas de manera coherente." Audited `METHODOLOGICAL_VACUITY`
+(16 hits on the held-out corpus, previously unaudited) next, by held-out
+hit volume.
+
+All 16 were `terminalskills` skills with exactly the same shape: 1
+normative rule, 0 procedural steps, 0 checks. Read `preact` in full:
+it has a genuine `## Instructions` section (already in
+`_PROCEDURAL_SECTIONS`) with real procedural content -- but structured
+as narrative prose and code blocks under topic-named sub-headings
+(`### Install`, `### Components and Hooks`, `### Signals`), never
+numbered, never bulleted. `_extract_procedural_steps`'s existing
+nested-sub-heading pass (added for `### 1. Scaffold the endpoint`-style
+numbered sub-headings, see the entry above) required a leading number,
+so none of this matched. Checked all 16: 15 share the exact
+`## Instructions` -> `### <Topic>` shape (`vllm`, `solid-js`,
+`nanostores`, `goose`, `great-expectations`, `libsql`, `magicui`,
+`nativewind`, `paperclip`, `rive`, `segment`, `supermemory`,
+`terminal-skills`, `adonisjs`, `vertex-ai-gemini` with an equivalent
+non-"Instructions" variant) -- one dominant, corpus-wide authoring
+convention for general-purpose dev-tool skills, not 16 separate issues.
+
+This is larger in scope than the numbered-sub-heading fix it builds on:
+it also plausibly explains a meaningful share of `REQUIREMENT_WITHOUT_
+CHECK` (110) and `MISSING_FAILURE_MODE` (33-41) on the same corpus,
+since a skill whose only real content lives in topic-named sub-headings
+had ZERO extracted steps before this fix, not merely mis-extracted
+ones -- flagged to Anna before implementing, given the reach.
+
+**Fix, on Anna's go-ahead ("corrijamos eso antes de seguir con cosas más
+grandes")**: generalized path 5 of `_extract_procedural_steps` from
+"numbered sub-heading under a procedural ancestor" to "ANY sub-heading
+under a procedural ancestor, excluding a boilerplate title
+(`_BOILERPLATE_SECTIONS`) or an `Example N:` walkthrough heading" --
+the numbered form is now just one instance of the general rule, not a
+separate case. The now-redundant `_NUMBERED_SUBHEADING` pattern was
+removed; a small `_LEADING_NUMBER` pattern strips a numeric prefix from
+the extracted step text when one is present, purely cosmetic.
+
+Verified by diffing, not just counting (per the SCOPE_TRIGGER_MISMATCH
+gate-change lesson):
+
+| Check | terminalskills before -> after | mukul975 | author corpus |
+|---|---|---|---|
+| METHODOLOGICAL_VACUITY | 16 -> 0 | 1 -> 1 (unchanged) | 1 -> 1 (unchanged) |
+| REQUIREMENT_WITHOUT_CHECK | 110 -> 110 (identical skill set, diffed) | 23 -> 23 | 21 -> 21 |
+| MISSING_FAILURE_MODE | 33 -> 39 (skills with real steps now in scope for the check for the first time; same template, still no failure vocabulary) | 40 -> 40 | 0 -> 0 |
+| CHECK_WITHOUT_ORACLE | 8 -> 8 | 326 -> 326 | 7 -> 7 |
+
+Zero effect on mukul975/the author's own corpus -- neither uses this
+exact topic-sub-heading convention. 2 new compiler-level tests (a
+genuine topic-named sub-heading extracted as a step; a boilerplate
+sub-heading under the same procedural ancestor correctly excluded).
+Full suite and mutation gate green.
+
+## Summary
+
+Both mechanism E (section-title substring collision) and the topic-
+named-sub-heading step-extraction gap are now fixed, verified by diff
+against held-out, mukul975, and the author's corpus. REQUIREMENT_
+WITHOUT_CHECK's remaining true positives and SCOPE_TRIGGER_MISMATCH's
+already-accepted lexical-vs-semantic residual are untouched, correctly.

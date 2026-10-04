@@ -630,8 +630,8 @@ def test_numbered_heading_outside_a_procedural_ancestor_is_not_a_step(
     heading elsewhere must not be extracted, since a bare number alone is
     too weak a signal (unlike the "step"-anchored _STEP_HEADING, which is
     scanned globally).
-    Mutation: scan _NUMBERED_SUBHEADING globally instead of per-ancestor
-    -> this test goes red."""
+    Mutation: scan sub-headings globally instead of per-ancestor -> this
+    test goes red."""
     _write_skill(
         tmp_path,
         "numbered-faq",
@@ -644,6 +644,63 @@ def test_numbered_heading_outside_a_procedural_ancestor_is_not_a_step(
     artifact = compile_corpus(tmp_path)
 
     assert artifact["skills"][0]["procedural_steps"] == []
+
+
+def test_topic_named_subheading_under_instructions_is_extracted_as_a_step(
+    tmp_path: Path,
+) -> None:
+    """A non-numbered, topic-named sub-heading ("### Install", "###
+    Component usage") nested under "## Instructions" is a step, not just
+    the numbered form -- a narrative dev-tool-documentation convention
+    (prose + code blocks under topic sub-headings, no numbering or
+    bullets anywhere) found via a held-out run (TerminalSkills/skills):
+    preact, vllm, solid-js, nanostores, goose and 10 more all share this
+    shape, producing 16/16 METHODOLOGICAL_VACUITY findings from one root
+    cause -- the skill's real procedure was entirely invisible to step
+    extraction, not merely misclassified.
+    Mutation: require a numbered prefix again -> this test goes red. See
+    docs/evidence/2026-10-04-held-out-corpora-my-classes/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "topic-subheadings",
+        "---\nname: topic-subheadings\ndescription: test\n---\n\n"
+        "## Instructions\n\n"
+        "### Install\n\n"
+        "```bash\nnpm install preact\n```\n\n"
+        "### Component usage\n\n"
+        "Use `h()` or JSX to create elements.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    step_texts = [s["text"] for s in artifact["skills"][0]["procedural_steps"]]
+    assert step_texts == ["Install", "Component usage"]
+
+
+def test_boilerplate_subheading_under_instructions_is_not_a_step(
+    tmp_path: Path,
+) -> None:
+    """Negative control: a boilerplate-titled sub-heading ("### Overview")
+    nested under a procedural ancestor must not become a step just
+    because its parent is procedural -- the exclusion applies at every
+    level, not only to top-level sections.
+    Mutation: drop the _BOILERPLATE_SECTIONS check from path 5 -> this
+    test goes red."""
+    _write_skill(
+        tmp_path,
+        "boilerplate-subheading",
+        "---\nname: boilerplate-subheading\ndescription: test\n---\n\n"
+        "## Instructions\n\n"
+        "### Overview\n\n"
+        "General context, not a step.\n\n"
+        "### Install\n\n"
+        "```bash\nnpm install preact\n```\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    step_texts = [s["text"] for s in artifact["skills"][0]["procedural_steps"]]
+    assert step_texts == ["Install"]
 
 
 def test_numbered_comment_inside_code_fence_in_a_steps_section_is_not_a_step(

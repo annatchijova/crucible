@@ -66,20 +66,13 @@ _STEP_HEADING = re.compile(
     re.IGNORECASE,
 )
 
-# A bare numbered sub-heading ("### 1. Scaffold the endpoint"), with no
-# "Step" word. Unlike _STEP_HEADING, this is NOT scanned globally -- a
-# bare number is too weak a signal on its own (a numbered FAQ entry or
-# reference list is not a step). _extract_procedural_steps only applies
-# it to headings already inside a section whose own title matched
-# _PROCEDURAL_SECTIONS, where a numbered sub-heading is unambiguously a
-# step. Found via a held-out run (TerminalSkills/skills): "## Instructions"
-# -> "### 1. Scaffold the webhook endpoint" -> "### 2. ..." is a common
-# convention this corpus uses instead of a flat numbered list, and was
-# completely invisible to step extraction (not a numbered list line, and
-# not a "Step N:" heading) -- the skill's real procedure was silently
-# lost, not merely misclassified. See docs/evidence/2026-10-04-held-out-
-# corpora-adjudication/FINDINGS.md.
-_NUMBERED_SUBHEADING = re.compile(
+# A bare leading number on a sub-heading nested under a procedural
+# ancestor ("### 1. Scaffold the endpoint"), stripped for cosmetic
+# cleanliness only -- any sub-heading under a confirmed procedural
+# ancestor already becomes a step regardless of numbering (see path 5 of
+# _extract_procedural_steps); this just removes a redundant ordinal
+# prefix from the extracted step text when one is present.
+_LEADING_NUMBER = re.compile(
     r"^\d+[a-z]?\b[:\-–—.\s]*(?P<title>.*)$",
 )
 
@@ -1067,19 +1060,30 @@ def _extract_procedural_steps(
         })
         seen_lines.add(index)
 
-    # 5. Extract bare numbered sub-headings ("### 1. Title", no "Step"
-    #    word) nested under a heading whose own title matched
-    #    _PROCEDURAL_SECTIONS -- e.g. "## Instructions" -> "### 1.
-    #    Scaffold the endpoint" -> "### 2. ...". _section_ranges does not
-    #    nest (any heading, regardless of level, ends the previous one's
-    #    range), so path 1 above never sees this shape: by the time a
-    #    sub-heading line is reached, it has already started its OWN
-    #    section entry titled "1. scaffold the endpoint", which does not
-    #    match _PROCEDURAL_SECTIONS. This pass tracks real heading
+    # 5. Extract ANY sub-heading nested under a heading whose own title
+    #    matched _PROCEDURAL_SECTIONS -- not just a numbered one. A
+    #    narrative "## Instructions" -> "### Install" -> "### Component
+    #    usage" convention (topic-named sub-headings over prose and code
+    #    blocks, no numbering or bullets at all) is extremely common in
+    #    general-purpose dev-tool skills and was entirely invisible to
+    #    step extraction before this generalization: confirmed on a
+    #    held-out corpus (TerminalSkills/skills) where this exact shape
+    #    produced 16/16 METHODOLOGICAL_VACUITY findings sharing one root
+    #    cause (preact, vllm, solid-js, nanostores, goose, ...). The
+    #    numbered form ("### 1. Scaffold the endpoint") used to need its
+    #    own narrower match; it is now just one instance of this broader
+    #    rule. _section_ranges does not nest (any heading, regardless of
+    #    level, ends the previous one's range), so path 1 above never
+    #    sees this shape: by the time a sub-heading line is reached, it
+    #    has already started its OWN section entry, which does not match
+    #    _PROCEDURAL_SECTIONS itself. This pass tracks real heading
     #    hierarchy by level (the number of leading '#'s) to find each
     #    heading's nearest shallower procedural ancestor, scoped
-    #    narrowly: a bare number is only a step inside a confirmed
+    #    narrowly: a sub-heading is only a step inside a CONFIRMED
     #    procedural ancestor, never scanned globally like _STEP_HEADING.
+    #    A boilerplate title (_BOILERPLATE_SECTIONS) or an "Example N:"
+    #    walkthrough sub-heading is excluded even inside a procedural
+    #    ancestor -- neither is a step, regardless of its parent.
     procedural_ancestor_level: int | None = None
     for index in range(body_start, len(lines)):
         if index in code_lines:
@@ -1096,10 +1100,12 @@ def _extract_procedural_steps(
             procedural_ancestor_level = None
         if procedural_ancestor_level is None or index in seen_lines:
             continue
-        sub_match = _NUMBERED_SUBHEADING.match(raw_title)
-        if not sub_match:
+        lowered_title = raw_title.lower()
+        if lowered_title in _BOILERPLATE_SECTIONS or _EXAMPLE_HEADING.match(raw_title):
             continue
-        step_text = sub_match.group("title").strip() or raw_title
+        numbered_match = _LEADING_NUMBER.match(raw_title)
+        step_text = numbered_match.group("title").strip() if numbered_match else raw_title
+        step_text = step_text or raw_title
         steps.append({
             "id": f"step-{len(steps) + 1:04d}",
             "text": step_text,
