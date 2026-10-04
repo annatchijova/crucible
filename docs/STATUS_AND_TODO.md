@@ -248,12 +248,45 @@ grande y arriesgado que cualquiera de los anteriores en este archivo
 (riesgo de falso negativo en un `## Checks and Verification` real) — queda
 documentado, no resuelto. 775 tests en verde, mutation gate 6/6 intacto.
 
+**Nota: sesión paralela detectada.** Mientras se hacía este trabajo, otra
+sesión de Claude Code corría en paralelo sobre el mismo checkout (otra de
+las ventanas abiertas), haciendo la misma adjudicación held-out de forma
+independiente. Encontró y arregló el mismo problema de título de sección
+laxo que esta sesión había dejado documentado sin cerrar
+(`_EXAMPLE_HEADING`, commit `b6cd2ad`). Por compartir el mismo directorio
+de trabajo, ese commit terminó incluyendo también un fix mío que todavía
+no había comiteado (la extracción de trigger, ver abajo) — ambos cambios
+son correctos e independientemente testeados, pero la atribución en el
+historial de git quedó mezclada entre las dos sesiones. Avisado a Anna.
+
+Quinta clase: `MISSING_FAILURE_MODE` (41) — el vocabulario del check se
+perdía 4 formas comunes de nombrar una falla sin decir literalmente
+"fail"/"error": "invalid" (un `catch` real devolviendo "Invalid
+signature", 400, marcado como que no tiene ningún manejo de fallas) y
+"crash"/"denied"/"rejected" (ssh: "fix permission denied and host key
+errors", literal en la descripción del propio skill). Agregadas las 4
+palabras, confirmadas una por una contra el texto real antes de tocar
+nada. Medido en dos pasos: 41 → 37 → 33. 2 tests nuevos.
+
+Sexta clase: `SCOPE_TRIGGER_MISMATCH` (15) — `windsurf-rules` reveló un
+bug real en la extracción del trigger: el regex corta en el primer punto
+literal, incluso dentro de un nombre de archivo. La descripción real
+dice "Use when a user asks to set up `.windsurfrules` or
+`.windsurf/rules`, write global..." pero el trigger capturado quedaba en
+"a user asks to set up" — el punto de ".windsurfrules" cortaba todo lo
+demás, dejando 4 tokens genéricos sin ningún vocabulario real del
+dominio. Arreglado: el límite ahora exige que el punto esté seguido de
+espacio o fin de string, no cualquier punto. Medido: 15 → 13 (verificado
+que los 13 restantes no muestran el mismo síntoma). Este fix quedó
+mezclado en el commit `b6cd2ad` de la otra sesión por el motivo de
+arriba.
+
 El resto de las clases de finding sobre este mismo corpus
-(`MISSING_FAILURE_MODE` 41, y 10 clases más) quedó sin adjudicar — el gate
-de evaluación independiente sigue abierto, este incremento cerró cuatro
-clases de quince (más el problema de título de sección, documentado sin
-cerrar). Detalle completo, manifiesto de muestreo y digests en
-docs/evidence/2026-10-04-held-out-corpora-adjudication/FINDINGS.md.
+(`METHODOLOGICAL_VACUITY` 20, y 8 clases más) quedó sin adjudicar — el
+gate de evaluación independiente sigue abierto. Entre las dos sesiones se
+cerraron 6 clases de quince. Detalle completo, manifiesto de muestreo y
+digests en docs/evidence/2026-10-04-held-out-corpora-adjudication/FINDINGS.md
+y docs/evidence/2026-10-04-held-out-corpora-my-classes/FINDINGS.md.
 
 ---
 

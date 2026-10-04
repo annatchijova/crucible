@@ -274,6 +274,57 @@ def test_missing_failure_mode_does_not_fire_with_pitfalls_heading(
     assert "MISSING_FAILURE_MODE" not in _classes(audit["findings"])
 
 
+def test_missing_failure_mode_does_not_fire_on_invalid(
+    tmp_path: Path,
+) -> None:
+    """Invariant: "invalid" names a rejection/error outcome without using
+    "fail"/"error" literally -- real failure handling, not a gap. Found
+    via a held-out run (TerminalSkills/skills): a literal try/catch
+    returning "Invalid signature" (400) was flagged as having no failure
+    mode at all.
+    Mutation: remove "invalid" from the pattern list -> this test goes
+    red. See docs/evidence/2026-10-04-held-out-corpora-adjudication/
+    FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "invalid_signature",
+        "---\nname: invalid_signature\ndescription: Verifies a webhook signature.\n---\n\n"
+        "Operations MUST be processed.\n\n"
+        "## Steps\n\n"
+        "1. Verify the webhook signature.\n"
+        "2. Return `Invalid signature` with status 400 if verification "
+        "does not match.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "MISSING_FAILURE_MODE" not in _classes(audit["findings"])
+
+
+def test_missing_failure_mode_does_not_fire_on_crash_denied_rejected(
+    tmp_path: Path,
+) -> None:
+    """Invariant: "crash"/"denied"/"rejected" each name a failure outcome
+    without "fail"/"error" literally. Found via a held-out run
+    (TerminalSkills/skills): ssh's "fix permission denied and host key
+    errors" and intercom's "a request without a valid jwt is rejected"
+    were both flagged as having no failure mode at all.
+    Mutation: remove these words from the pattern list -> this test goes
+    red. See docs/evidence/2026-10-04-held-out-corpora-adjudication/
+    FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "permission_denied",
+        "---\nname: permission_denied\ndescription: SSH key setup.\n---\n\n"
+        "Operations MUST be processed.\n\n"
+        "## Steps\n\n"
+        "1. Generate the key pair.\n"
+        "2. Install the public key on the remote host.\n\n"
+        "If the connection is denied, check the key permissions on the "
+        "remote host; a request with the wrong key is rejected.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "MISSING_FAILURE_MODE" not in _classes(audit["findings"])
+
+
 def test_missing_failure_mode_still_fires_with_unrelated_heading(
     tmp_path: Path,
 ) -> None:

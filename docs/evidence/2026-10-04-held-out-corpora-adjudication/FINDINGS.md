@@ -362,24 +362,116 @@ own false-negative risk (a real `## Checks and Verification` heading must
 keep matching) -- left open rather than guessed at, same discipline as
 the other deferred mechanisms above.
 
+## Note on concurrent work
+
+A second Claude Code session ran the same adjudication independently in a
+different window on this same checkout, starting from the published state
+of this file after Finding 3. Its results are at
+`docs/evidence/2026-10-04-held-out-corpora-my-classes/FINDINGS.md`
+(commits `d0d11e9`, `b725bf2`): it confirms `REQUIREMENT_WITHOUT_CHECK`
+held up well independently, and found the same section-title-substring
+issue documented in Finding 4 above under its own name ("Mechanism E"),
+affecting both `CHECK_WITHOUT_ORACLE` and `COMMAND_ORACLE_WITHOUT_ARTIFACT`
+across all three corpora (~128 such headings). Neither session has fixed
+it; whoever picks it up next should read both write-ups first. By
+agreement, this session took `MISSING_FAILURE_MODE` and
+`SCOPE_TRIGGER_MISMATCH` next (below), which the other session had
+measured but not yet read in full, to avoid duplicating work.
+
+## Finding 5 (CONFIRMED, code fix applied): `MISSING_FAILURE_MODE`'s vocabulary missed four common ways of naming a failure without the words "fail"/"error"
+
+Read all 41 findings. Scanned each for words adjacent to but outside
+`_FAILURE_MODE_PATTERNS`'s vocabulary (fail/error/exception/fallback/
+recover/rollback/abort/timeout/degrade) that might indicate a missed
+synonym rather than a genuine absence of failure-mode content.
+
+- **"invalid" (4/4 confirmed genuine):** `val-town`'s webhook handler has
+  a literal `catch { return "Invalid signature", 400 }` block -- real,
+  explicit failure handling that the check missed entirely because the
+  response text never says "error". `sendgrid` ("Mark email as invalid...
+  bounce handling to prevent sending to invalid addresses"),
+  `cookie-consent` ("consent strings... are invalid"), and `lucia-auth`
+  ("a wrong one answers `401 Invalid email or password`") are the same
+  shape.
+- **"crash"/"denied"/"rejected" (3/3 sampled, confirmed genuine):**
+  `app-store-changelog` ("stop a crash when camera access was denied"),
+  `ssh` ("fix permission denied and host key errors" -- literally in the
+  skill's own description), `intercom` ("a request without a valid jwt is
+  rejected") are all real failure-path descriptions in a different
+  vocabulary.
+
+**Fix:** added `invalid`, `crash(?:es|ed|ing)?`, `denied?`, and
+`reject(?:ed|s|ion)?` to `_FAILURE_MODE_PATTERNS`. Measured in two steps
+to isolate each addition: `invalid` alone, 41 -> 37 (exactly the 4
+predicted); the other three together, 37 -> 33 (exactly the 4 predicted).
+Zero other check class moved either time. 2 new regression tests (one per
+addition, using the real found sentences). 777/777 tests pass, mutation
+gate unaffected (6/6 killed, 0 survived).
+
+**Not further investigated:** the remaining 33. A quick scan for a second
+tier of near-synonyms (`unavailable`, `blocked`, `mismatch`, `stale`,
+`expired`, `corrupted`, `malformed`, `unreachable`, `unauthorized`,
+`forbidden`) found scattered single hits in a few of the 33, not read in
+full -- this class is likely not exhausted, but each further word needs
+the same one-at-a-time, read-first verification as above, not a batch
+guess.
+
+## Finding 6 (CONFIRMED, code fix applied): the trigger-clause regex stopped at the first literal period, even inside a filename
+
+Read all 15 `SCOPE_TRIGGER_MISMATCH` findings. The parallel session's
+independent read (3/15: `referral-program`, `great-expectations`, `d3`)
+confirmed the already-accepted lexical-vs-semantic limitation and found
+no new mechanism; this session's read turned up one it didn't sample:
+`windsurf-rules`.
+
+Its real description reads "Use when a user asks to set up
+`.windsurfrules` or `.windsurf/rules`, write global or workspace rules
+for Windsurf, scope a rule to certain files, share coding standards with
+a team, or tune Cascade behavior." `_TRIGGER_PATTERNS`' boundary was a
+bare `(?:[.;]|\Z)` -- the first literal `.` or `;`, with no requirement
+that it actually end a sentence. The period inside `.windsurfrules`
+(a dotfile name) satisfied that boundary first, truncating the captured
+trigger to `"a user asks to set up"` -- four generic tokens with no
+domain vocabulary at all. `SCOPE_TRIGGER_MISMATCH` then correctly found
+zero overlap between that fragment and the skill's real content, but the
+skill's *actual* trigger (which plainly overlaps: "windsurfrules",
+"rules", "windsurf") was never evaluated.
+
+**Fix:** both patterns' boundary changed to `(?:[.;](?=\s|\Z)|\Z)` -- a
+period only ends the clause when followed by whitespace or the string's
+end, so a dotfile, extension, or decimal immediately after a period does
+not count as a sentence boundary. Measured: `SCOPE_TRIGGER_MISMATCH`
+15 -> 13. Verified this is a strict improvement, not a wash: re-read all
+13 remaining findings' trigger text for the same truncation symptom
+(ends abruptly with no natural clause boundary) -- none show it; the
+other 13 are genuine instances of the already-accepted limitation the
+parallel session's sample also confirms.
+
+This fix was written and tested in this session, but landed in the repo
+inside the parallel session's commit `b6cd2ad` (shared working directory,
+same uncommitted file at the time they ran `git commit`) -- both changes
+are independently correct and the combined test suite covers both; see
+the note above on concurrent work.
+
 ## Other classes: not adjudicated this round
 
-`MISSING_FAILURE_MODE` (41), `METHODOLOGICAL_VACUITY` (20),
-`SCOPE_TRIGGER_MISMATCH` (15), `UNPINNED_DEPENDENCY` (12),
-`CHECK_WITHOUT_ORACLE` (22), `UNBOUNDED_RETRY` (10),
+`METHODOLOGICAL_VACUITY` (20), `UNPINNED_DEPENDENCY` (12),
+`CHECK_WITHOUT_ORACLE` (16), `UNBOUNDED_RETRY` (10),
 `CLAIM_WITHOUT_PROVENANCE` (6), `OVERCLAIM` (5),
 `UNVALIDATED_EXTERNAL_INPUT` (4), `UNBOUNDED_RESOURCE` (3),
 `SECRET_IN_OUTPUT` (2) all fired on this held-out corpus and remain
-unreviewed (`NON_DETERMINISTIC_INSTRUCTION`, `IRREVERSIBLE_WITHOUT_REVIEW`,
-`COMMAND_ORACLE_WITHOUT_ARTIFACT`, and `REQUIREMENT_WITHOUT_CHECK` are now
-adjudicated, above; `CHECK_WITHOUT_ORACLE`'s count moved as a side effect
-of Finding 4 and includes the unfixed heading-title mechanism above, not a
-fresh adjudication of its own). This session scoped to four classes,
-each fully read, rather than a shallow pass over all eleven remaining —
-the next increment of this gate should pick up one of them against the
-same three pinned corpora (no new acquisition needed), and should
-probably start with the heading-title matcher question Finding 4 left
-open, since it affects what every other Checks-dependent check sees.
+unreviewed. Six classes are now adjudicated across the two sessions
+(`NON_DETERMINISTIC_INSTRUCTION`, `IRREVERSIBLE_WITHOUT_REVIEW`,
+`COMMAND_ORACLE_WITHOUT_ARTIFACT`, `REQUIREMENT_WITHOUT_CHECK`,
+`MISSING_FAILURE_MODE`, `SCOPE_TRIGGER_MISMATCH`); `CHECK_WITHOUT_ORACLE`
+has moved as a side effect of fixes to other checks three times now but
+has no adjudication of its own yet. The next increment of this gate
+should pick one of the remaining nine against the same three pinned
+corpora (no new acquisition needed), and should probably start with the
+heading-title matcher question Finding 4 raised and the parallel
+session's "Mechanism E" independently confirmed -- `_EXAMPLE_HEADING`
+(commit `b6cd2ad`) closed the one concrete instance found so far, but the
+underlying substring-vs-shape question is not resolved in general.
 
 ## Full raw results
 
@@ -396,11 +488,15 @@ reviewed, only the repo-level license):
 | `scan_collection_result_after_irreversible_fix.json` (post Finding 2) | `68ef3adb8e6746ead30361b2851a41a4e6e67350e8c54b778289f73d2ab2b6dd` | 4 | 47 | 106 | 120 | 11 |
 | `scan_collection_result_after_command_oracle_fix.json` (post Finding 3) | `6279dc518cb7284b83664c5db636e22ffc244ef80294acff8b23c8c3b4580a71` | 4 | 47 | 99 | 120 | 11 |
 | `scan_collection_result_after_numbered_checks_fix.json` (post Finding 4) | `49f98f7db157dc220850e23a1ceff20b5d96719f80eb5314dfcada1705b82aad` | 4 | 47 | 101 | 118 | 22 |
+| `scan_collection_result_after_missing_failure_mode_fix.json` (post Finding 5) | `b9c647e6020a26a94c7ae072c77d975df3e2c243a872f38a0538230676610559` | 4 | 47 | 101 | 118 | 22 |
+| `scan_collection_result_final.json` (post Finding 6 + parallel session's `b6cd2ad`) | `2257c72a0999442a7a4edabef3fc2b4aef397502327febcef3897444c5695a6d` | 4 | 47 | 101 | 119 | 16 |
 
 (NDI = `NON_DETERMINISTIC_INSTRUCTION`, IWR = `IRREVERSIBLE_WITHOUT_REVIEW`,
-RWC = `REQUIREMENT_WITHOUT_CHECK`, CWO = `CHECK_WITHOUT_ORACLE` (moved as a
-side effect of Finding 4, not independently adjudicated),
-COA = `COMMAND_ORACLE_WITHOUT_ARTIFACT`.)
+RWC = `REQUIREMENT_WITHOUT_CHECK`, CWO = `CHECK_WITHOUT_ORACLE` (moved
+three times as a side effect of other fixes, not independently
+adjudicated), COA = `COMMAND_ORACLE_WITHOUT_ARTIFACT`. `MISSING_FAILURE_
+MODE` and `SCOPE_TRIGGER_MISMATCH` counts are in Findings 5 and 6 above,
+not in this table.)
 
 Retained privately alongside the cloned corpora. [The sample manifest](terminalskills-sample-manifest.txt)
 (names only, no source text) is committed, so the exact 400-skill sample is

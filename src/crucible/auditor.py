@@ -1575,6 +1575,27 @@ _FAILURE_MODE_PATTERNS = [
     re.compile(r"\bdegrad(?:e|es|ed|ing|ation)\b", re.IGNORECASE),
     re.compile(r"\bwhat\s+happens\s+if\b", re.IGNORECASE),
     re.compile(r"\bif\s+(?:it|this|the)\s+(?:fails?|errors?)\b", re.IGNORECASE),
+    # "invalid" names a rejection/error outcome without using "fail"/
+    # "error" literally -- a try/catch returning "Invalid signature" (400)
+    # is real, explicit failure handling. Found via a held-out run
+    # (TerminalSkills/skills): 4/4 flagged skills containing "invalid"
+    # (val-town's literal catch-block error response, sendgrid's bounce/
+    # invalid-address handling, cookie-consent's compliance-rejection
+    # condition, lucia-auth's 401 response) were this exact false
+    # positive, all genuine failure-mode content missed on vocabulary
+    # alone. See docs/evidence/2026-10-04-held-out-corpora-adjudication/
+    # FINDINGS.md.
+    re.compile(r"\binvalid\b", re.IGNORECASE),
+    # "crash"/"denied"/"rejected" each name a failure outcome without
+    # "fail"/"error" literally. Confirmed genuine on the same held-out
+    # corpus: app-store-changelog's "stop a crash when camera access was
+    # denied", ssh's "fix permission denied and host key errors", and
+    # intercom's "a request without a valid jwt is rejected" are all real
+    # failure-handling content, not a gap. See docs/evidence/2026-10-04-
+    # held-out-corpora-adjudication/FINDINGS.md.
+    re.compile(r"\bcrash(?:es|ed|ing)?\b", re.IGNORECASE),
+    re.compile(r"\bdenied?\b", re.IGNORECASE),
+    re.compile(r"\breject(?:ed|s|ion)?\b", re.IGNORECASE),
 ]
 
 # ADR-0019-style heading signal (mechanism 2): a section explicitly about
