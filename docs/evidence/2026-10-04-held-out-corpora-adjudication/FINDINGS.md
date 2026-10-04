@@ -129,32 +129,114 @@ be the agent, not a third party or a named technical term) is a design
 decision for Anna, not an implementer default — flagging it here rather than
 quietly patching around it.
 
+## Finding 2 (CONFIRMED, code fix applied): `IRREVERSIBLE_WITHOUT_REVIEW` had no negative-modality guard at all
+
+Unlike `NON_DETERMINISTIC_INSTRUCTION`, this check never excluded
+MUST_NOT/SHOULD_NOT/NEVER rules, and had no equivalent guard for procedural
+steps (which carry no `modality` field). Reading all 54 findings:
+
+- **Prohibition, not instruction (7, fixed):** `tiktok-marketing` ("Never
+  delete underperforming videos"), `gdpr-compliance` ("Do NOT immediately
+  delete. Use a 30-day cooling-off queue."), `ssh` ("Never copy private
+  keys... remove old lines... when a device is decommissioned"),
+  `kubernetes-helm` ("Never run containers as root; drop all
+  capabilities..."), `documentation-and-adrs` ("Do not edit the reasoning
+  of an accepted record, delete a record..."), `react` ("Do not silence
+  `react-hooks/exhaustive-deps`. ... or drop the effect.") and one more —
+  all are prohibitions of the irreversible action, not instructions to
+  perform it. Same reasoning as `_check_non_deterministic`'s existing
+  `_NEGATIVE_MODALITIES` guard, which this check never had.
+- **Domain-specific, non-destructive sense of the trigger word (not
+  fixed):** `kql` ("`| project` to drop unneeded columns" — a query-time
+  projection, not data deletion), `tensorflow` ("drop to custom training
+  loops" — a fallback, not a deletion), `paid-ads` ("a sudden jump or drop
+  with flat spend" — a metric decline, not an action at all), `phaser`
+  ("destroy particle emitters" — game-object lifecycle, not user data),
+  `bug-hunt-swarm` ("Drop any claim that does not check out" — discard an
+  unverified assertion in a report), `value-based-selling` ("Remove
+  Barriers to Purchase" — a sales metaphor), and several more in the same
+  shape.
+- **Access-control rule text misread as an instruction (not fixed):**
+  `pocketbase` ("update/delete `author = @request.auth.id`") is a
+  PocketBase authorization-filter expression being documented, not an
+  instruction telling the agent to delete anything.
+- **Repeated template, same shape as Finding 1 (not fixed):** 7 Azure Rust
+  SDK skills share "Use `cargo add` to manage dependencies, never edit
+  `Cargo.toml` directly. Add and remove Rust SDK dependencies with cargo
+  commands..." — "never edit" is mid-sentence, not line-initial, so the
+  lexical starter guard (which only matches at the start of a bullet/line,
+  deliberately, to avoid a much riskier "contains never anywhere" rule)
+  does not reach it.
+- **The check has no notion of version control (not fixed, a real gap):**
+  several remaining findings are code/config deletions in a
+  presumably-git-tracked repository (`improve-codebase-architecture`:
+  "delete the old paths"; `typescript`: "Remove `allowJs`"; `vite`:
+  "remove react-scripts") — recoverable via `git revert`/history, but
+  `_REVIEW_BOUND_PATTERNS` has no anchor for that. This blind spot likely
+  affects most software-engineering-domain skills generically, not just
+  this corpus.
+- **Plausible genuine candidates, left as CANDIDATE (correct behavior):**
+  `cloudflare-vectorize` ("delete vectors"), `sentry` ("delete [source
+  maps] from the deployed output" after upload, order-dependent), `sst`/
+  `neon` ("delete branch/resource when PR is closed" with no safeguard
+  mentioned), `azure-containerregistry-py` ("Delete by digest not tag")
+  — real, stateful deletions with no review/backup/rollback language
+  nearby. Whether these are true positives requires domain judgment this
+  session did not have time for; they are correctly left unresolved, not
+  mislabeled.
+- **A vocabulary gap (not fixed):** `azure-keyvault-py` ("Enable
+  soft-delete for recovery") already names the deterministic anchor it
+  needs — "recovery"/"recoverable" is a reversibility bound in plain
+  English — but `_REVIEW_BOUND_PATTERNS` has no entry for it (only
+  `reversib(?:le|ility)`).
+
+**Fix applied:** added the `_NEGATIVE_MODALITIES` guard to the `rules` loop
+(direct reuse of the existing, already-validated pattern) and, for
+procedural steps (no `modality` field), reused the compiler's own
+`_NORMATIVE_STARTERS` line-initial lexical detector rather than inventing a
+second heuristic. Measured: 54 -> 47, exactly the 7 prohibition cases above,
+zero other class moved. 2 new regression tests (one rule-side, one
+step-side, using the real found sentences). 772/772 tests pass (770 + 2
+new). Mutation gate unaffected (6/6 killed, 0 survived).
+
+**Deliberately not fixed this round:** the mid-sentence negation, the
+domain-specific/metaphorical senses, the access-control misparse, the
+version-control blind spot, and the vocabulary gap. Each of those requires
+either a riskier pattern change (mid-sentence negation scanning could
+suppress a real positive sitting next to an unrelated "never") or a product
+decision (should "recoverable via git" count as a review bound for a
+security check that exists specifically because git history is not always
+checked before an agent acts?) — left open rather than guessed at, same
+discipline as `CHECK_WITHOUT_ORACLE`'s mechanism C in the 2026-10-02 audit.
+
 ## Other classes: not adjudicated this round
 
 `COMMAND_ORACLE_WITHOUT_ARTIFACT` (106), `REQUIREMENT_WITHOUT_CHECK` (120),
-`IRREVERSIBLE_WITHOUT_REVIEW` (54), `MISSING_FAILURE_MODE` (41),
-`METHODOLOGICAL_VACUITY` (20), `SCOPE_TRIGGER_MISMATCH` (15),
-`UNPINNED_DEPENDENCY` (12), `CHECK_WITHOUT_ORACLE` (11),
-`UNBOUNDED_RETRY` (10), `CLAIM_WITHOUT_PROVENANCE` (6), `OVERCLAIM` (5),
+`MISSING_FAILURE_MODE` (41), `METHODOLOGICAL_VACUITY` (20),
+`SCOPE_TRIGGER_MISMATCH` (15), `UNPINNED_DEPENDENCY` (12),
+`CHECK_WITHOUT_ORACLE` (11), `UNBOUNDED_RETRY` (10),
+`CLAIM_WITHOUT_PROVENANCE` (6), `OVERCLAIM` (5),
 `UNVALIDATED_EXTERNAL_INPUT` (4), `UNBOUNDED_RESOURCE` (3),
 `SECRET_IN_OUTPUT` (2) all fired on this held-out corpus and remain
-unreviewed. This session scoped to one class, fully adjudicated, rather than
-a shallow pass over all of them — the next increment of this gate should pick
-up one of the remaining classes against the same three pinned corpora (no
-new acquisition needed).
+unreviewed (`NON_DETERMINISTIC_INSTRUCTION` and `IRREVERSIBLE_WITHOUT_REVIEW`
+are now adjudicated, above). This session scoped to two classes, each fully
+read and adjudicated, rather than a shallow pass over all fifteen — the next
+increment of this gate should pick up one of the remaining classes against
+the same three pinned corpora (no new acquisition needed).
 
 ## Full raw results
 
-Both scans are sealed `crucible-installed-collection/v1` artifacts (488
+All three scans are sealed `crucible-installed-collection/v1` artifacts (488
 entries each, full per-skill IR text included — not committed to this public
 repo, same as the `mukul975` precedent, since redistribution terms for
 `TerminalSkills/skills`'s 400-skill sample have not been individually
 reviewed, only the repo-level license):
 
-| File | SHA-256 | `NON_DETERMINISTIC_INSTRUCTION` count |
-|---|---|---|
-| `scan_collection_result_before.json` (pre-fix) | `6b343b5d744ff196bea10947194700679def999952301c806e1c437c7673fe19` | 39 |
-| `scan_collection_result_after.json` (post-fix) | `15c429397982a2d8be487855f6d5f78eeb32e69bf976062fc923f2d5c44a0f10` | 4 |
+| File | SHA-256 | `NON_DETERMINISTIC_INSTRUCTION` | `IRREVERSIBLE_WITHOUT_REVIEW` |
+|---|---|---|---|
+| `scan_collection_result_before.json` (baseline) | `6b343b5d744ff196bea10947194700679def999952301c806e1c437c7673fe19` | 39 | 54 |
+| `scan_collection_result_after.json` (post Finding 1 fix) | `15c429397982a2d8be487855f6d5f78eeb32e69bf976062fc923f2d5c44a0f10` | 4 | 54 |
+| `scan_collection_result_after_irreversible_fix.json` (post Finding 2 fix) | `68ef3adb8e6746ead30361b2851a41a4e6e67350e8c54b778289f73d2ab2b6dd` | 4 | 47 |
 
 Retained privately alongside the cloned corpora. [The sample manifest](terminalskills-sample-manifest.txt)
 (names only, no source text) is committed, so the exact 400-skill sample is

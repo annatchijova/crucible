@@ -177,11 +177,31 @@ el diseño léxico del check puede ser estructuralmente incapaz de distinguir
 "se le instruye al agente actuar sin método fijo" de "el texto contiene la
 palabra random/arbitrary/pick/choose por otra razón". Rediseñar el check
 es una decisión de Anna, no un default del implementador — queda planteada,
-no resuelta. El resto de las clases de finding sobre este mismo corpus
-(`COMMAND_ORACLE_WITHOUT_ARTIFACT` 106, `REQUIREMENT_WITHOUT_CHECK` 120,
-`IRREVERSIBLE_WITHOUT_REVIEW` 54, y 10 clases más) quedó sin adjudicar —
-el gate de evaluación independiente sigue abierto, este incremento cerró
-una sola clase. Detalle completo, manifiesto de muestreo y digests en
+no resuelta.
+
+Segunda clase adjudicada en la misma corrida: `IRREVERSIBLE_WITHOUT_REVIEW`
+(54 findings). A diferencia de `NON_DETERMINISTIC_INSTRUCTION`, este check
+nunca excluía reglas con modalidad MUST_NOT/SHOULD_NOT/NEVER ("Never delete
+underperforming videos" se marcaba como la acción irreversible peligrosa
+que la propia regla prohíbe). Arreglado reusando el guard ya existente
+(`_NEGATIVE_MODALITIES`) para reglas, y el detector léxico del compilador
+(`_NORMATIVE_STARTERS`) para procedural steps (que no tienen campo
+`modality`). Medido: 54 → 47 (-7, exactamente los casos de prohibición). Los
+47 restantes son una mezcla más riesgosa de tocar a ciegas: sentidos
+metafóricos de "drop/remove" (query projection, fallback, declive de una
+métrica, metáfora de ventas), una regla de autorización de PocketBase mal
+interpretada como instrucción, el mismo patrón de plantilla repetida de la
+clase anterior ("never" a mitad de oración, no al inicio, el guard
+deliberadamente no llega ahí), y un hueco real: el check no tiene noción de
+que código en git es recuperable. Quedan documentados, no parcheados —
+cambiar esos patrones a ciegas arriesga falsos negativos reales en un check
+de seguridad. 2 tests nuevos, 772 tests en verde, mutation gate 6/6 intacto.
+
+El resto de las clases de finding sobre este mismo corpus
+(`COMMAND_ORACLE_WITHOUT_ARTIFACT` 106, `REQUIREMENT_WITHOUT_CHECK` 120, y
+10 clases más) quedó sin adjudicar — el gate de evaluación independiente
+sigue abierto, este incremento cerró dos clases de quince. Detalle
+completo, manifiesto de muestreo y digests en
 docs/evidence/2026-10-04-held-out-corpora-adjudication/FINDINGS.md.
 
 ---

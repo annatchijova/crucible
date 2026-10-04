@@ -12,7 +12,7 @@ import re
 from fractions import Fraction
 from typing import Any
 
-from .compiler import _ORACLE_INLINE_CODE
+from .compiler import _NORMATIVE_STARTERS, _ORACLE_INLINE_CODE
 from .ir import SCHEMA_VERSION, digest_payload
 
 AUDIT_VERSION = "crucible-audit/v1"
@@ -1832,7 +1832,15 @@ def _check_irreversible_without_review(
 
     The check scans rule text and procedural step text for irreversible
     action indicators. If a review/bound pattern is present in the same
-    text, the finding is suppressed.
+    text, the finding is suppressed. A rule or step whose own modality
+    already prohibits the action (MUST_NOT / SHOULD_NOT / NEVER) cannot be
+    instructing the agent to perform it -- it is forbidding it, same
+    reasoning as the equivalent guard in `_check_non_deterministic`. Found
+    via a held-out run against a fresh corpus (microsoft/skills,
+    TerminalSkills/skills): instructions like "Never delete underperforming
+    videos" and "Do NOT immediately delete" were flagged as the dangerous
+    unbounded action they explicitly prohibit -- see docs/evidence/2026-10-
+    04-held-out-corpora-adjudication/FINDINGS.md.
 
     Limitation: the check is pattern-based. A skill may describe an
     irreversible action or its bounds using vocabulary not captured by the
@@ -1843,6 +1851,8 @@ def _check_irreversible_without_review(
         name = skill["identity"]["name"]
         source_path = skill["identity"]["source_path"]
         for rule in skill.get("rules", []):
+            if rule.get("modality") in _NEGATIVE_MODALITIES:
+                continue
             text = rule.get("text", "")
             has_irreversible = any(p.search(text) for p in _IRREVERSIBLE_PATTERNS)
             if not has_irreversible:
@@ -1877,6 +1887,17 @@ def _check_irreversible_without_review(
             ))
         for step in skill.get("procedural_steps", []):
             text = step.get("text", "")
+            # Procedural steps carry no `modality` field (unlike rules); a
+            # step beginning with "Never"/"Do not"/"Don't" is a prohibition
+            # of the action that follows, not an instruction to perform it
+            # -- same lexical starters the compiler itself uses to assign a
+            # rule's modality (`_NORMATIVE_STARTERS`), reused here rather
+            # than inventing a second detector.
+            if any(
+                pattern.search(text) and negative_modality in _NEGATIVE_MODALITIES
+                for pattern, negative_modality in _NORMATIVE_STARTERS
+            ):
+                continue
             has_irreversible = any(p.search(text) for p in _IRREVERSIBLE_PATTERNS)
             if not has_irreversible:
                 continue

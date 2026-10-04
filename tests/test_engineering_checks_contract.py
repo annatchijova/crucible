@@ -463,6 +463,40 @@ def test_irreversible_without_review_does_not_fire_with_review(tmp_path: Path) -
     assert "IRREVERSIBLE_WITHOUT_REVIEW" not in _classes(audit["findings"])
 
 
+def test_irreversible_without_review_does_not_fire_on_never_delete_rule(tmp_path: Path) -> None:
+    """Invariant: a MUST_NOT/SHOULD_NOT/NEVER rule prohibiting the
+    irreversible action cannot be instructing the agent to perform it --
+    same reasoning as the modality guard in NON_DETERMINISTIC_INSTRUCTION.
+    Found via a held-out run against a fresh corpus (TerminalSkills/skills):
+    "Never delete underperforming videos" was flagged as the dangerous
+    unbounded delete it explicitly forbids. See docs/evidence/2026-10-04-
+    held-out-corpora-adjudication/FINDINGS.md.
+    Mutation: remove the modality guard -> this test goes red."""
+    _write_skill(
+        tmp_path,
+        "never_deleter",
+        "---\nname: never_deleter\ndescription: Retention policy.\n---\n\n"
+        "Never delete underperforming videos -- they can resurface weeks "
+        "later.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "IRREVERSIBLE_WITHOUT_REVIEW" not in _classes(audit["findings"])
+
+
+def test_irreversible_without_review_does_not_fire_on_never_delete_step(tmp_path: Path) -> None:
+    """Invariant: the same prohibition guard applies to procedural steps,
+    which carry no `modality` field and so need the lexical starter check.
+    Mutation: remove the step-side starter guard -> this test goes red."""
+    _write_skill(
+        tmp_path,
+        "never_deleter_step",
+        "---\nname: never_deleter_step\ndescription: Retention policy.\n---\n\n"
+        "## Steps\n\n1. Never delete the archived snapshots.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "IRREVERSIBLE_WITHOUT_REVIEW" not in _classes(audit["findings"])
+
+
 def test_irreversible_without_review_fires_on_force_push(tmp_path: Path) -> None:
     """Invariant: 'force-push' without backup is unbounded.
     Mutation: remove 'force-push' from patterns -> this test goes red."""
