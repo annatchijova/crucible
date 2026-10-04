@@ -255,6 +255,58 @@ def test_overclaim_fires_on_guaranteed(tmp_path: Path) -> None:
     assert "OVERCLAIM" in _classes(audit["findings"])
 
 
+def test_overclaim_does_not_fire_on_quoted_banned_phrase(tmp_path: Path) -> None:
+    """Invariant: overclaim vocabulary named inside a quoted phrase is
+    being prohibited, not asserted -- "Never use 'guaranteed edge'..."
+    forbids a phrase, it does not claim anything is guaranteed.
+    Mutation: remove the _QUOTED_SPAN stripping -> this test goes red.
+    See docs/evidence/2026-10-04-overclaim-audit/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "banned_phrase",
+        '---\nname: banned_phrase\ndescription: Bans overclaiming language.\n---\n\n'
+        'Never use "guaranteed edge" or "guaranteed profit" language in output.\n',
+    )
+    audit = _audit(tmp_path)
+    assert "OVERCLAIM" not in _classes(audit["findings"])
+
+
+def test_overclaim_does_not_fire_on_clause_initial_never_mid_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a clause-initial "Never"/"Always" partway through a
+    multi-clause rule is a second normative instruction, not a
+    descriptive overclaim, even when the rule's OWN overall modality is
+    IMPERATIVE/MUST_NOT rather than ALWAYS/NEVER itself.
+    Mutation: remove the _CLAUSE_INITIAL_ALWAYS_NEVER stripping -> this
+    test goes red."""
+    _write_skill(
+        tmp_path,
+        "embedded_never",
+        "---\nname: embedded_never\ndescription: Pin image tags.\n---\n\n"
+        "Pin image tags. Never use `latest` in production.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "OVERCLAIM" not in _classes(audit["findings"])
+
+
+def test_overclaim_still_fires_on_mid_sentence_always(tmp_path: Path) -> None:
+    """Negative control: "always" used as a plain adverb mid-sentence
+    (not at a clause boundary) must still be flagged -- the clause-
+    initial exemption must not over-broaden to any "always"/"never"
+    anywhere in the text.
+    Mutation: over-broaden the exemption to match anywhere -> this test
+    goes red."""
+    _write_skill(
+        tmp_path,
+        "mid_sentence_always",
+        "---\nname: mid_sentence_always\ndescription: Overclaims reliability.\n---\n\n"
+        "This method MUST work, and it always succeeds under every condition.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "OVERCLAIM" in _classes(audit["findings"])
+
+
 # ---------------------------------------------------------------------------
 # MISSING_FAILURE_MODE
 # ---------------------------------------------------------------------------

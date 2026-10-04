@@ -1480,6 +1480,28 @@ _OVERCLAIM_PATTERNS = [
     re.compile(r"\bimpossible\s+to\s+(?:fail|break|breach)\b", re.IGNORECASE),
 ]
 
+# "Always"/"Never" at the start of a clause (text start, or right after
+# a sentence/clause separator) followed by a word is a SECOND normative
+# instruction embedded in a multi-clause rule, not a descriptive
+# overclaim -- the existing rule-level modality exemption only catches
+# this when it's the rule's OWN overall modality (ALWAYS/NEVER), not
+# when the rule's modality is IMPERATIVE/MUST_NOT and a clause partway
+# through the text starts with "Always"/"Never" instead. Found via a
+# held-out run: "Pin image tags — never use `latest` in production"
+# (modality IMPERATIVE) and "Preserve the original files. Never modify
+# input PDFs in place." (modality IMPERATIVE) both flagged a clause that
+# is itself an instruction, not a claim. See docs/evidence/2026-10-04-
+# overclaim-audit/FINDINGS.md.
+_CLAUSE_INITIAL_ALWAYS_NEVER = re.compile(
+    r"(?:^|[.;:—-]\s+|,\s+and\s+)(always|never)\b", re.IGNORECASE
+)
+
+# "Guaranteed"/other overclaim vocabulary inside a quoted phrase is being
+# named (e.g. a banned phrase list: 'Never use "guaranteed edge"...'),
+# not asserted -- the rule is prohibiting the phrase, not making the
+# claim itself.
+_QUOTED_SPAN = re.compile(r'"[^"]*"|`[^`]*`')
+
 # Qualification patterns that soften an absolute claim.
 _QUALIFICATION_PATTERNS = [
     re.compile(r"\b(?:may|might|can|could|should|typically|usually|generally|in\s+most\s+cases|under\s+normal\s+conditions)\b", re.IGNORECASE),
@@ -1521,6 +1543,16 @@ def _check_overclaim(
         for rule in skill.get("rules", []):
             text = rule.get("text", "")
             modality = rule.get("modality", "")
+            # Strip quoted/backticked spans before matching: overclaim
+            # vocabulary named inside a quoted phrase ('Never use
+            # "guaranteed edge"...') is being prohibited, not asserted.
+            # Strip a clause-initial "Always"/"Never" too: it is a
+            # second normative instruction embedded in a multi-clause
+            # rule, the same reasoning the modality-level exemption
+            # below already applies, just not limited to the rule's own
+            # overall modality.
+            scan_text = _QUOTED_SPAN.sub(" ", text)
+            scan_text = _CLAUSE_INITIAL_ALWAYS_NEVER.sub(" ", scan_text)
             # For ALWAYS/NEVER rules, "always"/"never" is the modality,
             # not a descriptive overclaim. Skip those patterns but keep
             # the rest (100%, guaranteed, failsafe, etc.).
@@ -1531,7 +1563,7 @@ def _check_overclaim(
                 ]
             else:
                 patterns = _OVERCLAIM_PATTERNS
-            has_overclaim = any(p.search(text) for p in patterns)
+            has_overclaim = any(p.search(scan_text) for p in patterns)
             if not has_overclaim:
                 continue
             has_qualification = any(p.search(text) for p in _QUALIFICATION_PATTERNS)
@@ -1539,7 +1571,7 @@ def _check_overclaim(
                 continue
             # Identify which pattern matched for evidence.
             matched = next(
-                p.pattern for p in patterns if p.search(text)
+                p.pattern for p in patterns if p.search(scan_text)
             )
             findings.append(_finding(
                 cls="OVERCLAIM",
