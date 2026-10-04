@@ -2586,6 +2586,17 @@ def _check_unvalidated_external_input(
         name = skill["identity"]["name"]
         source_path = skill["identity"]["source_path"]
         for rule in skill.get("rules", []):
+            # A rule whose own modality prohibits the behavior
+            # (MUST_NOT/SHOULD_NOT/NEVER) cannot be instructing
+            # acceptance of unvalidated input -- it is forbidding it.
+            # E.g. "Never `torch.load` a checkpoint from an untrusted
+            # source with `weights_only=False`." Same guard already
+            # applied to NON_DETERMINISTIC_INSTRUCTION, IRREVERSIBLE_
+            # WITHOUT_REVIEW, and UNBOUNDED_RETRY this session. See
+            # docs/evidence/2026-10-04-unvalidated-external-input-audit/
+            # FINDINGS.md.
+            if rule.get("modality") in _NEGATIVE_MODALITIES:
+                continue
             text = rule.get("text", "")
             has_input = any(p.search(text) for p in _EXTERNAL_INPUT_PATTERNS)
             if not has_input:

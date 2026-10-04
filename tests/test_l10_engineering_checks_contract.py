@@ -252,6 +252,42 @@ def test_unvalidated_input_fires_on_read_stdin(tmp_path: Path) -> None:
     assert "UNVALIDATED_EXTERNAL_INPUT" in _classes(audit["findings"])
 
 
+def test_unvalidated_input_does_not_fire_on_negative_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST_NOT/SHOULD_NOT/NEVER rule that forbids
+    accepting unvalidated input is not instructing it.
+    Mutation: remove the _NEGATIVE_MODALITIES guard -> this test goes
+    red. See docs/evidence/2026-10-04-unvalidated-external-input-audit/
+    FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "safe-loader",
+        "---\nname: safe-loader\ndescription: Never loads untrusted input.\n---\n\n"
+        "Operations MUST NOT parse user input from the request without review.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "UNVALIDATED_EXTERNAL_INPUT" not in _classes(audit["findings"])
+
+
+def test_unvalidated_input_still_fires_on_positive_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST rule that genuinely instructs accepting
+    unvalidated input must still fire -- the negative-modality guard
+    must not suppress positive-modality rules.
+    Mutation: over-broaden the _NEGATIVE_MODALITIES guard -> this test
+    goes red."""
+    _write_skill(
+        tmp_path,
+        "unsafe-loader",
+        "---\nname: unsafe-loader\ndescription: Loads untrusted input.\n---\n\n"
+        "Operations MUST parse user input from the request.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "UNVALIDATED_EXTERNAL_INPUT" in _classes(audit["findings"])
+
+
 # ---------------------------------------------------------------------------
 # MISSING_TIMEOUT
 # ---------------------------------------------------------------------------
