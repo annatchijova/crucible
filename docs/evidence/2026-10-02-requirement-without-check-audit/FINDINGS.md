@@ -113,3 +113,55 @@ heading). Full suite and mutation gate green.
 
 Mechanism B (Step-N heading with a verification verb) remains deferred.
 The 19/34-equivalent true positives remain untouched.
+
+## Addendum 2026-10-04: an unmeasured side effect on CHECK_WITHOUT_ORACLE, found two days later
+
+This fix's own before/after measurement only checked `REQUIREMENT_
+WITHOUT_CHECK`'s count. It should also have re-measured every other
+check that consumes `_extract_checks`'s output -- the exact lesson this
+session already recorded once, for SCOPE_TRIGGER_MISMATCH's gate change.
+It was not applied here at the time. Caught during an unrelated resync
+two days later, while comparing corpus counts across commits.
+
+Adding "validation" to the section-title filter means every bullet in a
+`## Validation`/`## Validation Criteria`/`## Validation and Testing`
+section is now extracted as a check corpus-wide, not just within the 34
+originally-flagged skills -- and `CHECK_WITHOUT_ORACLE` fires on every
+one of those bullets that has no question mark, no checkbox, and no
+verification verb. Measured directly, isolating this fix from the
+later, unrelated multi-line-join work (commit `9021853`, right before
+this fix, vs. `f2e0e58`, right after it; current `HEAD` is identical to
+`f2e0e58` on this count, confirming the later join fixes contributed
+nothing further here):
+
+| State | CHECK_WITHOUT_ORACLE on mukul975 |
+|---|---|
+| Before this fix (`9021853`) | 20 |
+| After this fix (`f2e0e58`, and unchanged at current `HEAD`) | 306 |
+
+20 random samples from the 306, read in full: all 20 are the same
+pattern -- a bare declarative outcome statement under a Validation
+Criteria heading, with zero verification marker:
+
+```
+## Validation Criteria
+- DNSTwist generates domain permutations for target domain
+- Web similarity scoring detects cloned phishing pages
+```
+
+This is not an extraction bug. These bullets genuinely are checks (the
+heading says so) and genuinely contain no stated verification procedure
+(no checkbox, no question, no command, no verb from the oracle
+vocabulary) -- "detects cloned phishing pages" is an outcome claim, not
+a test. Whether a declarative property-statement living under an
+explicit "Validation Criteria" heading should count as having an
+*implicit* oracle (the heading itself asserting "this is how you
+validate") is a real, undecided design question -- the same shape as
+CHECK_WITHOUT_ORACLE's own deferred mechanism C (configuration
+imperatives) and REQUIREMENT_WITHOUT_CHECK's mechanism B (verification
+verb in a step heading): extending the oracle vocabulary to cover
+"is this heading's own context the oracle" risks another over-broad
+classification change, not a narrow word-list fix.
+
+Not fixed. Reported to Anna as its own finding, not folded quietly into
+the original fix's numbers.
