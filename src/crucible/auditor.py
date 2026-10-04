@@ -1648,18 +1648,30 @@ def _check_missing_failure_mode(
 
 # Patterns that indicate a non-deterministic instruction.
 #
-# "pick"/"choose" only match "any" or "one" (an unconstrained choice), not
-# the bare indefinite article "a" — "pick a `type` that matches the kind"
-# is an ordinary instruction to select the applicable item, not a claim
-# that the choice is arbitrary. A genuine "pick a random X" is still
+# "pick"/"choose" only match "any" (an explicitly unconstrained choice),
+# not the bare indefinite article "a" — "pick a `type` that matches the
+# kind" is an ordinary instruction to select the applicable item, not a
+# claim that the choice is arbitrary. A genuine "pick a random X" is still
 # caught by the separate \brandom\b pattern above, so narrowing this one
 # does not lose coverage (see docs/evidence/2026-10-02-non-deterministic-
 # instruction-false-positives/FINDINGS.md, mechanism 7).
+#
+# "pick"/"choose" + "one" was dropped from this alternation (it used to
+# match alongside "any"): a held-out run against a fresh, previously
+# unseen corpus (microsoft/skills) found 35/35 NON_DETERMINISTIC_
+# INSTRUCTION findings were the same templated sentence, "Pick sync OR
+# async and stay consistent ... Choose one mode per module" -- an
+# instruction to commit to a single fixed choice and not vary it, i.e.
+# the opposite of non-determinism, not an instance of it. "one" shares
+# "a"'s semantics (select a specific single item) rather than "any"'s
+# (no constraint on which); no existing test or adjudicated finding
+# relied on "one" as a genuine positive (see docs/evidence/2026-10-04-
+# held-out-corpora-adjudication/FINDINGS.md).
 _NON_DETERMINISTIC_PATTERNS = [
     re.compile(r"\brandom(?:ly)?\b", re.IGNORECASE),
     re.compile(r"\barbitrary\b", re.IGNORECASE),
-    re.compile(r"\bpick\s+(?:any|one)\b", re.IGNORECASE),
-    re.compile(r"\bchoose\s+(?:any|one)\b", re.IGNORECASE),
+    re.compile(r"\bpick\s+any\b", re.IGNORECASE),
+    re.compile(r"\bchoose\s+any\b", re.IGNORECASE),
     re.compile(r"\bany\s+(?:order|way|approach|method)\b", re.IGNORECASE),
 ]
 

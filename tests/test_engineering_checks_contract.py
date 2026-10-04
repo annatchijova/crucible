@@ -342,7 +342,7 @@ def test_non_deterministic_fires_on_arbitrary(tmp_path: Path) -> None:
 
 def test_non_deterministic_does_not_fire_on_pick_a(tmp_path: Path) -> None:
     """Invariant: 'pick a NOUN' is an ordinary indefinite article, not a
-    claim of arbitrary choice -- only 'pick any/one NOUN' is.
+    claim of arbitrary choice -- only 'pick any NOUN' is.
     Mutation: restore bare 'a' to the pick/choose alternation -> this test
     goes red. See docs/evidence/2026-10-02-non-deterministic-instruction-
     false-positives/FINDINGS.md, mechanism 7."""
@@ -351,6 +351,29 @@ def test_non_deterministic_does_not_fire_on_pick_a(tmp_path: Path) -> None:
         "picker",
         "---\nname: picker\ndescription: Pick a type.\n---\n\n"
         "Pick a `type` that matches the kind. Use self-explanatory values.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "NON_DETERMINISTIC_INSTRUCTION" not in _classes(audit["findings"])
+
+
+def test_non_deterministic_does_not_fire_on_choose_one_consistently(tmp_path: Path) -> None:
+    """Invariant: 'choose/pick one X and stay consistent' commits to a single
+    fixed choice -- it is an anti-non-determinism instruction, not an
+    instance of non-determinism. Found via a held-out run against a fresh,
+    previously unseen corpus (microsoft/skills): 35/35 NON_DETERMINISTIC_
+    INSTRUCTION findings there were this exact templated sentence. 'one'
+    shares the bare-article 'a' semantics (a specific single item), not
+    'any's (no constraint on which) -- see docs/evidence/2026-10-04-
+    held-out-corpora-adjudication/FINDINGS.md.
+    Mutation: restore 'one' to the pick/choose alternation -> this test
+    goes red."""
+    _write_skill(
+        tmp_path,
+        "sync_or_async",
+        "---\nname: sync_or_async\ndescription: Client usage.\n---\n\n"
+        "Pick sync OR async and stay consistent. Do not mix sync clients "
+        "with async clients in the same call path. Choose one mode per "
+        "module.\n",
     )
     audit = _audit(tmp_path)
     assert "NON_DETERMINISTIC_INSTRUCTION" not in _classes(audit["findings"])

@@ -148,6 +148,42 @@ sino también rules y relations, mismo patrón en los tres. Queda como
 pendiente nuevo (ver abajo), no cerrado. Detalle completo en
 docs/decisions/0023-verification-starter-continuation-lines.md.
 
+Actualización 2026-10-04: el usuario pidió avanzar el gate de "evaluación
+independiente" (`docs/NEXT_LEVELS.md`) en vez de seguir por días del
+calendario — y notó que `mukul975` ya no sirve como held-out: se usó para
+calibrar el compilador/auditor durante la sesión del 10-03, así que es dev
+data, no evidencia independiente. Buscamos y clonamos 3 repos reales nunca
+tocados antes (`microsoft/skills`, `machina-sports/sports-skills`,
+`TerminalSkills/skills`; dominios deliberadamente distintos entre sí y de
+mukul975) y simulamos un usuario instalándolos (HOME apuntado a un
+directorio aislado, sin tocar la colección real) con
+`--scan-installed-collection`. Encontramos que el cap de 500 entries aborta
+todo el scan sin devolver ningún parcial — confirmado intencional por su
+propio test, no un bug. 488 skills analizados (el resto de TerminalSkills,
+1055 en total, muestreado con semilla fija bajo el cap). Adjudicamos a mano
+la clase `NON_DETERMINISTIC_INSTRUCTION` (39 findings) contra el criterio ya
+establecido en la adjudicación de mukul975: encontramos un mecanismo nuevo
+(100% de 35/39 era la misma oración plantilla "Pick sync OR async... Choose
+one mode per module" — una instrucción ANTI-no-determinismo, no una
+instancia de él) y lo arreglamos en el auditor (se sacó "one" de la
+alternación `pick/choose`, queda solo "any"; 1 test nuevo, 770 tests en
+verde, mutation gate 6/6 intacto). Los 4 findings restantes también
+resultaron falsos positivos, todos ya cubiertos por mecanismos documentados
+previamente (randomness criptográfica requerida, texto descriptivo de un
+riesgo de terceros). Resultado agregado: **0 verdaderos positivos para
+`NON_DETERMINISTIC_INSTRUCTION` en 4 corpus independientes** hasta la
+fecha (autor, mukul975, y estos 3 nuevos combinados) — señal fuerte de que
+el diseño léxico del check puede ser estructuralmente incapaz de distinguir
+"se le instruye al agente actuar sin método fijo" de "el texto contiene la
+palabra random/arbitrary/pick/choose por otra razón". Rediseñar el check
+es una decisión de Anna, no un default del implementador — queda planteada,
+no resuelta. El resto de las clases de finding sobre este mismo corpus
+(`COMMAND_ORACLE_WITHOUT_ARTIFACT` 106, `REQUIREMENT_WITHOUT_CHECK` 120,
+`IRREVERSIBLE_WITHOUT_REVIEW` 54, y 10 clases más) quedó sin adjudicar —
+el gate de evaluación independiente sigue abierto, este incremento cerró
+una sola clase. Detalle completo, manifiesto de muestreo y digests en
+docs/evidence/2026-10-04-held-out-corpora-adjudication/FINDINGS.md.
+
 ---
 
 ## Lo que falta — por prioridad
