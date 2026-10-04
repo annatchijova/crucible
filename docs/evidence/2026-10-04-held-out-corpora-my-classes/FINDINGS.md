@@ -97,13 +97,51 @@ look for), extracted from a section that evidently matched the title
 filter, misclassified as checks rather than steps. Not yet traced to a
 specific heading; flagged, not resolved this round.
 
-## MISSING_FAILURE_MODE and SCOPE_TRIGGER_MISMATCH: not yet adjudicated
+## MISSING_FAILURE_MODE: genuine true positives, same template pattern
 
-Counts measured (41 and 15 respectively) but not read in full this
-round -- effort was spent on REQUIREMENT_WITHOUT_CHECK and
-CHECK_WITHOUT_ORACLE, where the new section-title substring-collision
-finding (mechanism E) was significant enough to report before
-continuing further. Deferred to a follow-up pass.
+33 hits (count dropped from an earlier 41 after the parallel session's
+`a522fce` landed -- re-measured at current HEAD). Sampled 5 at random
+(`jupyter`, `poetry`, `neon`, `whisper`, `growth-hacking`): zero
+occurrences anywhere in the body of any failure-mode vocabulary (base
+or conjugated forms). Same TerminalSkills template as REQUIREMENT_
+WITHOUT_CHECK's finding -- `## Guidelines` sections are caveats/gotchas,
+but phrased without any of the check's vocabulary, and the heading
+itself ("Guidelines") is too generic to safely add as a signal (unlike
+"Pitfalls"/"Troubleshooting", it doesn't specifically denote failure
+content). Correctly CANDIDATE; not a false-positive mechanism.
+
+## SCOPE_TRIGGER_MISMATCH: genuine instances of the already-accepted lexical-vs-semantic limitation
+
+15 hits. Read 3 in full (`referral-program`, `great-expectations`,
+`d3`): each is a real, on-topic skill whose one extracted rule happens
+to use completely different vocabulary than its trigger --
+`great-expectations`'s trigger is about dataset validation/expectations,
+its only rule is "Never put a database password directly in a
+connection string" (a security rule incidentally present in a data-
+validation skill). Same shape as the already-accepted residual in
+`docs/evidence/2026-10-02-scope-trigger-mismatch-audit/FINDINGS.md`. Not
+a new mechanism; the check's own stated limitation holding up as
+expected.
+
+## Cross-reference: independent convergence with a parallel session
+
+While this adjudication was in progress, a separate, concurrently-running
+session (paused by Anna shortly after) independently found and fixed two
+of the same issues reported above, against the same held-out corpus,
+citing the same example skills (`polymarket`, `web-research`,
+`microsoft-teams`):
+
+- The numbered-list-under-a-real-Checks-heading gap (mechanism A's
+  `implementing-next-generation-firewall-with-palo-alto` residual from
+  `docs/evidence/2026-10-02-requirement-without-check-audit/FINDINGS.md`)
+  -- fixed in commit `a522fce`.
+- The section-title substring-collision mechanism (mechanism E above) --
+  found, NOT fixed (same "shape-aware match is a larger, riskier change"
+  reasoning this document also reaches independently).
+
+Both sessions reading the same real examples and reaching the same
+conclusions independently is treated as corroboration, not as one
+session's work superseding the other's.
 
 ## What this does and does not resolve
 
