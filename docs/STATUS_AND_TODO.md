@@ -220,10 +220,39 @@ en verde, mutation gate 6/6 intacto. Los otros 4 mecanismos quedan
 documentados sin tocar — necesitan criterio de producto o un cambio mucho
 más grande, no un regex ciego.
 
+Cuarta clase: `REQUIREMENT_WITHOUT_CHECK` (120) — a diferencia de las tres
+anteriores, resistió bien la lectura: muestra de 10 skills (espn-api,
+adonisjs, cors, azure-storage-blob-rust, fail2ban...), todas con reglas
+normativas reales ("NEVER use Access-Control-Allow-Origin: * with
+credentials: true") y cero verificación en todo el cuerpo — skills tipo
+documentación/referencia que sí carecen genuinamente de mecanismo de
+verificación. Pero una (`polymarket`) reveló un bug real un nivel más abajo,
+en el compilador: dentro de una sección "### Live Odds Check" (reconocida
+como sección de Checks), el extractor solo capturaba bullets, nunca listas
+numeradas — 3 checks reales con comandos concretos se perdían enteros, no
+solo mal clasificados. Arreglado (`_EXPLICIT_LIST_MARKER` en vez de
+`_BULLET` en `_extract_checks`). Medido: 120 → 118. 1 test nuevo.
+
+Este mismo fix destapó un SEGUNDO problema, real pero preexistente y sin
+arreglar: el filtro de título de sección ("check"/"verification"/
+"validation" como substring) es demasiado laxo — "### Example 3:
+Fact-checking and verification" y "### Example 2: ...system health checks"
+son walkthroughs de ejemplo cuyo título solo *menciona* esas palabras, no
+secciones de checks reales. Antes eran invisibles (contenido numerado, el
+bug de arriba los tapaba); ahora se extraen sus pasos de ejemplo como
+checks falsos, y en el caso de `web-research` eso alcanza a sacarlo de la
+lista de `REQUIREMENT_WITHOUT_CHECK` sobre la base de checks que no son
+reales — podría estar tapando un caso genuino. Angostar el filtro de título
+de "contiene la palabra" a "el heading ES de checks" es un cambio más
+grande y arriesgado que cualquiera de los anteriores en este archivo
+(riesgo de falso negativo en un `## Checks and Verification` real) — queda
+documentado, no resuelto. 775 tests en verde, mutation gate 6/6 intacto.
+
 El resto de las clases de finding sobre este mismo corpus
-(`REQUIREMENT_WITHOUT_CHECK` 120, y 11 clases más) quedó sin adjudicar — el
-gate de evaluación independiente sigue abierto, este incremento cerró tres
-clases de quince. Detalle completo, manifiesto de muestreo y digests en
+(`MISSING_FAILURE_MODE` 41, y 10 clases más) quedó sin adjudicar — el gate
+de evaluación independiente sigue abierto, este incremento cerró cuatro
+clases de quince (más el problema de título de sección, documentado sin
+cerrar). Detalle completo, manifiesto de muestreo y digests en
 docs/evidence/2026-10-04-held-out-corpora-adjudication/FINDINGS.md.
 
 ---

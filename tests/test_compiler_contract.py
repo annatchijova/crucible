@@ -483,6 +483,37 @@ def test_validation_criteria_section_is_extracted_as_checks(tmp_path: Path) -> N
     ]
 
 
+def test_numbered_list_inside_a_checks_section_is_extracted(tmp_path: Path) -> None:
+    """A Checks/Verification/Validation section's content was only
+    extracted when bulleted (_BULLET), silently dropping a numbered list
+    under the same heading entirely -- no fallback caught it either, since
+    the items' text does not start with a verification verb. Found via a
+    held-out run (machina-sports/sports-skills): polymarket's "### Live
+    Odds Check" section (recognized as a Checks section via the "check"
+    substring match) had 3 real numbered checks, none extracted. Mutation:
+    narrow the marker match back to _BULLET alone -> this test goes red.
+    See docs/evidence/2026-10-04-held-out-corpora-adjudication/
+    FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "numbered-checks",
+        "---\nname: numbered-checks\ndescription: Has a numbered Checks section.\n---\n\n"
+        "### Live Odds Check\n\n"
+        "1. `search_markets --sport=nba --query=\"Lakers\"`\n"
+        "2. `get_market_prices --token_id=<id>` for live prices.\n"
+        "3. Present probabilities with liquidity caveats.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    check_texts = [c["text"] for c in artifact["skills"][0]["checks"]]
+    assert check_texts == [
+        '`search_markets --sport=nba --query="Lakers"`',
+        "`get_market_prices --token_id=<id>` for live prices.",
+        "Present probabilities with liquidity caveats.",
+    ]
+
+
 def test_numbered_comment_inside_code_fence_in_a_steps_section_is_not_a_step(
     tmp_path: Path,
 ) -> None:

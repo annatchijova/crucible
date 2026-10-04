@@ -300,20 +300,86 @@ decision about whether human confirmation satisfies this check's intent
 (it currently does not, and whether it should is not an implementer
 default).
 
+## Finding 4 (CONFIRMED, code fix applied; also surfaces a second, unfixed issue): `REQUIREMENT_WITHOUT_CHECK` fires because a Checks-section numbered list was silently dropped at extraction, not because the skill lacks checks
+
+Unlike the first three findings, `REQUIREMENT_WITHOUT_CHECK` itself held up
+well under reading: of a 10-skill sample (`espn-api`, `adonisjs`, `cors`,
+`azure-storage-blob-rust`, `fail2ban`, `documentation-and-adrs`,
+`changelog-generator`, and others), every one had real, substantive
+normative rules ("NEVER use `Access-Control-Allow-Origin: *` with
+`credentials: true`", "Do not import `azure_identity::DefaultAzureCredential`")
+and genuinely zero verification apparatus anywhere in the body — reference/
+API-documentation-style skills that state best practices but never say how
+to check compliance. This looks like the check doing exactly what it is
+designed to do, a different and more positive calibration result than the
+first three findings.
+
+But one of the 120 — `polymarket` — led to a real extraction bug one level
+down, in `compiler.py` rather than `auditor.py`. Its `### Live Odds Check`
+section (recognized as a Checks section by the same substring match
+discussed in Finding 3) contains 3 real numbered checks. `_extract_checks`'s
+in-section path only ever matched `_BULLET` (`-`/`*`/`+`), never
+`_NUMBERED` — a numbered list under a real Checks heading was invisible
+there, and the fallback "verification verb anywhere in the body" path does
+not catch it either, since the items' text ("Present probabilities with
+liquidity/freshness caveats") does not start with a verification verb.
+All 3 checks were silently lost, not merely misclassified.
+
+**Fix:** the in-section match in `_extract_checks` now uses
+`_EXPLICIT_LIST_MARKER` (bullet or numbered) instead of `_BULLET` alone.
+Measured: `REQUIREMENT_WITHOUT_CHECK` 120 -> 118 (`polymarket` and
+`web-research` both now have >=1 extracted check and leave the list). 1
+new regression test using the real found section. 775/775 tests pass,
+mutation gate unaffected (6/6 killed, 0 survived).
+
+**A second, separate, NOT-fixed issue this surfaced:** the same fix, by
+making numbered Checks-sections visible, exposed that the section-title
+match itself (`any(k in title for k in ("check", "verification",
+"validation"))`) is a loose substring match, not a heading-shape match.
+`web-research`'s `### Example 3: Fact-checking and verification` and
+`microsoft-teams`'s `### Example 2: Build a slash-command bot for system
+health checks` are ordinary worked-example walkthroughs whose *titles*
+happen to contain "verification"/"checks" as an incidental word, not
+genuine Checks sections. Post-fix, their numbered example steps (literal
+search-query strings in `web-research`; "Fetch current metrics from the
+monitoring API endpoints" in `microsoft-teams`) are now extracted as
+checks and fire `CHECK_WITHOUT_ORACLE` (+11 on this corpus; 5 of the 11
+are genuine recoveries from the same "Live Odds Check"-style template
+shared across sibling sports skills -- `kalshi`, `tennis-data`,
+`sports-news`, `regression-tester` -- the other 6 are this new mechanism).
+Worse: `web-research` left the `REQUIREMENT_WITHOUT_CHECK` list on the
+strength of these false checks, which could mask a real
+`REQUIREMENT_WITHOUT_CHECK` case behind a skill that does not actually
+have any genuine checks. This bug was always present in the heading-title
+matcher -- the numbered-list fix only made it visible, by letting a
+numbered example list reach the same section-title filter that bulleted
+content already passed through unnoticed. Narrowing the title match from
+"contains the substring anywhere" to something shape-aware (e.g. the
+heading's own words, stripped of an "Example N:" prefix, must *be*
+check/verification/validation rather than merely mention it) is a larger,
+less contained change than anything fixed in this file so far, with its
+own false-negative risk (a real `## Checks and Verification` heading must
+keep matching) -- left open rather than guessed at, same discipline as
+the other deferred mechanisms above.
+
 ## Other classes: not adjudicated this round
 
-`REQUIREMENT_WITHOUT_CHECK` (120), `MISSING_FAILURE_MODE` (41),
-`METHODOLOGICAL_VACUITY` (20), `SCOPE_TRIGGER_MISMATCH` (15),
-`UNPINNED_DEPENDENCY` (12), `CHECK_WITHOUT_ORACLE` (11),
-`UNBOUNDED_RETRY` (10), `CLAIM_WITHOUT_PROVENANCE` (6), `OVERCLAIM` (5),
+`MISSING_FAILURE_MODE` (41), `METHODOLOGICAL_VACUITY` (20),
+`SCOPE_TRIGGER_MISMATCH` (15), `UNPINNED_DEPENDENCY` (12),
+`CHECK_WITHOUT_ORACLE` (22), `UNBOUNDED_RETRY` (10),
+`CLAIM_WITHOUT_PROVENANCE` (6), `OVERCLAIM` (5),
 `UNVALIDATED_EXTERNAL_INPUT` (4), `UNBOUNDED_RESOURCE` (3),
 `SECRET_IN_OUTPUT` (2) all fired on this held-out corpus and remain
 unreviewed (`NON_DETERMINISTIC_INSTRUCTION`, `IRREVERSIBLE_WITHOUT_REVIEW`,
-and `COMMAND_ORACLE_WITHOUT_ARTIFACT` are now adjudicated, above). This
-session scoped to three classes, each fully read and adjudicated, rather
-than a shallow pass over all twelve remaining — the next increment of this
-gate should pick up one of them against the same three pinned corpora (no
-new acquisition needed).
+`COMMAND_ORACLE_WITHOUT_ARTIFACT`, and `REQUIREMENT_WITHOUT_CHECK` are now
+adjudicated, above; `CHECK_WITHOUT_ORACLE`'s count moved as a side effect
+of Finding 4 and includes the unfixed heading-title mechanism above, not a
+fresh adjudication of its own). This session scoped to four classes,
+each fully read, rather than a shallow pass over all eleven remaining —
+the next increment of this gate should pick up one of them against the
+same three pinned corpora (no new acquisition needed), and should
+probably start with the heading-title matcher question Finding 4 left
+open, since it affects what every other Checks-dependent check sees.
 
 ## Full raw results
 
@@ -323,14 +389,17 @@ repo, same as the `mukul975` precedent, since redistribution terms for
 `TerminalSkills/skills`'s 400-skill sample have not been individually
 reviewed, only the repo-level license):
 
-| File | SHA-256 | NDI | IWR | COA |
-|---|---|---|---|---|
-| `scan_collection_result_before.json` (baseline) | `6b343b5d744ff196bea10947194700679def999952301c806e1c437c7673fe19` | 39 | 54 | 106 |
-| `scan_collection_result_after.json` (post Finding 1) | `15c429397982a2d8be487855f6d5f78eeb32e69bf976062fc923f2d5c44a0f10` | 4 | 54 | 106 |
-| `scan_collection_result_after_irreversible_fix.json` (post Finding 2) | `68ef3adb8e6746ead30361b2851a41a4e6e67350e8c54b778289f73d2ab2b6dd` | 4 | 47 | 106 |
-| `scan_collection_result_after_command_oracle_fix.json` (post Finding 3) | `6279dc518cb7284b83664c5db636e22ffc244ef80294acff8b23c8c3b4580a71` | 4 | 47 | 99 |
+| File | SHA-256 | NDI | IWR | COA | RWC | CWO |
+|---|---|---|---|---|---|---|
+| `scan_collection_result_before.json` (baseline) | `6b343b5d744ff196bea10947194700679def999952301c806e1c437c7673fe19` | 39 | 54 | 106 | 120 | 11 |
+| `scan_collection_result_after.json` (post Finding 1) | `15c429397982a2d8be487855f6d5f78eeb32e69bf976062fc923f2d5c44a0f10` | 4 | 54 | 106 | 120 | 11 |
+| `scan_collection_result_after_irreversible_fix.json` (post Finding 2) | `68ef3adb8e6746ead30361b2851a41a4e6e67350e8c54b778289f73d2ab2b6dd` | 4 | 47 | 106 | 120 | 11 |
+| `scan_collection_result_after_command_oracle_fix.json` (post Finding 3) | `6279dc518cb7284b83664c5db636e22ffc244ef80294acff8b23c8c3b4580a71` | 4 | 47 | 99 | 120 | 11 |
+| `scan_collection_result_after_numbered_checks_fix.json` (post Finding 4) | `49f98f7db157dc220850e23a1ceff20b5d96719f80eb5314dfcada1705b82aad` | 4 | 47 | 101 | 118 | 22 |
 
 (NDI = `NON_DETERMINISTIC_INSTRUCTION`, IWR = `IRREVERSIBLE_WITHOUT_REVIEW`,
+RWC = `REQUIREMENT_WITHOUT_CHECK`, CWO = `CHECK_WITHOUT_ORACLE` (moved as a
+side effect of Finding 4, not independently adjudicated),
 COA = `COMMAND_ORACLE_WITHOUT_ARTIFACT`.)
 
 Retained privately alongside the cloned corpora. [The sample manifest](terminalskills-sample-manifest.txt)

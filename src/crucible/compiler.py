@@ -1102,13 +1102,21 @@ def _extract_checks(
     code_lines = _code_block_lines(lines, body_start)
 
     # 1. Extract from Checks/Verification/Validation sections.
+    #
+    # Matches _EXPLICIT_LIST_MARKER (bullet OR numbered), not _BULLET alone:
+    # a numbered list under a recognized Checks heading ("### Live Odds
+    # Check" -> 3 numbered steps) was invisible here, each item silently
+    # lost rather than extracted. Confirmed on a held-out corpus
+    # (machina-sports/sports-skills): polymarket's "Live Odds Check"
+    # section's 3 real checks never appeared in the IR at all. See
+    # docs/evidence/2026-10-04-held-out-corpora-adjudication/FINDINGS.md.
     for title, (start, end) in sections.items():
         if not any(k in title for k in ("check", "verification", "validation")):
             continue
         for index in range(start, end):
             if index in code_lines or index in seen_lines:
                 continue
-            match = _BULLET.match(lines[index])
+            match = _EXPLICIT_LIST_MARKER.match(lines[index])
             if match:
                 text, last = _join_marked_continuation(lines, index, code_lines, limit=end)
                 checks.append({
