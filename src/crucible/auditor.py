@@ -12,7 +12,7 @@ import re
 from fractions import Fraction
 from typing import Any
 
-from .compiler import _NORMATIVE_STARTERS, _ORACLE_INLINE_CODE
+from .compiler import _EXPLICIT_LIST_MARKER, _NORMATIVE_STARTERS, _ORACLE_INLINE_CODE
 from .ir import SCHEMA_VERSION, digest_payload
 
 AUDIT_VERSION = "crucible-audit/v1"
@@ -1087,6 +1087,17 @@ def _has_named_artifact(check_text: str, body_text: str) -> bool:
     pattern (fastapi x2, antigravity-support x1) -- a false positive, not
     a vague check. See docs/evidence/ for the measurement this fix is
     based on.
+
+    Also true if the check text itself ends in a colon and is immediately
+    followed by a bulleted/numbered list -- "Check these rules:" / "Verify:"
+    is a list *introduction*, not itself a checkable claim; the real check
+    items are its following list entries, each already extracted and
+    audited as their own independent check. Without this, the intro line
+    is double-counted as a spurious extra vague check alongside the real
+    ones. Measured against a held-out run (microsoft/skills,
+    TerminalSkills/skills): 8 of 106 COMMAND_ORACLE_WITHOUT_ARTIFACT
+    findings on that corpus were exactly this shape -- see docs/evidence/
+    2026-10-04-held-out-corpora-adjudication/FINDINGS.md.
     """
     if _ORACLE_INLINE_CODE.search(check_text):
         return True
@@ -1098,7 +1109,9 @@ def _has_named_artifact(check_text: str, body_text: str) -> bool:
         stripped = line.strip()
         if not stripped:
             continue
-        return stripped.startswith("```")
+        if stripped.startswith("```"):
+            return True
+        return check_text.rstrip().endswith(":") and bool(_EXPLICIT_LIST_MARKER.match(line))
     return False
 
 

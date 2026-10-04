@@ -197,11 +197,33 @@ que código en git es recuperable. Quedan documentados, no parcheados —
 cambiar esos patrones a ciegas arriesga falsos negativos reales en un check
 de seguridad. 2 tests nuevos, 772 tests en verde, mutation gate 6/6 intacto.
 
+Tercera clase adjudicada en la misma corrida: `COMMAND_ORACLE_WITHOUT_ARTIFACT`
+(106 findings) — mucho más heterogénea que las dos anteriores, al menos 5
+mecanismos distintos leyendo las 106 una por una: (1) líneas de introducción
+a una lista ("Check these rules:", "Verify:") contadas como check vago
+extra, encima de los checks reales de la lista que ya se extraen por
+separado — 8/106, arreglado reusando `_EXPLICIT_LIST_MARKER` del compilador;
+(2) herramienta/URL nombrada en texto plano (Grok Debugger, VoiceOver, GROQ,
+Nikto...) — ~15, ya es una limitación documentada en el propio docstring del
+check, no un bug oculto; (3) texto que no es un check en absoluto (nota de
+arquitectura, advertencia de seguridad, la propia descripción del skill)
+que arrancó con un verbo-trigger por casualidad — ~15-18, requeriría tocar
+qué cuenta como "check" en la extracción, superficie mucho más grande y
+riesgosa; (4) instrucciones de confirmación humana, no verificables por
+máquina — ~3-4, pregunta de producto (¿cuenta un humano confirmando como
+bound válido?), no mía para decidir; (5) el resto (~60-65) parece
+genuinamente vago sin artefacto nombrado — el check funcionando como se
+espera. Solo se arregló (1), el mecanismo limpio y de bajo riesgo: medido
+106 → 99 (7 de los 8 esperados; el octavo introduce una tabla markdown, no
+una lista, caso correctamente fuera de alcance). 2 tests nuevos, 774 tests
+en verde, mutation gate 6/6 intacto. Los otros 4 mecanismos quedan
+documentados sin tocar — necesitan criterio de producto o un cambio mucho
+más grande, no un regex ciego.
+
 El resto de las clases de finding sobre este mismo corpus
-(`COMMAND_ORACLE_WITHOUT_ARTIFACT` 106, `REQUIREMENT_WITHOUT_CHECK` 120, y
-10 clases más) quedó sin adjudicar — el gate de evaluación independiente
-sigue abierto, este incremento cerró dos clases de quince. Detalle
-completo, manifiesto de muestreo y digests en
+(`REQUIREMENT_WITHOUT_CHECK` 120, y 11 clases más) quedó sin adjudicar — el
+gate de evaluación independiente sigue abierto, este incremento cerró tres
+clases de quince. Detalle completo, manifiesto de muestreo y digests en
 docs/evidence/2026-10-04-held-out-corpora-adjudication/FINDINGS.md.
 
 ---

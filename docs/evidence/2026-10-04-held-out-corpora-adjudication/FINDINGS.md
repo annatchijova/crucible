@@ -209,20 +209,111 @@ security check that exists specifically because git history is not always
 checked before an agent acts?) — left open rather than guessed at, same
 discipline as `CHECK_WITHOUT_ORACLE`'s mechanism C in the 2026-10-02 audit.
 
+## Finding 3 (CONFIRMED, narrow code fix applied): `COMMAND_ORACLE_WITHOUT_ARTIFACT`'s list-introduction line was double-counted as a spurious extra vague check
+
+This class is far messier than the first two — reading all 106 findings
+line-by-line (with source context, not just the extracted check text) found
+at least five distinct shapes, only one of which was safe to fix this round:
+
+- **List introduction, double-counted (8/106, fixed):** a check whose text
+  is only a lead-in ending in a colon — `"Check these rules:"`,
+  `"Verify:"`, `"Run experiments in this order of impact:"` — is not itself
+  a checkable claim; the real check items are the following list entries,
+  which the extractor *already* captures as their own independent checks
+  (confirmed directly: `dns-record-analyzer`'s real checks at lines 81-84
+  were extracted correctly and separately from its spurious intro lines at
+  52 and 73). The intro line was flagged as an extra, redundant vague check
+  on top of the real ones.
+- **Named tool/script/URL by plain text (~15, not fixed — already a
+  documented limitation):** `burp-suite` ("Confirm a hit manually in
+  Repeater..."), `react-aria` ("Test with VoiceOver (Mac), NVDA
+  (Windows)..."), `logstash` x2 ("...with the Grok Debugger..."), `nikto`
+  ("Run Nikto early..."), `sanity` ("Query with GROQ projections..."),
+  `microsoft-teams` ("Test Adaptive Cards at adaptivecards.io/designer..."),
+  `whisper` ("Run pyannote speaker diarization..."), and others — each
+  names a concrete tool, but by plain English name rather than inline
+  code, which `_has_named_artifact`'s own docstring already discloses as
+  out of scope ("a check may reference an external script or tool by
+  plain-text name... which this heuristic cannot distinguish from a
+  genuinely vague claim"). Not a hidden bug; a already-disclosed,
+  now-measured limitation.
+- **Not a check at all — architecture/deployment/operational text that
+  happens to start with a verification-adjacent verb (~15-18, not fixed —
+  needs decompiler-level judgment, not an auditor-level pattern):** `neon`
+  ("Run migrations on the main branch; feature branches inherit schema
+  automatically" — a behavior statement), `thanos` ("Run exactly one
+  compactor instance per object storage bucket to avoid data corruption" —
+  an architectural constraint), `tooljet` ("Query results and component
+  state live in the browser: do not put secrets in expressions..." — a
+  security warning), `value-based-selling` ("Demonstrate how your approach
+  is different..." — sales methodology; "demonstrate" is a literal
+  verification-verb trigger, wrong domain entirely), `unusual-whales-api`
+  ("Query the Unusual Whales API for institutional-grade market data..." —
+  the skill's own top-level description, matched by "Query" at sentence
+  start). These are extraction-scope false positives, not auditor-pattern
+  false positives — the text was never a check to begin with; fixing this
+  means tightening what `_extract_checks` admits as a check, a much larger
+  and riskier surface than anything touched so far in this file.
+- **Not machine-verifiable by construction — a human-confirmation
+  instruction, not a command oracle (~3-4, not fixed):** `cv-builder`
+  ("Confirm the update with the user"), `polymarket-trading` ("Confirm the
+  user explicitly requested a trading/order-management action..."),
+  `machina` ("Run this in the developer's terminal if you have permission,
+  or ask them to run it.") — these ask a *person*, not a script; whether
+  that should count as "command oracle without artifact" at all is a
+  product question (is a human confirmation gate a valid bound, or does
+  this check only mean machine-executable verification?), not an
+  extraction bug.
+- **Genuinely vague, no named artifact, plausible true positive (the
+  remaining ~60-65):** `frontend-design-review` ("Verify design tokens are
+  used (not hardcoded values)"), `restic` ("Test restores regularly. A
+  backup you've never tested restoring from is not a backup — it's a
+  hope."), `regression-tester` (four separate findings, all genuine
+  testing-methodology prose with no named script), `cursor-ai` and
+  `openai-realtime` sharing an identical generic three-step install-guide
+  template ("Check system requirements and prerequisites" / "Verify the
+  setup works correctly" / "Test and validate the output") — vague by
+  construction, and notably templated the same way Finding 1's mechanism
+  was, though here the vagueness is real regardless of the repetition.
+  These look like the check doing exactly what it is designed to do.
+
+**Fix applied (list-introduction only):** `_has_named_artifact` now also
+returns true when the check text ends in `:` and the first non-blank line
+immediately following it starts with an explicit bullet/numbered marker
+(reusing the compiler's own `_EXPLICIT_LIST_MARKER`, not a new pattern).
+Measured: 106 -> 99 on the held-out corpus, 7 of the 8 predicted cases
+(the 8th, `agent-memory` line 30, introduces a **markdown table**, not a
+bulleted/numbered list — correctly left alone; a table row is not
+independently extracted as its own check the way a bullet is, so the same
+"already captured elsewhere" justification does not apply, and extending
+the fix to tables was not verified safe). 2 new regression tests (a real
+positive case mirroring `dns-record-analyzer`, and a negative control
+proving the exemption requires an actual following list, not just a
+trailing colon). 774/774 tests pass, mutation gate unaffected (6/6 killed,
+0 survived).
+
+**Deliberately not fixed this round:** the other four mechanisms above.
+Each needs either accepting a known, already-documented scope limitation
+(named-tool-by-text), a much larger and riskier change to what counts as
+a "check" at extraction time (wrong-domain/architecture text), or a product
+decision about whether human confirmation satisfies this check's intent
+(it currently does not, and whether it should is not an implementer
+default).
+
 ## Other classes: not adjudicated this round
 
-`COMMAND_ORACLE_WITHOUT_ARTIFACT` (106), `REQUIREMENT_WITHOUT_CHECK` (120),
-`MISSING_FAILURE_MODE` (41), `METHODOLOGICAL_VACUITY` (20),
-`SCOPE_TRIGGER_MISMATCH` (15), `UNPINNED_DEPENDENCY` (12),
-`CHECK_WITHOUT_ORACLE` (11), `UNBOUNDED_RETRY` (10),
-`CLAIM_WITHOUT_PROVENANCE` (6), `OVERCLAIM` (5),
+`REQUIREMENT_WITHOUT_CHECK` (120), `MISSING_FAILURE_MODE` (41),
+`METHODOLOGICAL_VACUITY` (20), `SCOPE_TRIGGER_MISMATCH` (15),
+`UNPINNED_DEPENDENCY` (12), `CHECK_WITHOUT_ORACLE` (11),
+`UNBOUNDED_RETRY` (10), `CLAIM_WITHOUT_PROVENANCE` (6), `OVERCLAIM` (5),
 `UNVALIDATED_EXTERNAL_INPUT` (4), `UNBOUNDED_RESOURCE` (3),
 `SECRET_IN_OUTPUT` (2) all fired on this held-out corpus and remain
-unreviewed (`NON_DETERMINISTIC_INSTRUCTION` and `IRREVERSIBLE_WITHOUT_REVIEW`
-are now adjudicated, above). This session scoped to two classes, each fully
-read and adjudicated, rather than a shallow pass over all fifteen — the next
-increment of this gate should pick up one of the remaining classes against
-the same three pinned corpora (no new acquisition needed).
+unreviewed (`NON_DETERMINISTIC_INSTRUCTION`, `IRREVERSIBLE_WITHOUT_REVIEW`,
+and `COMMAND_ORACLE_WITHOUT_ARTIFACT` are now adjudicated, above). This
+session scoped to three classes, each fully read and adjudicated, rather
+than a shallow pass over all twelve remaining — the next increment of this
+gate should pick up one of them against the same three pinned corpora (no
+new acquisition needed).
 
 ## Full raw results
 
@@ -232,11 +323,15 @@ repo, same as the `mukul975` precedent, since redistribution terms for
 `TerminalSkills/skills`'s 400-skill sample have not been individually
 reviewed, only the repo-level license):
 
-| File | SHA-256 | `NON_DETERMINISTIC_INSTRUCTION` | `IRREVERSIBLE_WITHOUT_REVIEW` |
-|---|---|---|---|
-| `scan_collection_result_before.json` (baseline) | `6b343b5d744ff196bea10947194700679def999952301c806e1c437c7673fe19` | 39 | 54 |
-| `scan_collection_result_after.json` (post Finding 1 fix) | `15c429397982a2d8be487855f6d5f78eeb32e69bf976062fc923f2d5c44a0f10` | 4 | 54 |
-| `scan_collection_result_after_irreversible_fix.json` (post Finding 2 fix) | `68ef3adb8e6746ead30361b2851a41a4e6e67350e8c54b778289f73d2ab2b6dd` | 4 | 47 |
+| File | SHA-256 | NDI | IWR | COA |
+|---|---|---|---|---|
+| `scan_collection_result_before.json` (baseline) | `6b343b5d744ff196bea10947194700679def999952301c806e1c437c7673fe19` | 39 | 54 | 106 |
+| `scan_collection_result_after.json` (post Finding 1) | `15c429397982a2d8be487855f6d5f78eeb32e69bf976062fc923f2d5c44a0f10` | 4 | 54 | 106 |
+| `scan_collection_result_after_irreversible_fix.json` (post Finding 2) | `68ef3adb8e6746ead30361b2851a41a4e6e67350e8c54b778289f73d2ab2b6dd` | 4 | 47 | 106 |
+| `scan_collection_result_after_command_oracle_fix.json` (post Finding 3) | `6279dc518cb7284b83664c5db636e22ffc244ef80294acff8b23c8c3b4580a71` | 4 | 47 | 99 |
+
+(NDI = `NON_DETERMINISTIC_INSTRUCTION`, IWR = `IRREVERSIBLE_WITHOUT_REVIEW`,
+COA = `COMMAND_ORACLE_WITHOUT_ARTIFACT`.)
 
 Retained privately alongside the cloned corpora. [The sample manifest](terminalskills-sample-manifest.txt)
 (names only, no source text) is committed, so the exact 400-skill sample is

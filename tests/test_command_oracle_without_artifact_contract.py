@@ -100,6 +100,49 @@ def test_not_flagged_for_check_followed_by_fenced_block() -> None:
     assert len(findings) == 0
 
 
+def test_not_flagged_for_colon_intro_followed_by_list() -> None:
+    """Invariant: a check whose text ends in ':' and introduces a
+    following bulleted/numbered list is NOT itself a checkable claim --
+    the real check items are the list entries, each already extracted and
+    audited independently. Without this, the intro line was double-
+    counted as a spurious extra vague check. Found via a held-out run
+    (dns-record-analyzer, TerminalSkills/skills): "Check these rules:"
+    followed by four real bulleted checks was flagged on top of them.
+    See docs/evidence/2026-10-04-held-out-corpora-adjudication/FINDINGS.md.
+    Mutation: drop the list-marker lookahead -> this test goes red."""
+    audit = _audit({
+        "test": (
+            "---\nname: test\ndescription: T.\nlicense: Apache-2.0\n---\n\n"
+            "# T\n\nRecords MUST be valid.\n\n"
+            "## Checks\n\n"
+            "Check these rules:\n\n"
+            "- MX records exist and resolve to valid hostnames\n"
+            "- Hostnames have valid A/AAAA records\n"
+        ),
+    })
+    findings = _findings_by_class(audit, "COMMAND_ORACLE_WITHOUT_ARTIFACT")
+    assert len(findings) == 0
+
+
+def test_flagged_for_colon_intro_not_followed_by_list() -> None:
+    """Invariant: a check text ending in ':' is only exempt when a list
+    actually follows -- an unrelated colon-terminated vague check followed
+    by prose (not a list) is still flagged.
+    Mutation: exempt any colon-terminated check regardless of what
+    follows -> this test goes red."""
+    audit = _audit({
+        "test": (
+            "---\nname: test\ndescription: T.\nlicense: Apache-2.0\n---\n\n"
+            "# T\n\nThe result MUST be correct.\n\n"
+            "## Checks\n\n"
+            "- Verify the result:\n\n"
+            "Some unrelated explanation paragraph goes here, not a list.\n"
+        ),
+    })
+    findings = _findings_by_class(audit, "COMMAND_ORACLE_WITHOUT_ARTIFACT")
+    assert len(findings) == 1
+
+
 def test_flagged_when_fenced_block_is_not_adjacent() -> None:
     """Invariant: a fenced block elsewhere in the body, separated by
     unrelated prose, does NOT exempt a vague check -- only a block
