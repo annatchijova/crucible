@@ -88,6 +88,83 @@ def test_unbounded_retry_does_not_fire_on_backoff(tmp_path: Path) -> None:
     assert "UNBOUNDED_RETRY" not in _classes(audit["findings"])
 
 
+def test_unbounded_retry_does_not_fire_on_backing_off(tmp_path: Path) -> None:
+    """Invariant: the gerund form "backing off" is a valid bound too, not
+    just the compound noun "backoff".
+    Mutation: revert to \\bbackoff\\b only -> this test goes red. See
+    docs/evidence/2026-10-04-unbounded-retry-audit/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "retrier",
+        "---\nname: retrier\ndescription: Retry operations.\n---\n\n"
+        "Handle rate limits by backing off; the SDK will retry automatically.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "UNBOUNDED_RETRY" not in _classes(audit["findings"])
+
+
+def test_unbounded_retry_does_not_fire_on_written_out_count(tmp_path: Path) -> None:
+    """Invariant: a written-out count ("twice") is a valid bound, not
+    just a digit count.
+    Mutation: remove the once/twice/thrice pattern -> this test goes red."""
+    _write_skill(
+        tmp_path,
+        "retrier",
+        "---\nname: retrier\ndescription: Retry operations.\n---\n\n"
+        "The client will retry twice before giving up.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "UNBOUNDED_RETRY" not in _classes(audit["findings"])
+
+
+def test_unbounded_retry_does_not_fire_on_plural_limits(tmp_path: Path) -> None:
+    """Invariant: "limits" (plural) is a valid bound, not just "limit".
+    Mutation: revert to \\blimit\\b only -> this test goes red."""
+    _write_skill(
+        tmp_path,
+        "retrier",
+        "---\nname: retrier\ndescription: Retry operations.\n---\n\n"
+        "Set retry limits to prevent infinite loops.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "UNBOUNDED_RETRY" not in _classes(audit["findings"])
+
+
+def test_unbounded_retry_does_not_fire_on_negative_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST_NOT/SHOULD_NOT/NEVER rule that forbids an
+    unbounded retry is not instructing one.
+    Mutation: remove the _NEGATIVE_MODALITIES guard -> this test goes
+    red. See docs/evidence/2026-10-04-unbounded-retry-audit/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "retrier",
+        "---\nname: retrier\ndescription: No unbounded retry.\n---\n\n"
+        "Operations MUST NOT retry failed orders in a loop.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "UNBOUNDED_RETRY" not in _classes(audit["findings"])
+
+
+def test_unbounded_retry_still_fires_on_positive_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST rule that genuinely instructs an unbounded
+    retry must still fire -- the negative-modality guard must not
+    suppress positive-modality rules.
+    Mutation: over-broaden the _NEGATIVE_MODALITIES guard -> this test
+    goes red."""
+    _write_skill(
+        tmp_path,
+        "retrier",
+        "---\nname: retrier\ndescription: Unbounded retry.\n---\n\n"
+        "Operations MUST retry failed orders in a loop.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "UNBOUNDED_RETRY" in _classes(audit["findings"])
+
+
 # ---------------------------------------------------------------------------
 # LLM_IN_DECISION_PATH
 # ---------------------------------------------------------------------------

@@ -1259,16 +1259,24 @@ _RETRY_PATTERNS = [
 ]
 
 # Patterns that indicate an explicit bound on retries.
+#
+# "limit"/"backoff" gained a plural/gerund form, and a written-out count
+# ("twice", "once") is accepted alongside a digit count -- found via a
+# held-out run: "Set retry limits (typically 3)..." and "...backing off;
+# the SDKs retry some errors twice by default" both state a real bound
+# that these patterns missed. See docs/evidence/2026-10-04-unbounded-
+# retry-audit/FINDINGS.md.
 _RETRY_BOUND_PATTERNS = [
     re.compile(r"\b(?:max(?:imum)?|at\s+most|limit(?:ed)?\s+to)\s+\d+", re.IGNORECASE),
     re.compile(r"\b\d+\s*(?:times|attempts|retries|iterations)\b", re.IGNORECASE),
+    re.compile(r"\b(?:once|twice|thrice)\b", re.IGNORECASE),
     re.compile(r"\btimeout\b", re.IGNORECASE),
-    re.compile(r"\bbackoff\b", re.IGNORECASE),
+    re.compile(r"\bback(?:ing)?\s*off\b", re.IGNORECASE),
     re.compile(r"\bcircuit\s+breaker\b", re.IGNORECASE),
     re.compile(r"\bbounded\b", re.IGNORECASE),
     re.compile(r"\bfinite\b", re.IGNORECASE),
     re.compile(r"\bbudget\b", re.IGNORECASE),
-    re.compile(r"\blimit\b", re.IGNORECASE),
+    re.compile(r"\blimits?\b", re.IGNORECASE),
     re.compile(r"\bidempotent\b", re.IGNORECASE),
 ]
 
@@ -1297,6 +1305,15 @@ def _check_unbounded_retry(
         source_path = skill["identity"]["source_path"]
         # Check rules.
         for rule in skill.get("rules", []):
+            # A rule whose own modality prohibits the behavior
+            # (MUST_NOT/SHOULD_NOT/NEVER) cannot be instructing an
+            # unbounded retry -- it is forbidding one. E.g. "Do not
+            # retry failed orders in a loop." Same guard already applied
+            # to NON_DETERMINISTIC_INSTRUCTION and IRREVERSIBLE_WITHOUT_
+            # REVIEW this session. See docs/evidence/2026-10-04-
+            # unbounded-retry-audit/FINDINGS.md.
+            if rule.get("modality") in _NEGATIVE_MODALITIES:
+                continue
             text = rule.get("text", "")
             if not _has_unbounded_retry(text):
                 continue
