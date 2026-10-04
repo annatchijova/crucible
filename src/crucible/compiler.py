@@ -38,6 +38,14 @@ _BOILERPLATE_SECTIONS = frozenset({
     "overview", "when to use", "prerequisites", "references", "key concepts",
 })
 
+# A "## Examples" sub-heading: "Example 1: ...", "Example 2: ...", with or
+# without a number. Used by _extract_checks to exclude narrative usage
+# walkthroughs from the Checks/Verification/Validation section match, even
+# when their own descriptive suffix happens to contain check-flavored
+# vocabulary. See docs/evidence/2026-10-04-held-out-corpora-my-classes/
+# FINDINGS.md.
+_EXAMPLE_HEADING = re.compile(r"^example\s*\d*\b", re.IGNORECASE)
+
 # ADR-0019 Option B, part 1: a heading of the shape "Step 1:", "Step 2a —",
 # "Step 5 - Title". Anchored at the start of the heading's own title text
 # (not a substring match anywhere in the line) and requires whitespace
@@ -645,13 +653,26 @@ def _code_block_lines(lines: list[str], body_start: int) -> set[int]:
 
 # Trigger extraction patterns. These capture the clause that describes
 # when the skill should be activated, from the description text.
+#
+# The boundary is `[.;](?=\s|\Z)`, not a bare `[.;]`: a period only ends
+# the clause when followed by whitespace or the string's end -- a period
+# immediately followed by a non-space character (a dotfile like
+# `.windsurfrules`, a file extension, a decimal) is not a sentence
+# boundary. Found via a held-out run (TerminalSkills/skills):
+# "Use when a user asks to set up .windsurfrules or .windsurf/rules,
+# write global..." was truncated to "a user asks to set up" at the
+# literal period preceding the filename, discarding the rest of the real
+# trigger clause -- SCOPE_TRIGGER_MISMATCH then compared that fragment's
+# four generic tokens against the skill's real content and found no
+# overlap, for a skill whose actual trigger was never evaluated. See
+# docs/evidence/2026-10-04-held-out-corpora-adjudication/FINDINGS.md.
 _TRIGGER_PATTERNS = [
     re.compile(
-        r"\buse\s+(?:this skill\s+)?(?:whenever|when|if|for)\b\s*(.+?)(?:[.;]|\Z)",
+        r"\buse\s+(?:this skill\s+)?(?:whenever|when|if|for)\b\s*(.+?)(?:[.;](?=\s|\Z)|\Z)",
         re.IGNORECASE | re.DOTALL,
     ),
     re.compile(
-        r"\btrigger(?:s|ed)?\s+(?:on|when|for)\b\s*(.+?)(?:[.;]|\Z)",
+        r"\btrigger(?:s|ed)?\s+(?:on|when|for)\b\s*(.+?)(?:[.;](?=\s|\Z)|\Z)",
         re.IGNORECASE | re.DOTALL,
     ),
 ]
@@ -1094,6 +1115,20 @@ def _extract_checks(
     _PROCEDURAL_SECTIONS gap. See docs/evidence/2026-10-02-requirement-
     without-check-audit/FINDINGS.md.
 
+    An "Example N: ..." sub-heading is excluded even when its own
+    descriptive suffix contains "check"/"verification"/"validation"
+    ("Example 3: Fact-checking and verification", "Example 2: Build a
+    slash-command bot for system health checks") -- these are narrative
+    usage walkthroughs under a top-level "## Examples" section, not a
+    normative checklist, the same non-normative role "## Examples"
+    already has everywhere else in this compiler. A title-shape filter
+    alone cannot otherwise separate this from a genuine, non-Example
+    checks section with a similarly check-flavored name ("Futures Market
+    Check", "Live Odds Check" -- real 3-step verification procedures,
+    confirmed by reading their content) -- the title match had to gain a
+    narrow, principled exception, not become shape-aware in general. See
+    docs/evidence/2026-10-04-held-out-corpora-my-classes/FINDINGS.md.
+
     Code blocks and headings are skipped. Lines already extracted from
     a Checks/Verification/Validation section are not re-extracted.
     """
@@ -1111,6 +1146,8 @@ def _extract_checks(
     # section's 3 real checks never appeared in the IR at all. See
     # docs/evidence/2026-10-04-held-out-corpora-adjudication/FINDINGS.md.
     for title, (start, end) in sections.items():
+        if _EXAMPLE_HEADING.match(title):
+            continue
         if not any(k in title for k in ("check", "verification", "validation")):
             continue
         for index in range(start, end):

@@ -143,6 +143,45 @@ Both sessions reading the same real examples and reaching the same
 conclusions independently is treated as corroboration, not as one
 session's work superseding the other's.
 
+## Update, same date: mechanism E fixed
+
+Investigated the "shape-aware match is riskier" concern both sessions
+raised, and found the actual safe boundary: the false cases
+(`web-research`'s "Example 3: Fact-checking and verification",
+`microsoft-teams`'s "Example 2: ...system health checks") are all
+`### Example N: ...` sub-headings under a top-level `## Examples`
+section -- narrative usage walkthroughs, a role `## Examples` already
+has everywhere else in this compiler, not a checklist. The genuine
+cases (`kalshi`'s "Futures Market Check", `polymarket`'s "Live Odds
+Check") are real, non-Example, 3-step verification procedures with the
+same "N-word phrase ending in Check" shape -- title shape alone cannot
+tell them apart, but the `Example N:` prefix can, cleanly. A corpus-wide
+scan found dozens of `Example N:` headings containing check vocabulary
+across the held-out TerminalSkills repo alone, not just the 2 originally
+sampled.
+
+Fix: `_EXAMPLE_HEADING` (`^example\s*\d*\b`) excludes any such heading
+from `_extract_checks`'s Checks/Verification/Validation section match.
+2 new compiler-level tests (the exclusion, and a negative control
+proving "Futures Market Check" -- same shape, no "Example" prefix --
+still matches). Verified by diffing, not just counting:
+
+| Corpus | CHECK_WITHOUT_ORACLE before -> after | REQUIREMENT_WITHOUT_CHECK before -> after |
+|---|---|---|
+| terminalskills | 14 -> 8 | 109 -> 110 |
+| mukul975 | 326 -> 326 (0 removed, 0 added) | 23 -> 23 |
+| Author's own corpus | 7 -> 7 | 21 -> 21 |
+
+Zero effect on mukul975/author (neither corpus has a real, content-
+bearing `## Example N:` section matching this pattern -- the `Example:
+Validate MS17-010...`-style lines found earlier in mukul975 were shell
+comments inside code fences, already excluded from `sections` entirely,
+not real headings this fix could touch). `REQUIREMENT_WITHOUT_CHECK`
+rose by 1 on terminalskills -- the same "noise down, signal up" pattern
+the parallel session's own fixes produced: a skill that looked like it
+had checks (via the now-excluded Example-section extraction) correctly
+surfaces as lacking them. Full suite and mutation gate green.
+
 ## What this does and does not resolve
 
 No code changed by this investigation. Mechanism E (substring

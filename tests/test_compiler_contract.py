@@ -514,6 +514,60 @@ def test_numbered_list_inside_a_checks_section_is_extracted(tmp_path: Path) -> N
     ]
 
 
+def test_example_heading_with_check_vocabulary_is_not_a_checks_section(
+    tmp_path: Path,
+) -> None:
+    """An "Example N: ..." sub-heading whose own descriptive suffix
+    happens to contain "check"/"verification"/"validation" is a
+    narrative usage walkthrough under "## Examples", not a normative
+    checklist -- its bullets must not be extracted as checks. Found on
+    a held-out corpus (TerminalSkills/skills): web-research's "###
+    Example 3: Fact-checking and verification" had its literal quoted
+    search-query strings extracted as vague checks. Mutation: remove the
+    _EXAMPLE_HEADING exclusion -> this test goes red. See
+    docs/evidence/2026-10-04-held-out-corpora-my-classes/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "example-with-check-words",
+        "---\nname: example-with-check-words\ndescription: Has an Example heading with check vocabulary.\n---\n\n"
+        "## Examples\n\n"
+        "### Example 3: Fact-checking and verification\n\n"
+        '1. "microservices deployment frequency study"\n'
+        '2. "DORA metrics microservices research"\n',
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    assert artifact["skills"][0]["checks"] == []
+
+
+def test_non_example_heading_with_check_vocabulary_still_a_checks_section(
+    tmp_path: Path,
+) -> None:
+    """Negative control: a genuine Checks-shaped heading that is NOT an
+    Example sub-heading must still be recognized, even though its title
+    has the same "N-word phrase ending in Check" shape as the excluded
+    case above -- the _EXAMPLE_HEADING exclusion must be specific to the
+    "Example" prefix, not a general narrowing of the title match.
+    Mutation: over-broaden the exclusion -> this test goes red."""
+    _write_skill(
+        tmp_path,
+        "futures-market-check",
+        "---\nname: futures-market-check\ndescription: Has a genuine Checks-shaped heading.\n---\n\n"
+        "### Futures Market Check\n\n"
+        "1. `get_markets --series_ticker=<ticker> --status=open`\n"
+        "2. Sort by `last_price` descending.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    check_texts = [c["text"] for c in artifact["skills"][0]["checks"]]
+    assert check_texts == [
+        "`get_markets --series_ticker=<ticker> --status=open`",
+        "Sort by `last_price` descending.",
+    ]
+
+
 def test_numbered_comment_inside_code_fence_in_a_steps_section_is_not_a_step(
     tmp_path: Path,
 ) -> None:
