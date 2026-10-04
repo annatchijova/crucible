@@ -23,7 +23,7 @@ _URL = re.compile(r"https?://[^\s)>]+")
 _HEADING = re.compile(r"^(#{1,6})\s+(?P<title>.+?)\s*$")
 _BULLET = re.compile(r"^\s*[-*+]\s+(?P<value>.+?)\s*$")
 _NUMBERED = re.compile(r"^\s*(?P<num>\d+)\.\s+(?P<value>.+?)\s*$")
-_PROCEDURAL_SECTIONS = {"steps", "procedure", "how to", "how", "process", "workflow", "method"}
+_PROCEDURAL_SECTIONS = {"steps", "procedure", "how to", "how", "process", "workflow", "method", "instructions"}
 
 # ADR-0019 Option B, part 2: universal boilerplate sections that appear in
 # nearly every skill in this corpus style regardless of whether the skill
@@ -64,6 +64,23 @@ _EXAMPLE_HEADING = re.compile(r"^example\s*\d*\b", re.IGNORECASE)
 _STEP_HEADING = re.compile(
     r"^step\s+\d+[a-z]?\b[:\-–—.\s]*(?P<title>.*)$",
     re.IGNORECASE,
+)
+
+# A bare numbered sub-heading ("### 1. Scaffold the endpoint"), with no
+# "Step" word. Unlike _STEP_HEADING, this is NOT scanned globally -- a
+# bare number is too weak a signal on its own (a numbered FAQ entry or
+# reference list is not a step). _extract_procedural_steps only applies
+# it to headings already inside a section whose own title matched
+# _PROCEDURAL_SECTIONS, where a numbered sub-heading is unambiguously a
+# step. Found via a held-out run (TerminalSkills/skills): "## Instructions"
+# -> "### 1. Scaffold the webhook endpoint" -> "### 2. ..." is a common
+# convention this corpus uses instead of a flat numbered list, and was
+# completely invisible to step extraction (not a numbered list line, and
+# not a "Step N:" heading) -- the skill's real procedure was silently
+# lost, not merely misclassified. See docs/evidence/2026-10-04-held-out-
+# corpora-adjudication/FINDINGS.md.
+_NUMBERED_SUBHEADING = re.compile(
+    r"^\d+[a-z]?\b[:\-–—.\s]*(?P<title>.*)$",
 )
 
 # Code fence detection for skipping code blocks during extraction. Leading
@@ -1043,6 +1060,46 @@ def _extract_procedural_steps(
         if not step_match:
             continue
         step_text = step_match.group("title").strip() or raw_title
+        steps.append({
+            "id": f"step-{len(steps) + 1:04d}",
+            "text": step_text,
+            "source_span": {"line": index + 1, "column": 1},
+        })
+        seen_lines.add(index)
+
+    # 5. Extract bare numbered sub-headings ("### 1. Title", no "Step"
+    #    word) nested under a heading whose own title matched
+    #    _PROCEDURAL_SECTIONS -- e.g. "## Instructions" -> "### 1.
+    #    Scaffold the endpoint" -> "### 2. ...". _section_ranges does not
+    #    nest (any heading, regardless of level, ends the previous one's
+    #    range), so path 1 above never sees this shape: by the time a
+    #    sub-heading line is reached, it has already started its OWN
+    #    section entry titled "1. scaffold the endpoint", which does not
+    #    match _PROCEDURAL_SECTIONS. This pass tracks real heading
+    #    hierarchy by level (the number of leading '#'s) to find each
+    #    heading's nearest shallower procedural ancestor, scoped
+    #    narrowly: a bare number is only a step inside a confirmed
+    #    procedural ancestor, never scanned globally like _STEP_HEADING.
+    procedural_ancestor_level: int | None = None
+    for index in range(body_start, len(lines)):
+        if index in code_lines:
+            continue
+        heading_match = _HEADING.match(lines[index])
+        if not heading_match:
+            continue
+        level = len(heading_match.group(1))
+        raw_title = heading_match.group("title").strip()
+        if any(ps in raw_title.lower() for ps in _PROCEDURAL_SECTIONS):
+            procedural_ancestor_level = level
+            continue
+        if procedural_ancestor_level is not None and level <= procedural_ancestor_level:
+            procedural_ancestor_level = None
+        if procedural_ancestor_level is None or index in seen_lines:
+            continue
+        sub_match = _NUMBERED_SUBHEADING.match(raw_title)
+        if not sub_match:
+            continue
+        step_text = sub_match.group("title").strip() or raw_title
         steps.append({
             "id": f"step-{len(steps) + 1:04d}",
             "text": step_text,

@@ -568,6 +568,84 @@ def test_non_example_heading_with_check_vocabulary_still_a_checks_section(
     ]
 
 
+def test_instructions_section_with_direct_bullets_is_extracted_as_steps(
+    tmp_path: Path,
+) -> None:
+    """"## Instructions" was missing from _PROCEDURAL_SECTIONS even though
+    it is one of the most common procedural headings in real skills --
+    its direct bullet/numbered content was invisible to step extraction.
+    Mutation: remove "instructions" from _PROCEDURAL_SECTIONS -> this
+    test goes red. See docs/evidence/2026-10-04-held-out-corpora-
+    adjudication/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "has-instructions",
+        "---\nname: has-instructions\ndescription: test\n---\n\n"
+        "## Instructions\n\n"
+        "1. Create the client.\n"
+        "2. Call the API.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    step_texts = [s["text"] for s in artifact["skills"][0]["procedural_steps"]]
+    assert step_texts == ["Create the client.", "Call the API."]
+
+
+def test_numbered_subheading_under_instructions_is_extracted_as_a_step(
+    tmp_path: Path,
+) -> None:
+    """A bare numbered sub-heading ("### 1. Title", no "Step" word) nested
+    under a heading already confirmed procedural ("## Instructions") is a
+    step -- _section_ranges does not nest, so by the time the sub-heading
+    line is reached it has already started its own, non-procedural-titled
+    section; step extraction needs real heading-hierarchy tracking to see
+    it at all. Found via a held-out run (TerminalSkills/skills):
+    webhook-processor's "## Instructions" -> "### 1. Scaffold the webhook
+    endpoint" -> "### 2. ..." convention lost all 4 of its real steps
+    entirely, not merely misclassified.
+    Mutation: remove the heading-hierarchy pass -> this test goes red."""
+    _write_skill(
+        tmp_path,
+        "numbered-subheadings",
+        "---\nname: numbered-subheadings\ndescription: test\n---\n\n"
+        "## Instructions\n\n"
+        "### 1. Scaffold the endpoint\n\n"
+        "Create an HTTP endpoint that accepts POST requests.\n\n"
+        "### 2. Verify the signature\n\n"
+        "Check the request signature before processing.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    step_texts = [s["text"] for s in artifact["skills"][0]["procedural_steps"]]
+    assert step_texts == ["Scaffold the endpoint", "Verify the signature"]
+
+
+def test_numbered_heading_outside_a_procedural_ancestor_is_not_a_step(
+    tmp_path: Path,
+) -> None:
+    """Negative control: a bare numbered heading is only a step inside a
+    confirmed procedural ancestor -- a numbered FAQ entry or reference
+    heading elsewhere must not be extracted, since a bare number alone is
+    too weak a signal (unlike the "step"-anchored _STEP_HEADING, which is
+    scanned globally).
+    Mutation: scan _NUMBERED_SUBHEADING globally instead of per-ancestor
+    -> this test goes red."""
+    _write_skill(
+        tmp_path,
+        "numbered-faq",
+        "---\nname: numbered-faq\ndescription: test\n---\n\n"
+        "## FAQ\n\n"
+        "### 1. What is this?\n\n"
+        "An example skill.\n",
+    )
+
+    artifact = compile_corpus(tmp_path)
+
+    assert artifact["skills"][0]["procedural_steps"] == []
+
+
 def test_numbered_comment_inside_code_fence_in_a_steps_section_is_not_a_step(
     tmp_path: Path,
 ) -> None:
