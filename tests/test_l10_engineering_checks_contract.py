@@ -72,6 +72,44 @@ def test_secret_in_output_fires_on_step(tmp_path: Path) -> None:
     assert "SECRET_IN_OUTPUT" in _classes(audit["findings"])
 
 
+def test_secret_in_output_does_not_fire_on_negative_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST_NOT/SHOULD_NOT/NEVER rule that forbids leaking a
+    secret is not instructing one, even when the banned-action list is
+    comma-separated ("paste, print, log, or commit") and breaks the
+    existing "never log"/"do not print" adjacency pattern.
+    Mutation: remove the _NEGATIVE_MODALITIES guard -> this test goes
+    red. See docs/evidence/2026-10-04-secret-and-resource-audit/
+    FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "no-leak",
+        "---\nname: no-leak\ndescription: Never leaks secrets.\n---\n\n"
+        "Operations MUST NOT paste, print, log, or commit a real API key.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "SECRET_IN_OUTPUT" not in _classes(audit["findings"])
+
+
+def test_secret_in_output_still_fires_on_positive_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST rule that genuinely instructs leaking a secret
+    must still fire -- the negative-modality guard must not suppress
+    positive-modality rules.
+    Mutation: over-broaden the _NEGATIVE_MODALITIES guard -> this test
+    goes red."""
+    _write_skill(
+        tmp_path,
+        "leaks",
+        "---\nname: leaks\ndescription: Leaks secrets.\n---\n\n"
+        "Operations MUST print the password to stdout.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "SECRET_IN_OUTPUT" in _classes(audit["findings"])
+
+
 # ---------------------------------------------------------------------------
 # SILENT_FAILURE
 # ---------------------------------------------------------------------------
@@ -202,6 +240,42 @@ def test_unbounded_resource_fires_on_read_entire(tmp_path: Path) -> None:
         "reader",
         "---\nname: reader\ndescription: Reads entire files.\n---\n\n"
         "1. Read the entire dataset into memory.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "UNBOUNDED_RESOURCE" in _classes(audit["findings"])
+
+
+def test_unbounded_resource_does_not_fire_on_negated_load_everything(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a negation directly in front of the unbounded-action
+    phrase ("don't load everything") is an explicit instruction to
+    AVOID it -- the inverse of what it would otherwise be flagged for.
+    Mutation: remove the negation-adjacency bound pattern -> this test
+    goes red. See docs/evidence/2026-10-04-secret-and-resource-audit/
+    FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "namespaced",
+        "---\nname: namespaced\ndescription: Splits data by feature.\n---\n\n"
+        "1. Split translations into namespaces by feature — don't load everything.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "UNBOUNDED_RESOURCE" not in _classes(audit["findings"])
+
+
+def test_unbounded_resource_still_fires_on_unqualified_load_everything(
+    tmp_path: Path,
+) -> None:
+    """Negative control: "load everything" with no negation anywhere
+    nearby must still fire -- the negation-adjacency pattern must not
+    over-broaden to any mention of "load everything" in the text.
+    Mutation: over-broaden the negation pattern -> this test goes red."""
+    _write_skill(
+        tmp_path,
+        "loads-everything",
+        "---\nname: loads-everything\ndescription: Loads everything.\n---\n\n"
+        "1. Load everything into memory at startup.\n",
     )
     audit = _audit(tmp_path)
     assert "UNBOUNDED_RESOURCE" in _classes(audit["findings"])

@@ -2075,6 +2075,19 @@ def _check_secret_in_output(
         name = skill["identity"]["name"]
         source_path = skill["identity"]["source_path"]
         for rule in skill.get("rules", []):
+            # A rule whose own modality prohibits the behavior
+            # (MUST_NOT/SHOULD_NOT/NEVER) cannot be instructing a secret
+            # leak -- it is forbidding one. E.g. "Never paste, print,
+            # log, or commit a real API key." -- the existing
+            # _SECRET_PROTECTION_PATTERNS already has a "never log/
+            # print" pattern, but it requires the verb immediately after
+            # "never"; a comma-separated list of banned actions
+            # ("paste, print, log, or commit") breaks that adjacency.
+            # Reusing the rule-modality guard (5th instance this
+            # session) covers this shape directly. See docs/evidence/
+            # 2026-10-04-secret-and-resource-audit/FINDINGS.md.
+            if rule.get("modality") in _NEGATIVE_MODALITIES:
+                continue
             text = rule.get("text", "")
             has_leak = any(p.search(text) for p in _SECRET_IN_OUTPUT_PATTERNS)
             if not has_leak:
@@ -2426,6 +2439,20 @@ _RESOURCE_BOUND_PATTERNS = [
     re.compile(r"\bsampl(?:e|ed|ing)\b", re.IGNORECASE),
     re.compile(r"\blazy\b", re.IGNORECASE),
     re.compile(r"\bon\s+demand\b", re.IGNORECASE),
+    # A negation directly in front of the unbounded-action phrase itself
+    # ("don't load everything") is an explicit instruction to AVOID the
+    # unbounded action -- the inverse of what it was flagged for. Same
+    # negation-adjacency idiom _SECRET_PROTECTION_PATTERNS already uses
+    # for "never log"/"do not print". Found via a held-out run:
+    # "Split translations into namespaces by feature — don't load
+    # everything." See docs/evidence/2026-10-04-secret-and-resource-
+    # audit/FINDINGS.md.
+    re.compile(
+        r"\b(?:don'?t|do\s+not|never|avoid)\s+"
+        r"(?:load|read|collect|gather|fetch|buffer|cach(?:e|ing))\s+"
+        r"(?:all|everything|the\s+entire)\b",
+        re.IGNORECASE,
+    ),
 ]
 
 
