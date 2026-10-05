@@ -28,6 +28,8 @@ Crucible's deterministic core decides whether the evidence satisfies the contrac
 
 An optional model may narrate or rank candidates after the deterministic artifact exists. It is not the authority for a consequential verdict.
 
+The NVIDIA model used through Nebius is an experimental behavior generator; the resulting run is an observation source. The model generates conduct — Crucible's deterministic core observes and adjudicates that conduct. Role separation is the design, not a workaround.
+
 Current external boundary: NVIDIA's public ecosystem already covers security scanning, validation, semantic overlap/deduplication, live agent evaluation, signatures, Skill Cards, and benchmark artifacts. CRUCIBLE therefore narrows its intended contribution to methodology-level IR, typed conditional composition, requirement-to-oracle coverage, and mutation testing of the verifier. See [`docs/COMPETITIVE_BOUNDARY.md`](docs/COMPETITIVE_BOUNDARY.md). The boundary remains partly experimental: conditional contradiction, inferred invariants, and marginal utility are `UNKNOWN / NEEDS EXPERIMENT` until fixtures establish them.
 
 ## 2. Destination architecture
@@ -279,7 +281,7 @@ The project will prefer deterministic output and explicit abstention over an app
 
 ## 11. Model and runtime authority
 
-The NVIDIA model used through Nebius is an experimental behavior generator and observation source, not the authority for deterministic findings. A run must retain model ID, provider/runtime, task digest, corpus/skill digests, sampling controls where available, and the property oracle. A behavioral observation is bounded by that experiment; it is not automatically a universal claim about the methodology.
+The NVIDIA model used through Nebius is an experimental behavior generator, not the authority for deterministic findings. The resulting run is an observation source. A run must retain model ID, provider/runtime, task digest, corpus/skill digests, sampling controls where available, and the property oracle. A behavioral observation is bounded by that experiment; it is not automatically a universal claim about the methodology.
 
 Imported output from SkillSpector, SkillEvaluator, NVIDIA signatures, or NVIDIA benchmarks is neighboring evidence. It must retain its source, version/commit, artifact identity, and scope. A signature establishes that a directory matches the signed bytes; it does not establish semantic truth. A benchmark establishes what its evaluation measured; it does not establish universal correctness.
 
