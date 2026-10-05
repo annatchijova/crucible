@@ -46,6 +46,51 @@ This is a proposed boundary, not yet a demonstrated product result.
 | Repair verification | Suggestions/workflows exist | Reports suggest improvements | Publication workflow exists | UNKNOWN / NEEDS EXPERIMENT | Re-audit and replay, never suggestion alone |
 | Corpus-level methodology analysis | Security/report aggregation exists | Collection dedup/evaluation exists | Catalog sync exists | PARTIAL OVERLAP | The claim must be about declared methodology semantics |
 
+## Broader community landscape (RU/ZH + general OSS, verified 2026-10-04/05)
+
+The matrix above is scoped to NVIDIA's own tooling. A separate pass
+checked whether the broader Agent-Skills community (Russian Habr,
+Chinese Juejin/CSDN/cnblogs/oschina/SegmentFault/Zhihu engineering
+writing, plus the ~300 tools linked from a widely-shared Russian
+"Claude Code Handbook" link-dump) has independently built the same
+boundary. Full method and evidence:
+`docs/evidence/2026-10-04-ru-zh-corpus-sweep/FINDINGS.md`.
+
+Every claim below is backed by reading the named project's own README
+directly (`gh repo view` or a direct fetch), not by trusting a citing
+article's paraphrase of it.
+
+| Axis | Representative project(s) | What it actually measures | Overlaps CRUCIBLE's core boundary? |
+|---|---|---|---|
+| Usage/telemetry audit | `sfrangulov/skill-graveyard` (+ companions `mcp-graveyard`, `memory-graveyard`) | Parses local session logs; buckets each skill as Active/Dead/Missing/Hallucinated | No — measures whether a skill is *used*, never whether its methodology is coherent |
+| Install-time security scanning | `rolecraft-sh/rolecraft`, `scalefocus/skilly`, `anthropics/claude-code-security-review`, `trailofbits/skills`, Snyk `agent-scan`/`skill-scan`, skills.sh Trust Hub/Socket badges | Malware, secret leakage, static heuristic risk patterns, before/at install or in a PR diff | No — measures whether a skill is *malicious or leaky*, never whether its stated procedure has a verifiable oracle, a bounded retry, a failure mode, etc. |
+| Agent-infrastructure engineering discipline | PGK Digital's "Как не дать проекту деградировать" (Habr) | Practitioner heuristics for Claude Code project hygiene (hooks over prompt rules, memory files, style-audit gates) | No — operational advice for one project's setup, not a corpus-level audit tool; but independently arrives at the same "encode rules into infrastructure, not the prompt" thesis CRUCIBLE is built on, and at a crisp Skill-vs-Rules test ("can you say 'run X and tell me what you got'?") that matches what `DESCRIPTION_BODY_GAP`/`METHODOLOGICAL_VACUITY` try to detect mechanically |
+| Deterministic methodology-quality audit with epistemic states + mutation testing | **None found** | — | This is CRUCIBLE's actual boundary, confirmed unoccupied at the scale searched, not merely unsearched |
+
+One correction from an earlier draft: `agentskills.io` is the Agent
+Skills *format specification's* own homepage (a client-adoption
+showcase), not a registry and not a validator of any kind — it makes
+no quality or security claim at all.
+
+A concrete, worth-citing parallel: `skill-graveyard`'s "Hallucinated"
+bucket (the agent invokes a skill/tool name that does not resolve) is
+the same shape as CRUCIBLE's `BROKEN_REFERENCE`, caught at runtime via
+session logs instead of statically via the compiled IR — a genuinely
+complementary tool, not a competing one, worth naming as such rather
+than ignoring.
+
+Two open scope questions surfaced by CRUCIBLE's own held-out-corpus
+audits (does "unpinned dependency = defect" depend on production vs.
+ad hoc operational context; does an environment variable count as
+untrusted external input) were swept against this same RU/ZH corpus
+specifically. Negative, registrable result: neither ecosystem
+formalizes the context-vs-pattern distinction as a checkable oracle —
+"pin always," "env var is the secrets solution" are universal advice,
+never a conditioned rule. This confirms the gap CRUCIBLE's own
+`UNPINNED_DEPENDENCY`/`UNVALIDATED_EXTERNAL_INPUT` checks are
+grappling with is a real, unsolved problem in the wider ecosystem, not
+an artifact of CRUCIBLE's own corpus choice.
+
 ## Source-backed observations
 
 ### NVIDIA SkillSpector
