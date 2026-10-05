@@ -39,7 +39,8 @@ def build_final_report(
     ir = compile_corpus(corpus_root)
     audit = audit_corpus(ir)
     confirmation = confirm_candidates(audit, ir, confirm_executor)
-    recommendations = compute_recommendations(audit, confirmation)
+    all_skill_names = [skill["identity"]["name"] for skill in ir["skills"]]
+    recommendations = compute_recommendations(audit, confirmation, all_skill_names)
     findings_by_id = {f["id"]: f for f in audit["findings"]}
 
     skills: dict[str, Any] = {}

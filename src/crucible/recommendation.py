@@ -56,8 +56,9 @@ _MODIFY = "MODIFY"
 def compute_recommendations(
     audit: dict[str, Any],
     confirmation: dict[str, Any] | None = None,
+    all_skill_names: list[str] | None = None,
 ) -> dict[str, Any]:
-    """Compute one recommendation per skill named in the audit's findings.
+    """Compute one recommendation per skill.
 
     ``audit`` is a sealed ``crucible-audit/v1`` artifact. ``confirmation``,
     if given, is a sealed ``crucible-confirmation/v1`` artifact whose
@@ -65,6 +66,21 @@ def compute_recommendations(
     a mismatch is recorded, not silently ignored, since a recommendation
     computed against the wrong audit's confirmations would misattribute
     CONFIRMED/REJECTED verdicts to findings that never produced them.
+
+    ``all_skill_names``, if given, is the full set of skill names in the
+    compiled corpus (``ir["skills"][i]["identity"]["name"]`` for each
+    skill). Without it, a skill with zero findings has no entry at all
+    in the result -- not even KEEP -- because the only skill names this
+    function can see are the ones mentioned in ``audit["findings"]``.
+    That silently drops every clean skill from any report built on this
+    function's output (confirmed: `build_final_report`'s rendered
+    Markdown/HTML/PDF header states the true `skill_count` but the body
+    lists nothing for a skill with no findings, a visible, misleading
+    gap). Passing the full name list lets every skill with zero findings
+    get an explicit KEEP entry instead of silent omission. Kept optional,
+    defaulting to the old (buggy) behavior, since existing callers build
+    a bare ``audit`` dict in tests without a real compiled corpus to draw
+    names from.
     """
     findings = audit.get("findings", [])
     confirmation_by_id = _index_confirmations(confirmation)
@@ -77,6 +93,8 @@ def compute_recommendations(
     for finding in findings:
         skill = finding.get("skill") or "(corpus-level)"
         by_skill.setdefault(skill, []).append(finding)
+    for skill_name in all_skill_names or ():
+        by_skill.setdefault(skill_name, [])
 
     skills: dict[str, Any] = {}
     for skill_name, skill_findings in sorted(by_skill.items()):

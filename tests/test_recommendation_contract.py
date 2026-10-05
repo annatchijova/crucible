@@ -23,11 +23,33 @@ def _confirmation(audit_digest, entries):
     }
 
 
-def test_skill_with_no_findings_is_kept():
+def test_without_all_skill_names_a_clean_skill_has_no_entry_at_all():
+    """Documents the limitation, not the desired behavior: without
+    ``all_skill_names``, a skill with zero findings is invisible to this
+    function entirely -- not even a KEEP entry, since the only skill
+    names it can see come from ``audit["findings"]``. See
+    ``test_clean_skill_gets_an_explicit_keep_entry`` for the fix."""
     audit = {"audit_digest": "sha256:a", "findings": []}
     result = compute_recommendations(audit)
     assert result["skills"] == {}
     assert result["schema_version"] == "crucible-recommendation/v1"
+
+
+def test_clean_skill_gets_an_explicit_keep_entry() -> None:
+    """Invariant: a skill with zero findings gets an explicit KEEP entry
+    when the full corpus skill list is known -- not silent omission.
+    Confirmed as a real bug otherwise: `build_final_report`'s rendered
+    report states the true skill_count in its header but the body lists
+    nothing for a clean skill, a visible, misleading gap.
+    Mutation: drop the all_skill_names merge -> this test goes red."""
+    audit = {
+        "audit_digest": "sha256:a",
+        "findings": [_finding("f1", "REQUIREMENT_WITHOUT_CHECK", "bad-skill")],
+    }
+    result = compute_recommendations(audit, all_skill_names=["bad-skill", "clean-skill"])
+    assert result["skills"]["clean-skill"]["recommendation"] == "KEEP"
+    assert result["skills"]["clean-skill"]["total_finding_count"] == 0
+    assert result["skills"]["bad-skill"]["recommendation"] == "NEEDS_CONFIRMATION"
 
 
 def test_unconfirmed_candidate_needs_confirmation_not_action():
