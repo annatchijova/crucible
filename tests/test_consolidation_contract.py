@@ -140,6 +140,32 @@ class BlockedProposer:
         }
 
 
+class CollidingNameProposer:
+    """Test fixture only -- proposes a complete, coverage-passing merge
+    named after a skill OUTSIDE the cluster (CONSOLIDATION_FIXTURE's
+    "unrelated"), to exercise the name-collision gate."""
+
+    def __init__(self, name: str = "unrelated") -> None:
+        self.name = name
+
+    def propose_merge(self, cluster_skills, evidence, context):
+        text = (
+            f"---\nname: {self.name}\n"
+            "description: Retry failed network calls and requests with a bounded budget.\n"
+            "license: Apache-2.0\n---\n\n"
+            "# Retry network operations\n\n"
+            "Retries MUST have a finite budget.\n\n"
+            "## Checks\n\n"
+            "- Verify the retry budget is enforced: run `scripts/check_budget.sh`.\n"
+        )
+        return {
+            "proposed_name": self.name,
+            "proposed_text": text,
+            "rationale": "colliding-name test double",
+            "proposer": "colliding-name-test-only",
+        }
+
+
 def _confirmed(audit, cls="SEMANTIC_REDUNDANCY"):
     finding = next(f for f in audit["findings"] if f["class"] == cls)
     return {"confirmations": [{"finding_id": finding["id"], "verdict": "CONFIRMED"}]}
@@ -295,6 +321,44 @@ def test_coverage_gap_rejects_merge() -> None:
     assert report["rejection_reason"] == "COVERAGE_GAP"
     assert len(report["coverage_gaps"]) == 2  # one per original skill's check
     assert all(g["item_type"] == "check" for g in report["coverage_gaps"])
+
+
+def test_name_collision_with_an_unrelated_skill_rejects_merge() -> None:
+    """Invariant: a proposed name matching a skill OUTSIDE the cluster is
+    rejected before the merge is ever applied -- confirmed otherwise to
+    silently destroy the unrelated skill (repaired_corpus[proposed_name]
+    = proposed_text overwrites it with no warning). The proposer here is
+    deliberately a complete, coverage-passing merge (everything else
+    about it is fine) so this test isolates the collision gate from
+    every other rejection reason.
+    Mutation: remove the name-collision check -> red (the merge would
+    ACCEPT and silently clobber "unrelated"). See docs/evidence/
+    2026-10-05-l16-name-collision/FINDINGS.md."""
+    ir, audit = _compile_ir_and_audit(CONSOLIDATION_FIXTURE)
+    confirmation = _confirmed(audit)
+    report = run_consolidation(
+        corpus=CONSOLIDATION_FIXTURE, confirmation=confirmation,
+        proposer=CollidingNameProposer(name="unrelated"),
+    )
+    assert report["outcome"] == OUTCOME_REJECTED
+    assert report["rejection_reason"] == "NAME_COLLISION"
+
+
+def test_proposed_name_matching_a_cluster_member_is_not_a_collision() -> None:
+    """Negative control: a proposed name equal to one of the CLUSTER's
+    own members (not an unrelated skill) must NOT be rejected as a
+    collision -- that name is being freed up by this exact merge, since
+    every cluster member is removed from the corpus first.
+    Mutation: over-broaden the collision check to include cluster
+    members -> red."""
+    ir, audit = _compile_ir_and_audit(CONSOLIDATION_FIXTURE)
+    confirmation = _confirmed(audit)
+    report = run_consolidation(
+        corpus=CONSOLIDATION_FIXTURE, confirmation=confirmation,
+        proposer=CollidingNameProposer(name="retry-a"),
+    )
+    assert report["outcome"] == OUTCOME_ACCEPTED
+    assert report["rejection_reason"] is None
 
 
 # ---------------------------------------------------------------------------

@@ -683,6 +683,24 @@ def _run_gate_for_cluster(
             cluster=cluster, proposal=proposal,
         )
 
+    # The proposer only ever sees the cluster being merged (CONSOLIDATION_
+    # SYSTEM_PROMPT asks it not to reuse one of THOSE names, but it is
+    # never shown the rest of the corpus, so it cannot know whether its
+    # chosen name collides with some OTHER, unrelated skill). Without this
+    # check, `repaired_corpus[proposed_name] = proposed_text` below would
+    # silently overwrite that unrelated skill: confirmed directly --
+    # a 3-skill corpus (two genuinely redundant retry skills + one
+    # unrelated skill) with a proposer that names the merge after the
+    # unrelated skill went from ACCEPTED straight to a 1-skill corpus,
+    # the unrelated skill's real content gone, no warning anywhere. This
+    # is a deterministic gate, so it cannot rely on the LLM's own
+    # instruction-following; the LLM is not in the decision path here.
+    if proposed_name not in cluster and proposed_name in corpus:
+        return _report(
+            base_audit_digest=base_audit_digest, outcome=OUTCOME_REJECTED,
+            rejection_reason="NAME_COLLISION", cluster=cluster, proposal=proposal,
+        )
+
     repaired_corpus = {k: v for k, v in corpus.items() if k not in cluster}
     repaired_corpus[proposed_name] = proposed_text
     repaired_corpus, rewritten_refs = rewrite_external_references(
