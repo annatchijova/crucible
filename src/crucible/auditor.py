@@ -1429,6 +1429,14 @@ def _check_llm_in_decision_path(
         name = skill["identity"]["name"]
         source_path = skill["identity"]["source_path"]
         for rule in skill.get("rules", []):
+            # A rule whose own modality prohibits the behavior
+            # (MUST_NOT/SHOULD_NOT/NEVER) cannot be instructing an LLM
+            # decision -- it is forbidding one, e.g. "Never let the
+            # model approve a transaction directly." Preemptive
+            # hardening (8th instance this session). See docs/evidence/
+            # 2026-10-04-polarity-sweep/FINDINGS.md.
+            if rule.get("modality") in _NEGATIVE_MODALITIES:
+                continue
             text = rule.get("text", "")
             has_llm_decision = any(p.search(text) for p in _LLM_DECISION_PATTERNS)
             if not has_llm_decision:
@@ -2212,6 +2220,14 @@ def _check_silent_failure(
         name = skill["identity"]["name"]
         source_path = skill["identity"]["source_path"]
         for rule in skill.get("rules", []):
+            # A rule whose own modality prohibits the behavior
+            # (MUST_NOT/SHOULD_NOT/NEVER) cannot be instructing a silent
+            # failure -- it is forbidding one, e.g. "Never silently
+            # swallow an exception." Preemptive hardening (7th instance
+            # this session). See docs/evidence/2026-10-04-polarity-
+            # sweep/FINDINGS.md.
+            if rule.get("modality") in _NEGATIVE_MODALITIES:
+                continue
             text = rule.get("text", "")
             has_silent = any(p.search(text) for p in _SILENT_FAILURE_PATTERNS)
             if not has_silent:
@@ -2337,6 +2353,20 @@ def _check_hardcoded_credential(
         name = skill["identity"]["name"]
         source_path = skill["identity"]["source_path"]
         for rule in skill.get("rules", []):
+            # A rule whose own modality prohibits the behavior
+            # (MUST_NOT/SHOULD_NOT/NEVER) cannot be instructing a
+            # hardcoded credential -- it is forbidding one. Preemptive
+            # hardening: the existing _SECURE_CREDENTIAL_PATTERNS already
+            # has an adjacency-only "never hardcode"/"do not hardcode"
+            # guard, which breaks the same way the SECRET_IN_OUTPUT/
+            # UNBOUNDED_RETRY/etc. adjacency patterns did on a comma-
+            # separated list or a differently-worded MUST_NOT clause
+            # (pattern 2: "Do not put a secret directly in the script").
+            # Reusing the rule-modality guard (6th instance this
+            # session) closes that gap directly. See docs/evidence/
+            # 2026-10-04-polarity-sweep/FINDINGS.md.
+            if rule.get("modality") in _NEGATIVE_MODALITIES:
+                continue
             text = rule.get("text", "")
             has_hardcode = any(
                 p.search(text) for p in _HARDCODED_CREDENTIAL_PATTERNS
@@ -2877,6 +2907,15 @@ def _check_floating_point_in_decision_path(
         name = skill["identity"]["name"]
         source_path = skill["identity"]["source_path"]
         for rule in skill.get("rules", []):
+            # A rule whose own modality prohibits the behavior
+            # (MUST_NOT/SHOULD_NOT/NEVER) cannot be instructing float
+            # use in the decision path -- it is forbidding it, e.g.
+            # "Never compare floats directly for equality in money
+            # calculations." Preemptive hardening (9th instance this
+            # session). See docs/evidence/2026-10-04-polarity-sweep/
+            # FINDINGS.md.
+            if rule.get("modality") in _NEGATIVE_MODALITIES:
+                continue
             text = rule.get("text", "")
             has_float = any(p.search(text) for p in _FLOAT_DECISION_PATTERNS)
             if not has_float:

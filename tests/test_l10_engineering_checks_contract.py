@@ -155,6 +155,41 @@ def test_silent_failure_fires_on_swallow_exception(tmp_path: Path) -> None:
     assert "SILENT_FAILURE" in _classes(audit["findings"])
 
 
+def test_silent_failure_does_not_fire_on_negative_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST_NOT/SHOULD_NOT/NEVER rule that forbids silently
+    swallowing an error is not instructing one.
+    Mutation: remove the _NEGATIVE_MODALITIES guard -> this test goes
+    red. See docs/evidence/2026-10-04-polarity-sweep/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "no-swallow",
+        "---\nname: no-swallow\ndescription: Never swallows exceptions.\n---\n\n"
+        "Operations MUST NOT swallow the exception silently.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "SILENT_FAILURE" not in _classes(audit["findings"])
+
+
+def test_silent_failure_still_fires_on_positive_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST rule that genuinely instructs swallowing an
+    error must still fire -- the negative-modality guard must not
+    suppress positive-modality rules.
+    Mutation: over-broaden the _NEGATIVE_MODALITIES guard -> this test
+    goes red."""
+    _write_skill(
+        tmp_path,
+        "swallows",
+        "---\nname: swallows\ndescription: Swallows exceptions.\n---\n\n"
+        "Operations MUST swallow the exception silently.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "SILENT_FAILURE" in _classes(audit["findings"])
+
+
 # ---------------------------------------------------------------------------
 # HARDCODED_CREDENTIAL
 # ---------------------------------------------------------------------------
@@ -195,6 +230,44 @@ def test_hardcoded_credential_fires_on_embed_password(tmp_path: Path) -> None:
         "embed",
         "---\nname: embed\ndescription: Embeds passwords.\n---\n\n"
         "1. Embed the password directly in the script.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "HARDCODED_CREDENTIAL" in _classes(audit["findings"])
+
+
+def test_hardcoded_credential_does_not_fire_on_negative_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST_NOT/SHOULD_NOT/NEVER rule that forbids hardcoding
+    a credential is not instructing one, even when phrased as "Do not put
+    a secret directly in the script" (pattern 2) rather than the
+    adjacency-only "never hardcode" the existing _SECURE_CREDENTIAL_
+    PATTERNS already recognizes.
+    Mutation: remove the _NEGATIVE_MODALITIES guard -> this test goes
+    red. See docs/evidence/2026-10-04-polarity-sweep/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "no-hardcode",
+        "---\nname: no-hardcode\ndescription: Never hardcodes secrets.\n---\n\n"
+        "Operations MUST NOT put a secret directly in the script.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "HARDCODED_CREDENTIAL" not in _classes(audit["findings"])
+
+
+def test_hardcoded_credential_still_fires_on_positive_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST rule that genuinely instructs hardcoding a
+    credential must still fire -- the negative-modality guard must not
+    suppress positive-modality rules.
+    Mutation: over-broaden the _NEGATIVE_MODALITIES guard -> this test
+    goes red."""
+    _write_skill(
+        tmp_path,
+        "hardcodes",
+        "---\nname: hardcodes\ndescription: Hardcodes secrets.\n---\n\n"
+        "Operations MUST put a secret directly in the script.\n",
     )
     audit = _audit(tmp_path)
     assert "HARDCODED_CREDENTIAL" in _classes(audit["findings"])
@@ -447,6 +520,41 @@ def test_float_decision_fires_on_float_for_money(tmp_path: Path) -> None:
         "float-money",
         "---\nname: float-money\ndescription: Floats for money.\n---\n\n"
         "1. Use float for the money calculation.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "FLOATING_POINT_IN_DECISION_PATH" in _classes(audit["findings"])
+
+
+def test_float_decision_does_not_fire_on_negative_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST_NOT/SHOULD_NOT/NEVER rule that forbids float use
+    in the decision path is not instructing it.
+    Mutation: remove the _NEGATIVE_MODALITIES guard -> this test goes
+    red. See docs/evidence/2026-10-04-polarity-sweep/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "no-float",
+        "---\nname: no-float\ndescription: Never uses floats for money.\n---\n\n"
+        "Operations MUST NOT use float for the money calculation.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "FLOATING_POINT_IN_DECISION_PATH" not in _classes(audit["findings"])
+
+
+def test_float_decision_still_fires_on_positive_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST rule that genuinely instructs float use in the
+    decision path must still fire -- the negative-modality guard must
+    not suppress positive-modality rules.
+    Mutation: over-broaden the _NEGATIVE_MODALITIES guard -> this test
+    goes red."""
+    _write_skill(
+        tmp_path,
+        "uses-float",
+        "---\nname: uses-float\ndescription: Uses floats for money.\n---\n\n"
+        "Operations MUST use float for the money calculation.\n",
     )
     audit = _audit(tmp_path)
     assert "FLOATING_POINT_IN_DECISION_PATH" in _classes(audit["findings"])

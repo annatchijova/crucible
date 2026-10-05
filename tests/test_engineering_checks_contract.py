@@ -210,6 +210,41 @@ def test_llm_in_decision_path_fires_on_ask_model_to_decide(tmp_path: Path) -> No
     assert "LLM_IN_DECISION_PATH" in _classes(audit["findings"])
 
 
+def test_llm_in_decision_path_does_not_fire_on_negative_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST_NOT/SHOULD_NOT/NEVER rule that forbids letting
+    the model decide is not instructing it to.
+    Mutation: remove the _NEGATIVE_MODALITIES guard -> this test goes
+    red. See docs/evidence/2026-10-04-polarity-sweep/FINDINGS.md."""
+    _write_skill(
+        tmp_path,
+        "no-llm-decide",
+        "---\nname: no-llm-decide\ndescription: Never lets the model decide.\n---\n\n"
+        "The system MUST NOT let the model decide the final verdict.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "LLM_IN_DECISION_PATH" not in _classes(audit["findings"])
+
+
+def test_llm_in_decision_path_still_fires_on_positive_modality_rule(
+    tmp_path: Path,
+) -> None:
+    """Invariant: a MUST rule that genuinely lets the model decide must
+    still fire -- the negative-modality guard must not suppress
+    positive-modality rules.
+    Mutation: over-broaden the _NEGATIVE_MODALITIES guard -> this test
+    goes red."""
+    _write_skill(
+        tmp_path,
+        "llm-decides",
+        "---\nname: llm-decides\ndescription: Lets the model decide.\n---\n\n"
+        "The system MUST let the model decide the final verdict.\n",
+    )
+    audit = _audit(tmp_path)
+    assert "LLM_IN_DECISION_PATH" in _classes(audit["findings"])
+
+
 # ---------------------------------------------------------------------------
 # OVERCLAIM
 # ---------------------------------------------------------------------------
