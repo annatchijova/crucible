@@ -241,6 +241,58 @@ unaffected.
 
 ## Next discriminating experiment
 
+### Synthetic link-source matrix: pre-registered predictions and result
+
+Before running `docs/evidence/check_link_source_matrix.py`, predictions were
+recorded in the session: the explicit map would reproduce annotations exactly
+(including an intentionally false annotation); Jaccard at `1/7` would recover
+the clear and exact-condition links but over-link both rules in the partial
+case; `1/5` would remove that extra edge while missing the correct partial
+edge. The ambiguous policy case would be disclosed separately, not used to
+choose a threshold. No model metric would be reported without an actual model
+run and independent labels.
+
+The offline harness compiled six synthetic fixtures through the current L1
+compiler. It emitted IR digest
+`sha256:8823f1d517839d85e38c534c7762b29c35eb3eba2d865639db1c9490118c38bd`.
+Two consecutive runs produced byte-identical JSON (`cmp` passed). Against the
+five labeled cases (three expected edges), the observed counts were:
+
+| Mechanism | TP | FP | FN | Precision | Recall |
+|---|---:|---:|---:|---:|---:|
+| No links | 0 | 0 | 3 | undefined | 0/3 |
+| All pairs | 3 | 3 | 0 | 3/6 | 3/3 |
+| Author declarations | 2 | 1 | 1 | 2/3 | 2/3 |
+| Jaccard ≥ 1/7 | 3 | 1 | 0 | 3/4 | 3/3 |
+| Jaccard ≥ 1/5 | 2 | 0 | 1 | 2/2 | 2/3 |
+
+The explicit-declaration false positive is the intentionally incorrect
+annotation on the unrelated-signature fixture. Its false negative is the
+unannotated direct status condition. In the partial fixture both rule/check
+pairs score `1/7`; the low threshold emits both, while the high threshold
+emits neither. The unresolved policy case scores `1/4` and would still be
+proposed by both thresholds; it was excluded from the metrics, so neither
+threshold demonstrates abstention. A threshold does not supply confidence or
+semantic adequacy.
+
+The thresholds are comparison points, not calibrated choices: `1/7` was
+observed in the previously consumed partial fixture and this set is not
+independent. These exact finite counts describe only this author-labeled
+synthetic matrix. They are not corpus estimates, have no useful confidence
+interval, and do not rank general-purpose mechanisms. The sidecar declarations
+are harness labels only; the current Markdown parser does not support them.
+No model/API was called, and no L1, L2, or persisted schema changed. Reproduce
+with `.venv/bin/python docs/evidence/check_link_source_matrix.py`.
+
+This result confirms the predicted trade-off but does not select a source of
+truth. Preserve declarations, deterministic proposals, human adjudication, and
+model observations as distinct provenance. The next step is a fresh
+independently labeled set with explicit abstention criteria, then evaluate
+whether any relation artifact can be consumed without becoming a second audit
+authority.
+
+## Next discriminating experiment (expanded plan)
+
 Before selecting the link mechanism, add adversarial pairs where:
 
 - one normative rule has a relevant check and an unrelated check;

@@ -90,12 +90,17 @@ impact, and whether link proposals can be confirmed in L2.5.
 
 ## Revisit trigger
 
-Accept, revise, or reject this proposal after the candidate link mechanisms
-are exercised on a fresh, independently adjudicated fixture set that includes
-positive, negative, ambiguous, and partial coverage. Any implementation
-proposal must include consumer inventory, artifact compatibility treatment,
-corpus impact evidence, and a validated human/model output contract before
-changing the auditor.
+The first mechanism comparison is now recorded in the linked experiment, using
+six synthetic fixtures with five labeled cases and one explicit abstention.
+It confirms the predicted threshold trade-off but is not independent
+validation: thresholds were informed by an earlier consumed fixture, labels
+were authored for this exercise, and no model was run. Do not treat this
+trigger as satisfied. Accept, revise, or reject after an independently
+adjudicated fixture set tests positive, negative, ambiguous, partial, and
+misdeclared relations, including explicit abstention behavior. Any
+implementation proposal must include consumer inventory, artifact
+compatibility treatment, corpus impact evidence, and a validated human/model
+output contract before changing the auditor.
 
 ## Evidence
 
