@@ -60,6 +60,19 @@ compiler extracted the item as a check; the auditor emitted no
 `REQUIREMENT_WITHOUT_CHECK` finding. The check is plainly about a signature,
 not request idempotency, so it cannot establish coverage of that rule.
 
+A sixth fixture contained two rules, `The request MUST be authenticated` and
+`The request MUST be idempotent`, plus one check: `Verify the request signature
+against the publisher key.` It is relevant to authentication, but not
+idempotency. The auditor again emitted no `REQUIREMENT_WITHOUT_CHECK` finding.
+This demonstrates that the current skill-level boolean also erases partial
+coverage.
+
+A simple shared-token link proposal cannot distinguish the two rules in that
+partial fixture: both rules share `request` with the check, while the check
+contains no `idempotent` token. A tokenizer that removes common words still
+leaves `request` on both sides. This is a hand-inspected counterexample to
+plain lexical overlap, not a benchmark of every lexical linker.
+
 The first harness attempt passed a temporary directory with no `SKILL.md` and
 was rejected by `compile_corpus` (`corpus contains no SKILL.md files`). The
 fixture was moved under a temporary skill directory and rerun. No repository
@@ -73,6 +86,15 @@ Focused route-fixture test:
 1 passed
 ```
 
+The two added characterization tests for unrelated and partial checks passed
+alongside the original workflow characterization and the existing related
+check control (**4 passed**). A negative-control mutation changed the auditor
+guard from `if not rules or checks` to `if not rules`; all three
+characterization tests then failed because the missing-check finding appeared.
+The guard was restored and the same four tests passed again. The tests pin
+current defective behavior and are named as characterizations; they do not
+claim that suppressing those findings is correct.
+
 ## Hypothesis adjudication
 
 | Hypothesis | Result | Evidence and limit |
@@ -82,6 +104,8 @@ Focused route-fixture test:
 | H3: non-`unknown` `oracle_kind` means meaningful verification | **Falsified** | Both signature verification and run-and-print are `command`; the valid exact-status criterion is `unknown`. This field describes a lexical oracle shape, not rule coverage. |
 | H4: observable acceptance predicate can separate the four cases | **Promising, unvalidated** | The two CHECK fixtures contain a determinate comparison; the two WORKFLOW controls do not. This is a post-hoc fit to four deliberately selected fixtures and is not evidence of general accuracy. |
 | H5: any check in a skill covers its rules | **Falsified** | The unrelated signature-check fixture suppresses the idempotency requirement candidate. This remains false even if extraction perfectly distinguishes checks from workflow. |
+| H6: skill-level boolean is enough when a skill has some relevant coverage | **Falsified** | The partial fixture has one check relevant to authentication and another uncovered idempotency rule; the auditor suppresses the candidate for both. |
+| H7: shared-token overlap can map checks to rules | **Falsified for the partial fixture** | Both rules share `request` with the authentication check, so token overlap cannot distinguish which rule is covered without stronger structure or semantic evidence. |
 
 The most consequential result is H5: check/workflow classification alone cannot
 repair skill-level coverage accounting. The auditor needs rule-to-check
@@ -96,6 +120,7 @@ relationship evidence, or it must report that relationship as unresolved.
 | Treat `oracle_kind != unknown` as coverage | Rejected | It confuses run-and-print with signature verification and misses exact status criteria. | A changed, tested meaning for `oracle_kind` that includes rule linkage; current field does not. |
 | Patch a semantic heuristic now | Deferred | Four curated controls are too small and post-hoc; no fresh independently labeled corpus is present locally. | Independent labels plus explicit consumer/compatibility impact replay. |
 | Treat rule-check linkage as the missing design dimension | Working hypothesis | Unrelated-check experiment falsifies skill-level existence as a coverage proxy. | A counterexample where linkage evidence still yields an incorrect coverage verdict, or an impact study showing the candidate model is unusable. |
+| Keep one coverage boolean per skill | Rejected | The partial fixture proves it cannot represent one covered rule alongside another uncovered rule. | Reopen only if the product explicitly limits its claim to skill-level presence and renames/narrows the finding accordingly. |
 
 ## Candidate integral design, not yet adopted
 
@@ -111,9 +136,12 @@ states at the audit boundary:
 
 Possible link evidence needs its own comparison: explicit source annotations,
 deterministic rule references, and confirmation-layer proposals all have
-different author burden, recall, determinism, and trust costs. A confirmation
-result must remain a separate artifact; it must not silently rewrite the L1 IR
-or the deterministic L2 audit.
+different author burden, recall, determinism, and trust costs. Plain token
+overlap is insufficient on the partial fixture. A confirmation result must
+remain a separate artifact; it must not silently rewrite the L1 IR or the
+deterministic L2 audit. The current L2.5 prompt for
+`REQUIREMENT_WITHOUT_CHECK` assumes there are zero extracted checks, so it
+cannot simply be reused for an unresolved rule-check relation.
 
 This design could add a finding class or alter the meaning of an existing one.
 Before implementation, inventory all readers (`auditor`, `confirm`, `graph`,
@@ -127,6 +155,7 @@ Before selecting the link mechanism, add adversarial pairs where:
 
 - one normative rule has a relevant check and an unrelated check;
 - one skill has several rules but a check that covers only one;
+- rules and checks share a generic noun but differ on the required property;
 - a check states a direct condition without a verification verb;
 - a workflow invokes `run`, `check`, or `verify` but only gathers or presents
   data;
@@ -145,8 +174,10 @@ for the next fixture-level experiment.
 
 ## Limits
 
-This experiment confirms current behavior on five local fixtures. Human labels
-for the four route controls come from a single-reviewer, consumed pilot. It
-does not estimate corpus accuracy, establish a semantic classifier, or prove
-that explicit annotations are the best link source. No production code or
-persisted schema changed.
+This experiment confirms current behavior on six local fixtures. Human labels
+for the four route controls come from a single-reviewer, consumed pilot; the
+unrelated and partial fixtures have intended links authored for this
+experiment, not independent adjudication. It does not estimate corpus
+accuracy, establish a semantic classifier, or prove that explicit annotations
+are the best link source. Two characterization tests were added; no production
+code or persisted schema changed.

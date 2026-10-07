@@ -16,6 +16,9 @@ contracts change; low if limited to a new audit finding.
   verification operation from a workflow command.
 - A new local fixture showed that a real signature check unrelated to an
   idempotency rule also suppresses the missing-coverage candidate.
+- A second fixture showed that one check relevant to one of two normative rules
+  suppresses the candidate for both; shared-token overlap cannot distinguish
+  the two rules because they share the noun `request`.
 - The relevant pinned source corpus is not present in this checkout; broad
   impact replay is unavailable offline.
 
@@ -48,6 +51,10 @@ choose among them and authorizes no persisted schema change.
 - **Keep the current skill-level nonempty check gate.** Rejected because a
   genuine but unrelated check suppresses a requirement finding. Best point: it
   avoids candidate volume and remains a cheap coarse signal.
+- **Map checks to rules by shared tokens.** Rejected for the partial-coverage
+  fixture because both rules share a generic noun with the check. Best point:
+  deterministic lexical links are cheap, explainable, and may still be useful
+  as candidate evidence when they are not treated as proof.
 
 ## Assumption
 

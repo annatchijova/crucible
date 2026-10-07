@@ -201,6 +201,64 @@ def test_characterizes_workflow_check_suppressing_requirement_gap(
     assert "REQUIREMENT_WITHOUT_CHECK" not in classes
 
 
+def test_characterizes_unrelated_check_suppressing_requirement_gap(
+    tmp_path: Path,
+) -> None:
+    """Known false negative: a real check about another subject is treated
+    as coverage for every normative rule in the skill. This pins the
+    skill-level accounting defect independently of check/workflow extraction;
+    see the 2026-10-07 coverage hypothesis experiment."""
+    _write_skill(
+        tmp_path,
+        "unrelated-check",
+        "---\nname: unrelated-check\ndescription: Unrelated check.\n---\n\n"
+        "Requests MUST be idempotent.\n\n"
+        "## Checks\n\n"
+        "- Verify the detached signature matches the publisher key.\n",
+    )
+    ir = compile_corpus(tmp_path)
+    skill = ir["skills"][0]
+    assert [rule["text"] for rule in skill["rules"]] == [
+        "Requests MUST be idempotent."
+    ]
+    assert [check["text"] for check in skill["checks"]] == [
+        "Verify the detached signature matches the publisher key."
+    ]
+
+    audit = audit_corpus(ir)
+    assert "REQUIREMENT_WITHOUT_CHECK" not in _classes(audit["findings"])
+
+
+def test_characterizes_partial_check_coverage_suppressing_requirement_gap(
+    tmp_path: Path,
+) -> None:
+    """Known false negative: one check for one of two rules suppresses the
+    skill-level gap for both. The fixture keeps the check relevant to exactly
+    one rule so a future rule-to-check relation must preserve partial coverage
+    rather than collapse to a skill-wide boolean."""
+    _write_skill(
+        tmp_path,
+        "partial-check-coverage",
+        "---\nname: partial-check-coverage\ndescription: Partial coverage.\n---\n\n"
+        "The request MUST be authenticated.\n"
+        "The request MUST be idempotent.\n\n"
+        "## Checks\n\n"
+        "- Verify the request signature against the publisher key.\n",
+    )
+    ir = compile_corpus(tmp_path)
+    skill = ir["skills"][0]
+    assert [rule["text"] for rule in skill["rules"]] == [
+        "The request MUST be authenticated.",
+        "The request MUST be idempotent.",
+    ]
+    assert [check["text"] for check in skill["checks"]] == [
+        "Verify the request signature against the publisher key."
+    ]
+
+    audit = audit_corpus(ir)
+    assert "REQUIREMENT_WITHOUT_CHECK" not in _classes(audit["findings"])
+
+
 # ---------------------------------------------------------------------------
 # REQUIREMENT_WITHOUT_CHECK
 # ---------------------------------------------------------------------------
