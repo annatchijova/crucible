@@ -501,3 +501,16 @@ not in this table.)
 Retained privately alongside the cloned corpora. [The sample manifest](terminalskills-sample-manifest.txt)
 (names only, no source text) is committed, so the exact 400-skill sample is
 reproducible against a fresh clone of the pinned commit above.
+
+## 2026-10-07 adjudication correction
+
+The broader “section-title substring collision” claim above needs a narrower
+reading. The `Example N:` false-positive route is covered by `_EXAMPLE_HEADING`
+and its regression test. The separate `kalshi` / `Futures Market Check`
+classification is disputed: the source is a workflow under `Workflows`, but
+the title labels it a check and current tests preserve such headings. This
+review has not established a ground-truth criterion, so that item is an
+unresolved hypothesis rather than a confirmed extraction bug. The prior
+approximate count of 128 matching headings was not revalidated as a false
+positive count. See the
+[adjudication follow-up](../../red-team/2026-10-07-check-heading-adjudication.md).

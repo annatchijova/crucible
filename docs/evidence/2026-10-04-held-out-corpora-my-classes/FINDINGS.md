@@ -246,3 +246,16 @@ named-sub-heading step-extraction gap are now fixed, verified by diff
 against held-out, mukul975, and the author's corpus. REQUIREMENT_
 WITHOUT_CHECK's remaining true positives and SCOPE_TRIGGER_MISMATCH's
 already-accepted lexical-vs-semantic residual are untouched, correctly.
+
+## 2026-10-07 follow-up: scope correction
+
+The `Example N:` heading route is covered by the current `_EXAMPLE_HEADING`
+exclusion and regression tests. The classification of `kalshi`'s
+`Futures Market Check` as an extraction false positive remains disputed: its
+items are workflow steps under `Workflows`, but the title explicitly calls
+them a check, and the current compiler test preserves non-Example headings
+with that shape. The source and current behavior do not establish a stable
+ground-truth criterion, so that one item is unresolved rather than confirmed.
+The earlier estimate of ~128 substring-matching headings has not been
+recomputed as a false-positive count. See the
+[adjudication follow-up](../../red-team/2026-10-07-check-heading-adjudication.md).
