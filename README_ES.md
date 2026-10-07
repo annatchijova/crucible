@@ -52,10 +52,13 @@ la evidencia de un circuito completo con propuestas reales de un LLM.
 | ¿La skill cambió el comportamiento observado? | Observaciones por propiedad y variante |
 | ¿Se aceptó una reparación propuesta? | Resultados de reauditoría y evaluación conductual |
 
-Complementa el análisis de seguridad y la evaluación del rendimiento de agentes.
-Se concentra en la metodología y la evidencia de cada afirmación, no en declarar
-skills universalmente seguras. Ver la [frontera comparativa](docs/COMPETITIVE_BOUNDARY.md)
-y la [arquitectura de destino](TECHNICAL.md#2-destination-architecture).
+Crucible complementa el análisis de seguridad y la evaluación del rendimiento de
+agentes. Se concentra en la metodología y la evidencia de cada afirmación, no en
+declarar skills universalmente seguras. Los `checks` extraídos son candidatos
+estructurales, no cobertura vinculada a reglas: un paso de flujo puede ocultar un
+hallazgo candidato por falta de verificación. Ver la [revisión red team](docs/red-team/2026-10-07-check-heading-adjudication.md),
+la [frontera comparativa](docs/COMPETITIVE_BOUNDARY.md) y la
+[arquitectura de destino](TECHNICAL.md#2-destination-architecture).
 
 ## Qué evidencia tenemos
 

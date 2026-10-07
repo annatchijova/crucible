@@ -52,9 +52,12 @@ and limitations.
 | Did the skill change observed behavior? | Per-variant property observations |
 | Was a proposed repair accepted? | Re-audit and behavioral gate results |
 
-This complements security scanning and agent performance evaluation. Its focus
+Crucible complements security scanning and agent performance evaluation. Its focus
 is methodology and the evidence supporting each claim, not universal skill safety.
-See the [comparison scope](docs/COMPETITIVE_BOUNDARY.md) and
+Extracted `checks` are structural candidates, not rule-linked coverage; a workflow
+item can suppress a missing-check candidate. See the
+[red-team review](docs/red-team/2026-10-07-check-heading-adjudication.md),
+[comparison scope](docs/COMPETITIVE_BOUNDARY.md), and
 [destination architecture](TECHNICAL.md#2-destination-architecture).
 
 ## What has been demonstrated

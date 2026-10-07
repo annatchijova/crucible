@@ -168,6 +168,39 @@ def test_orphan_skill_does_not_fire_when_graph_is_empty(tmp_path: Path) -> None:
     assert "ORPHAN_SKILL" not in _classes(audit["findings"])
 
 
+def test_characterizes_workflow_check_suppressing_requirement_gap(
+    tmp_path: Path,
+) -> None:
+    """Known false negative, pinned before changing check semantics.
+
+    A numbered workflow under a check-family heading is extracted both as a
+    check and a procedural step. The current auditor treats the nonempty
+    checks list as coverage and suppresses REQUIREMENT_WITHOUT_CHECK. This
+    characterization should be deliberately revised with the eventual
+    semantic contract; see CHECK-CONSUMER-01 in the red-team review."""
+    _write_skill(
+        tmp_path,
+        "workflow-masks-gap",
+        "---\nname: workflow-masks-gap\ndescription: Workflow collision.\n---\n\n"
+        "Requests MUST be reviewed against an approved policy.\n\n"
+        "## Live Odds Check\n\n"
+        "1. Search markets for the requested event.\n",
+    )
+    ir = compile_corpus(tmp_path)
+    skill = ir["skills"][0]
+    checks = skill["checks"]
+    steps = skill["procedural_steps"]
+    assert [item["text"] for item in checks] == [
+        "Search markets for the requested event."
+    ]
+    assert checks[0]["source_span"] == steps[0]["source_span"]
+
+    audit = audit_corpus(ir)
+    classes = _classes(audit["findings"])
+    assert "CHECK_WITHOUT_ORACLE" in classes
+    assert "REQUIREMENT_WITHOUT_CHECK" not in classes
+
+
 # ---------------------------------------------------------------------------
 # REQUIREMENT_WITHOUT_CHECK
 # ---------------------------------------------------------------------------

@@ -89,7 +89,26 @@ checks without a question, checkbox, or verification verb. Keep the fix open
 until the check/workflow distinction has an explicit contract, focused
 negative/positive cases, and a version/consumer plan if persisted IR changes.
 
-## Disposition and open work
+### Mitigation hypothesis — same-line step/check overlap is not enough
+
+A proposed mitigation would have treated a check as non-coverage whenever its
+source span also appeared in `procedural_steps`. I applied that predicate to
+the same consumed 427-file slice as an impact replay: the candidate count for
+`REQUIREMENT_WITHOUT_CHECK` would rise from 114 to 124 skills (+10). Source
+review of those ten additions found plausible verification operations among
+them, including confirming a user's authorization, checking server payloads,
+testing hypotheses, validating specification values, and confirming a hit in
+Repeater. These examples show that same-line overlap signals ambiguity; it does
+not establish that an item is only workflow.
+
+**Disposition:** reject this mitigation. The count is a development impact
+result on a consumed set, not an accuracy estimate. The auditor code remains
+unchanged; a characterization test preserves the reproduced suppression and
+will need an explicit decision when a semantic check/workflow contract exists.
+A fresh and independently adjudicated corpus is still needed before choosing a
+classifier or changing persisted IR.
+
+## Disposition after source-overlap probe
 
 No parser patch is made. A broad title-shape filter risks dropping real
 domain-specific headings such as `Live Odds Check`; preserving all titles
