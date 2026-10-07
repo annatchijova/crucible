@@ -41,6 +41,27 @@ def test_coverage_flag_requires_installed_mode(monkeypatch):
     assert exc.value.code == 2
 
 
+@pytest.mark.parametrize('include_coverage', [False, True])
+def test_empty_installed_cli_keeps_coverage_opt_in(
+    tmp_path, monkeypatch, capsys, include_coverage
+):
+    """Empty-scan coverage is additive; legacy error JSON stays unchanged."""
+    monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))
+    args = ['crucible', '--scan-installed']
+    if include_coverage:
+        args.append('--include-coverage')
+    monkeypatch.setattr(sys, 'argv', args)
+
+    assert main() == 1
+    result = json.loads(capsys.readouterr().out)
+    assert 'error' in result
+    if include_coverage:
+        assert result['coverage']['status'] == 'EMPTY'
+        assert result['coverage']['discovered'] == 0
+    else:
+        assert 'coverage' not in result
+
+
 def test_collection_limit_has_machine_readable_error(monkeypatch, capsys):
     def fail():
         raise ValueError('installed collection exceeds directory limit')

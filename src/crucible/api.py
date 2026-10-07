@@ -111,6 +111,18 @@ def scan_installed_skills() -> dict[str, Any]:
     Returns the audit artifact with the L1 IR and L3 graph.
     """
     skill_dirs = _find_installed_skill_dirs()
+    def coverage_report(items: list[dict[str, str]], analyzed: int) -> dict[str, Any]:
+        skipped = sum(item['status'] == 'SKIPPED_DUPLICATE' for item in items)
+        return {
+            'scope': 'installed-direct-child-packages',
+            'status': 'EMPTY' if not items else ('PARTIAL' if skipped else 'COMPLETE'),
+            'discovered': len(items),
+            'analyzed': analyzed,
+            'skipped': skipped,
+            'items': items,
+            'searched': [str(p) for p in _standard_skill_dirs()],
+        }
+
     if not skill_dirs:
         return {
             "audit": None,
@@ -121,6 +133,7 @@ def scan_installed_skills() -> dict[str, Any]:
             "searched": [
                 str(p) for p in _standard_skill_dirs()
             ],
+            "coverage": coverage_report([], 0),
         }
     # Stage only compiler inputs, with source identity and byte checks before
     # writing. Preserve nested SKILL.md paths and historical package precedence.
@@ -185,6 +198,7 @@ def scan_installed_skills() -> dict[str, Any]:
                 "error": "no SKILL.md files found in installed skill directories",
                 "skipped_duplicates": skipped_duplicates,
                 "searched": [str(p) for p in skill_dirs],
+                "coverage": coverage_report(coverage_items, count),
             }
         ir = compile_corpus(tmpdir, max_skills=_MAX_SCAN_SKILLS)
         audit = audit_corpus(ir)
@@ -194,15 +208,7 @@ def scan_installed_skills() -> dict[str, Any]:
             "ir": _redact_ir(ir),
             "graph": graph,
             "skipped_duplicates": skipped_duplicates,
-            "coverage": {
-                'scope': 'installed-direct-child-packages',
-                'status': 'PARTIAL' if skipped_duplicates else 'COMPLETE',
-                'discovered': len(coverage_items),
-                'analyzed': count,
-                'skipped': len(skipped_duplicates),
-                'items': coverage_items,
-                'searched': [str(p) for p in _standard_skill_dirs()],
-            },
+            "coverage": coverage_report(coverage_items, count),
         }
 
 

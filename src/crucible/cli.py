@@ -281,7 +281,10 @@ def main() -> int:
         from .api import scan_installed_skills
         result = scan_installed_skills()
         if result.get("error"):
-            _emit(result, args.human)
+            output = result
+            if not args.include_coverage:
+                output = {key: value for key, value in result.items() if key != 'coverage'}
+            _emit(output, args.human)
             return 1
         coverage = result.get('coverage')
         if coverage and coverage['status'] == 'PARTIAL':

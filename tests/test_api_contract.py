@@ -169,6 +169,30 @@ def test_scan_installed_returns_result(tmp_path, monkeypatch) -> None:
     assert "audit" in result or "error" in result
 
 
+@pytest.mark.parametrize('create_empty_root', [False, True])
+def test_scan_installed_empty_reports_explicit_coverage(
+    tmp_path, monkeypatch, create_empty_root
+) -> None:
+    """An empty installed scan is reported as EMPTY with zero counts.
+
+    Mutation: omit coverage from either empty return path -> red.
+    """
+    monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))
+    if create_empty_root:
+        (tmp_path / '.codex/skills').mkdir(parents=True)
+
+    result = scan_installed_skills()
+
+    assert result['audit'] is None
+    assert 'error' in result
+    assert result['coverage']['status'] == 'EMPTY'
+    assert result['coverage']['discovered'] == 0
+    assert result['coverage']['analyzed'] == 0
+    assert result['coverage']['skipped'] == 0
+    assert result['coverage']['items'] == []
+    assert result['coverage']['searched']
+
+
 def test_scan_installed_is_deterministic(tmp_path, monkeypatch) -> None:
     """Invariant: scanning installed skills twice produces the same digest.
     Mutation: introduce non-determinism -> this test goes red."""
