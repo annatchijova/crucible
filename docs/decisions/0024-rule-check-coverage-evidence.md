@@ -48,6 +48,9 @@ decision, and must bind both source digests, validate IDs/conflicts, authenticat
 adjudication provenance, and appear in the composite report's digest chain.
 See the mechanism/consumer comparison and the [authority boundary red-team
 review](../red-team/2026-10-07-coverage-map-authority-review.md).
+The validator-only prototype currently accepts declared/proposed links but
+cannot emit or consume an adjudicated state; its digest is unkeyed and its
+evidence locator is not verified.
 
 ## Alternatives considered
 
@@ -96,18 +99,21 @@ impact, and whether link proposals can be consumed by L15.
 
 ## Revisit trigger
 
-The first mechanism comparison and a source-confirmed authority-boundary review
-are recorded in the linked experiment and its red-team companion. The matrix
-uses six synthetic fixtures with five labeled cases and one explicit abstention.
-It confirms the predicted threshold trade-off but is not independent
-validation: thresholds were informed by an earlier consumed fixture, labels
-were authored for this exercise, and no model was run. Do not treat this
-trigger as satisfied. Accept, revise, or reject after an independently
-adjudicated fixture set tests positive, negative, ambiguous, partial, and
-misdeclared relations, including explicit abstention behavior. Any
+The first mechanism comparison, authority-boundary review, and validator-only
+prototype are recorded in the linked experiment and red-team companion. The
+matrix uses six synthetic fixtures with five labeled cases and one explicit
+abstention; the prototype accepts four valid structural declaration/proposal
+shapes and rejects 10 invalid cases. Neither establishes relation accuracy or
+reviewer identity.
+Thresholds were informed by an earlier consumed fixture, labels were authored
+for this exercise, and no model was run. Do not treat this trigger as
+satisfied. Accept, revise, or reject after an independently adjudicated
+fixture set tests positive, negative, ambiguous, partial, misdeclared, stale,
+and conflicting relations, including explicit abstention behavior. Any
 implementation proposal must include consumer inventory, artifact
-compatibility treatment, corpus impact evidence, and a validated human/model
-output contract before changing the auditor.
+compatibility treatment, corpus impact evidence, authenticated adjudication,
+and a validated human/model output contract before changing the auditor or
+recommendation path.
 
 ## Evidence
 

@@ -332,10 +332,36 @@ provenance, and inclusion in the final report digest chain.
 The inherited stale-source recommendation test passed, failed under a temporary
 negative-control mutation that disabled the digest-mismatch guard, and passed
 after restoration. This is evidence for that existing guard only. No proposed
-coverage-map validator or consumer was tested, and no independent reviewer was
-available. The next engineering step is a validator-only schema prototype;
+coverage-map consumer was tested at that stage, and no independent reviewer
+was available. The subsequent validator-only prototype is recorded below;
 consumer integration remains gated on independent labels and an explicit
 authority contract.
+
+### Validator-only schema prototype
+
+The follow-up prototype is
+[`coverage_map_contract_prototype.py`](coverage_map_contract_prototype.py).
+It binds a relation map to both source digests, verifies source artifact
+self-digests, rejects unknown or conflicting IDs, disallows unsupported
+`ADJUDICATED` status, constrains declaration/proposal provenance, and checks a
+canonical map digest. This is a draft contract, not a production API; the
+unkeyed digest provides consistency, not actor authentication.
+
+Pre-run oracle: accept one well-formed declaration, deterministic proposal,
+model proposal, and sorted mixed-provenance map with existing IDs; reject stale
+IR/audit bindings, tampered IR/audit payloads, invented rule/check IDs,
+duplicate relations, unauthenticated adjudication status, incompatible
+provenance, and a tampered map digest. Observed: all 14 cases matched
+expectations. Two runs produced byte-identical output. As a negative control,
+disabling the IR-binding check caused the stale-IR case to be accepted and the
+harness to report failure; after restoration all 14 cases passed again.
+
+The accepted declaration is not proof of coverage: the positive case can be
+semantically false and `evidence_ref` is not resolved. No reviewer identity is
+authenticated, and neither a digest nor a state label can supply that missing
+trust. The harness tests structural rejection paths only; it has no semantic
+accuracy metric and does not call a model. No production code or persisted
+schema changed.
 
 This experiment confirms current behavior on six local fixtures. Human labels
 for the four route controls come from a single-reviewer, consumed pilot; the

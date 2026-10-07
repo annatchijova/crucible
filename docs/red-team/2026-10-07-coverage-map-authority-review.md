@@ -98,10 +98,40 @@ was available, so the relation correctness question remains open. The focused
 test is a precedent test for stale-source handling, not a coverage-link
 accuracy result.
 
-## Next step
+## Validator-only contract prototype
 
-Draft a versioned artifact contract and validator **without wiring it into
-recommendations**. Red-team the schema/ID/digest/provenance boundary first.
-Only after a separate reviewer supplies fresh adjudications should a consumer
-be proposed; then version the recommendation/report contract and replay its
-downstream digests and behavior.
+The follow-up prototype is
+[`coverage_map_contract_prototype.py`](../evidence/coverage_map_contract_prototype.py).
+Its proposed v1 shape binds `source_ir_digest` and `source_audit_digest`,
+verifies source self-digests, contains sorted unique `(skill, rule_id, check_id)`
+entries, allows only `DECLARED/AUTHOR_SOURCE` and
+`PROPOSED/DETERMINISTIC|MODEL`, validates IDs against the exact bound IR, and
+seals canonical payload bytes with `coverage_map_digest`. It rejects unknown
+fields and unsupported states, including `ADJUDICATED` until there is an
+authenticated review mechanism.
+
+The fixture prediction was exact: a valid declaration, a deterministic
+proposal, a model proposal, and a sorted mixed-provenance map are accepted;
+stale bindings, modified source artifacts with stale digests, fabricated IDs,
+duplicate relation keys, unsupported adjudication, mismatched provenance, and
+a changed map payload are rejected. All 14 expectations were met. Two
+consecutive executions emitted byte-identical JSON. A negative-control
+mutation disabled the IR-digest binding check; the stale-IR case was then
+accepted and the harness failed. Restoring the guard returned the harness to
+14/14. No mutation remains.
+
+The positive control is deliberately only structural: a false
+`AUTHOR_SOURCE` relation is accepted if it is well formed and refers to real
+IDs. That is correct for a declaration-only artifact, but it means the map
+cannot claim verified coverage. `coverage_map_digest` is an unkeyed hash and
+`evidence_ref` is a string locator; neither authenticates the actor or source
+line. The prototype also does not resolve the locator or assess the check's
+oracle. The IR/audit inputs are assumed to come from a trusted local compiler
+and auditor; digest self-consistency is not a signature or trust root.
+
+No production consumer was wired. No relation truth set or independent human
+review was available. Treat this as a validator contract spike only, not an
+accepted API/schema. Before persistence, decide source ownership and stable IDs;
+before any adjudicated state or recommendation effect, establish reviewer
+authentication, fresh independent labels, and a versioned downstream report
+contract.
