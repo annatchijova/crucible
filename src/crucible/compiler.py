@@ -1161,6 +1161,8 @@ def _extract_checks(
     lines: list[str],
     sections: dict[str, tuple[int, int]],
     body_start: int,
+    *,
+    check_trace: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Extract checks from a skill body.
 
@@ -1184,13 +1186,15 @@ def _extract_checks(
     slash-command bot for system health checks") -- these are narrative
     usage walkthroughs under a top-level "## Examples" section, not a
     normative checklist, the same non-normative role "## Examples"
-    already has everywhere else in this compiler. A title-shape filter
-    alone cannot separate this from non-Example sections with a similarly
-    check-flavored name ("Futures Market Check", "Live Odds Check").
-    Existing fixtures preserve extraction for that title shape, but a later
-    single-reviewer held-out pilot classified the sports examples as
-    workflow steps under the criterion used there. This remains a design
-    question, not confirmed semantic ground truth. See
+    already has everywhere else in this compiler. This exclusion applies
+    to the section-list path only; explicit verification-starter lines in
+    examples may still be extracted by the global path. The pilot found
+    two such records, so an Example heading alone does not explain every
+    extracted check. A title-shape filter alone cannot separate this from
+    non-Example sections with a similarly check-flavored name ("Futures
+    Market Check", "Live Odds Check"). The held-out pilot classified the
+    sports sections as workflows under its provisional criterion; this
+    remains a design question, not confirmed semantic ground truth. See
     docs/red-team/2026-10-07-check-heading-adjudication.md and
     docs/evidence/2026-10-07-check-heading-evaluation.md.
 
@@ -1205,11 +1209,10 @@ def _extract_checks(
     #
     # Matches _EXPLICIT_LIST_MARKER (bullet OR numbered), not _BULLET alone:
     # a numbered list under a recognized Checks heading ("### Live Odds
-    # Check" -> 3 numbered steps) was invisible here, each item silently
-    # lost rather than extracted. Confirmed on a held-out corpus
-    # (machina-sports/sports-skills): polymarket's "Live Odds Check"
-    # section's 3 real checks never appeared in the IR at all. See
-    # docs/evidence/2026-10-04-held-out-corpora-adjudication/FINDINGS.md.
+    # Check" -> 3 numbered items) was invisible here and is now
+    # extracted. A later single-reviewer pilot classified the sports
+    # section items as workflow steps rather than criteria; that semantic
+    # label remains provisional. See docs/evidence/2026-10-07-check-heading-evaluation.md.
     for title, (start, end) in sections.items():
         if _EXAMPLE_HEADING.match(title):
             continue
@@ -1227,14 +1230,26 @@ def _extract_checks(
                     "oracle_kind": _extract_oracle_kind(text),
                     "source_span": {"line": index + 1, "column": 1},
                 })
+                if check_trace is not None:
+                    check_trace.append({
+                        "check_id": checks[-1]["id"],
+                        "source_line": index + 1,
+                        "extraction_method": "section-list",
+                        "section_title": title,
+                    })
                 seen_lines.update(range(index, last + 1))
 
     # 2. Extract verification-starter lines from anywhere in the body.
+    current_section_title: str | None = None
     for index in range(body_start, len(lines)):
-        if index in seen_lines or index in code_lines:
+        if index in code_lines:
             continue
         line = lines[index]
-        if _HEADING.match(line):
+        heading = _HEADING.match(line)
+        if heading:
+            current_section_title = heading.group("title").strip().lower()
+            continue
+        if index in seen_lines:
             continue
         if not _VERIFICATION_STARTER.match(line):
             continue
@@ -1262,6 +1277,13 @@ def _extract_checks(
             "oracle_kind": _extract_oracle_kind(text),
             "source_span": {"line": index + 1, "column": 1},
         })
+        if check_trace is not None:
+            check_trace.append({
+                "check_id": checks[-1]["id"],
+                "source_line": index + 1,
+                "extraction_method": "verification-starter",
+                "section_title": current_section_title,
+            })
         seen_lines.update(range(index, last + 1))
 
     return checks

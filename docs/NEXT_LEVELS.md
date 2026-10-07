@@ -27,8 +27,9 @@ for methodological accuracy or release readiness.
 | Use and publish the complete workflow | CLI, API and read-only viewer | End-to-end user tasks, accessibility, deployment/privacy review and release evidence | Gate open; not release-ready |
 
 The current check-heading pilot is a spent validation slice, not an independent
-benchmark. Its labeling criterion, baseline counts, subgroup results, and
-single-reviewer limits are recorded in the
+benchmark. Its diagnostic trace separates the extraction routes without
+changing persisted IR. The labeling criterion, route counts, subgroup results,
+and single-reviewer limits are recorded in the
 [2026-10-07 evaluation note](evidence/2026-10-07-check-heading-evaluation.md).
 
 ### Active block: runtime evidence and replay

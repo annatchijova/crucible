@@ -3,7 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from crucible.compiler import compile_corpus
+from crucible.compiler import (
+    _extract_checks,
+    _parse_frontmatter,
+    _section_ranges,
+    compile_corpus,
+)
 
 
 def _write_skill(root: Path, name: str, body: str) -> Path:
@@ -965,3 +970,44 @@ def test_structural_headings_excludes_code_fence_lines(tmp_path: Path) -> None:
     artifact = compile_corpus(tmp_path)
 
     assert artifact["skills"][0]["structural_headings"] == ["real section"]
+
+
+def test_check_extraction_trace_identifies_both_paths(tmp_path: Path) -> None:
+    skill_dir = _write_skill(
+        tmp_path,
+        "trace",
+        "---\nname: trace\ndescription: Trace check extraction.\n---\n\n"
+        "## Validation Criteria\n\n"
+        "- The response status is 200.\n\n"
+        "## Instructions\n\n"
+        "Verify the signed result is valid.\n\n"
+        "## Instructions\n\n"
+        "Verify the second signed result is valid.\n",
+    )
+    path = skill_dir / "SKILL.md"
+    lines = path.read_text(encoding="utf-8").splitlines()
+    _, body_start = _parse_frontmatter(lines, "trace/SKILL.md")
+    trace: list[dict[str, object]] = []
+    checks = _extract_checks(
+        lines, _section_ranges(lines, body_start), body_start,
+        check_trace=trace,
+    )
+    assert [check["text"] for check in checks] == [
+        "The response status is 200.",
+        "Verify the signed result is valid.",
+        "Verify the second signed result is valid.",
+    ]
+    assert trace == [
+        {"check_id": "check-0001", "source_line": 8,
+         "extraction_method": "section-list",
+         "section_title": "validation criteria"},
+        {"check_id": "check-0002", "source_line": 12,
+         "extraction_method": "verification-starter",
+         "section_title": "instructions"},
+        {"check_id": "check-0003", "source_line": 16,
+         "extraction_method": "verification-starter",
+         "section_title": "instructions"},
+    ]
+    compiled_checks = compile_corpus(tmp_path)["skills"][0]["checks"]
+    assert compiled_checks == checks
+    assert all("extraction_method" not in item for item in compiled_checks)

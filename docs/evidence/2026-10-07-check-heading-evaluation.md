@@ -38,10 +38,11 @@ all source lines. The repositories and several examples had already been
 inspected, so this review consumes the held-out set. Labels below are a single
 reviewer's provisional adjudication, not independent expert ground truth.
 
-Some records come from `_extract_checks`'s section-list path and some from its
-global verification-starter path. The current IR does not record which path
-produced a check. Therefore these counts characterize the returned IR slice;
-they do not isolate the causal effect of heading-title matching.
+The persisted IR does not record the extraction path. A private diagnostic
+parameter now records `section-list` vs `verification-starter` plus source
+line and nearest section title; it does not alter the persisted IR shape.
+The traced extractor and ordinary `compile_skill_file` output were compared
+for all 427 files and returned identical check records.
 
 ## Results
 
@@ -58,6 +59,11 @@ they do not isolate the causal effect of heading-title matching.
 | Sports skills | 0 | 14 | 0 | 0 | 14 |
 | TerminalSkills sample | 17 | 8 | 8 | 1 | 34 |
 
+| Extraction route | CHECK | WORKFLOW | REFERENCE | ABSTAIN | Total |
+|---|---:|---:|---:|---:|---:|
+| `section-list` | 16 | 20 | 8 | 0 | 44 |
+| `verification-starter` | 1 | 2 | 0 | 1 | 4 |
+
 The current output labels all 48 records as `checks`. Under the provisional
 criterion, 17/48 (35.4%) are clear checks, 30/48 (62.5%) are clear workflow or
 reference material, and one is unresolved. If the unresolved case is a check,
@@ -69,19 +75,18 @@ all sections or lines that the current extractor omitted.
 
 The current regression controls both pass: an `Example N:` heading with
 check-family words is not extracted through the section-list path, and a
-non-Example check heading is still recognized. These tests confirm those
-specific behaviors; they do not establish that every retained heading is a
-check. The additional Example records in this scan were produced by the global
-verification-starter path, showing why extraction provenance must be visible
-before attributing every false positive to the heading matcher.
+non-Example check heading keeps its existing extraction behavior. These tests
+confirm those specific behaviors; they do not establish that every retained
+heading is a check. Two Example records in this set were instead produced by
+the global verification-starter path.
 
 ## Decision and next measurable step
 
-This pilot establishes a usable labeling criterion and a concrete error
-surface, but it does not support a safe rule patch yet. First add extraction
-provenance to the IR (`section-list` vs `verification-starter`) and preserve
-the relevant heading path. Then turn the clear examples above into negative
-and positive fixtures, adjudicate the single abstention independently, and
-rerun the same pinned set as a spent validation set. Keep a new corpus or
-shard untouched for a later evaluation. Do not claim a general precision or
-recall improvement from this pilot alone.
+This pilot establishes a usable criterion and error surface, but the labels
+remain single-reviewer and do not support a safe semantic rule patch. The
+diagnostic trace now separates the two extraction routes without changing
+serialized data. The next step is to turn clear cases from both routes into
+positive and negative fixtures and adjudicate the ONNX comparison case
+independently. Reuse this pinned set only as spent validation; reserve a new
+corpus or shard for later evaluation. Do not claim general precision or recall
+from this pilot.

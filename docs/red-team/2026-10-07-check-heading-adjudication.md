@@ -63,12 +63,19 @@ inspected. The complete source, method, subgroup counts, and limits are in the
 [held-out pilot evaluation](../evidence/2026-10-07-check-heading-evaluation.md).
 
 This supports a measurable false-positive hypothesis in the selected slice,
-but does not isolate the title matcher from the global verification-starter
-path: current IR records do not retain extraction provenance. The next code
-increment should expose that provenance, then add fixtures for clear checks,
-workflow headings, and incidental title phrases. Keep the broader metric
-`CANDIDATE` until that distinction and the one abstention are adjudicated
-independently.
+but the labels remain provisional. A diagnostic-only `check_trace` now
+separates `section-list` from `verification-starter` and records line/title
+without changing the IR schema. In this run, 44 of the 48 records came from
+the section-list path and 4 from the global starter path; normal persisted IR
+still carries no trace field. Adversarial fixture review found that two
+same-named `Instructions` headings made the title-keyed section map lose
+the first range, so the diagnostic initially reported no title for its
+verification-starter record. The trace now follows active headings line
+by line while skipping code fences; the repeated-heading regression test
+passes. This was a diagnostic metadata defect, not a persisted check or
+schema change. The next code increment should add tests for clear checks,
+workflow headings, and incidental title phrases. Keep the
+semantic claim `CANDIDATE` until the label rule is independently adjudicated.
 
 ## Reproduction
 
