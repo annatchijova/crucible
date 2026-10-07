@@ -22,7 +22,7 @@ for methodological accuracy or release readiness.
 | Product outcome | Evidence now | Remaining exit evidence | Work state |
 |---|---|---|---|
 | Audit one skill, a repository or installed packages with honest scope | Local APIs/CLI, sealed independent collection, ingestion regression cases | Shared cross-mode coverage contract, explicit roots, missing-context reporting, equivalence fixtures | Implemented in part; gate open |
-| Inspect and replay a bounded model experiment without recontacting the provider | Saved real L5 run; v2 bundles with source/oracle links; journal, export, pinned replay and explicit re-evaluation | Integrated release verification; repeated/held-out repair evaluation | **R1–R4 exercised locally/live; one R4 fixture run accepted** |
+| Inspect and replay a bounded model experiment without recontacting the provider | Saved real L5 run; v2 bundles with source/oracle links; journal, export, pinned replay and explicit re-evaluation | Integrated release verification; repeated/held-out repair evaluation | **R1–R4 exercised locally/live; two accepted synthetic L7 captures, one v2 decision replay MATCH** |
 | Justify findings and repair decisions independently | Seeded mutations, external-corpus fixtures, local repair loop | Held-out adjudication, class-level denominators, repeated pinned experiments, real repair evidence | Gate open; not benchmarked |
 | Use and publish the complete workflow | CLI, API and read-only viewer | End-to-end user tasks, accessibility, deployment/privacy review and release evidence | Gate open; not release-ready |
 
@@ -38,9 +38,9 @@ for methodological accuracy or release readiness.
 3. **R3 — offline replay:** reproduce observations and acceptance decisions with
    the pinned oracle (property decisions are PASS/FAIL/ABSTAINED), reject
    tampered/mismatched bundles, and distinguish replay from re-evaluation under
-   a newer oracle. Keep historical outputs untouched. The current bundle does
-   not carry L7 repair-decision inputs, so replay must not claim to reconstruct
-   L7 acceptance.
+   a newer oracle. Keep historical outputs untouched. The general
+   `crucible-replay-bundle/v2` does not carry L7 repair-decision inputs; the
+   separate repair-evidence bundle now has its own offline L7 replay path.
 4. **R4 — real repair evidence:** only after R2/R3, run the authorized provider
    path and retain a full evidence bundle, including rejected/failed outcomes.
    A favorable single run does not close independent evaluation.
@@ -63,26 +63,33 @@ four-way Nebius adapter. This is not a live-provider rerun or global recovery
 guarantee. R3 has separate pinned replay and explicit re-evaluation CLI paths.
 They recompute per-property observations offline and seal a new result without
 changing the bundle. The [R3 review and negative controls](red-team/2026-10-01-r3-replay-code-review.md)
-close local R3 verification under its stated trust assumptions. Replay reports
-per-property decision agreement and does not reconstruct L7 repair acceptance.
+close local R3 verification under its stated trust assumptions. The R3
+behavioral-bundle replay reports per-property agreement; it remains separate
+from the repair-evidence replay that reconstructs L7 acceptance.
 R4's private capture path and local negative controls are implemented in
 `repair_evidence.py`. On 2026-10-02, the first live fixture response ended with
 `finish_reason=length` at the 1,000-token cap and was retained as
 `REJECTED / NO_PROPOSAL`. After increasing the shared cap to 3,000, a second
 capture returned `ACCEPTED`: the targeted finding disappeared, no new findings
-appeared, and the seeded behavioral property changed from FAIL to PASS. Both
-bundles verify offline; raw captures match their journal events. This is one
-synthetic task and one provider session, not evidence of general repair
-accuracy or stability. Integrated release verification remains open. See the
+appeared, and the seeded behavioral property changed from FAIL to PASS. On
+2026-10-07, an accepted loop-v2 run was captured at
+`/tmp/crucible-l7-live-20261007-04`; all three responses were complete and the
+new `--replay-repair-evidence` command returned `MATCH` without contacting
+Nebius. Earlier captures that used the pre-fix proposal prompt correctly return
+`NOT_REPLAYABLE` under the current prompt. The accepted evidence is still one
+synthetic task and one model session, not evidence of general repair accuracy
+or stability. Independent evaluation and integrated release verification
+remain open. See the
 [L7 evidence contract](REPAIR_EVIDENCE.md) and [27-day plan](27_DAY_BUILD_PLAN.md).
 
 L7 correctness increment: the ordinary repair loop is now version 2. It rejects
 length-limited or metadata-incomplete Nebius proposals before re-audit and
 returns `ERROR / INCOMPLETE_PROVIDER_RESPONSE` if either behavioral response
 cannot support an observation. A response is usable only with stop completion,
-no truncation, nonempty output/response ID, and consistent usage counts. This is
-local contract evidence; a new live Nebius repair run is still needed to verify
-the current integration end to end.
+no truncation, nonempty output/response ID, and consistent usage counts. Local
+contract tests and one live-capture/replay pair verify the current integration
+end to end for the built-in synthetic task. This is not a stability estimate
+or independent repair evaluation.
 
 ### Selection and closure discipline
 

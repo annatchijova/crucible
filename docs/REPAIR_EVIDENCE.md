@@ -18,6 +18,20 @@ representation. `verify_repair_evidence` checks internal bundle/source/event
 consistency offline; it does not authenticate Nebius or anchor the digest
 outside the local evidence directory.
 
+`crucible --replay-repair-evidence BUNDLE_JSON` reconstructs the L7 decision
+offline from recorded response projections. It requires the current repair-loop
+and property-oracle identities and checks that captured prompts and request
+configuration match the local repair inputs. It feeds those recorded outputs
+through the existing compile, audit, behavioral-oracle, and acceptance path; it
+never creates a provider executor or makes a network call. `MATCH` means the
+decision surface reproduces, `DIVERGED` means it does not, `NOT_REPLAYABLE` means
+the current implementation or event sequence cannot replay that bundle, and
+`INVALID_EVIDENCE` means local structure/seal validation failed. The command
+exits zero only for `MATCH` and prints a summary without captured prompts or
+outputs. Decision comparison omits only executor class labels, so raw loop
+digests can differ while decision digests match. This remains local
+recomputation, not provider authentication or an external timestamp/signature.
+
 Incomplete, malformed, errored, or truncated provider responses are retained.
 They are not eligible to produce a proposal or behavioral observation. Loop v2
 also applies this gate in the ordinary repair loop: a Nebius response must have

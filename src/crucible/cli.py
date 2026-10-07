@@ -223,9 +223,11 @@ def main() -> int:
                               help='recompute observations offline with the exact recorded oracle')
     replay_modes.add_argument('--reevaluate-bundle', metavar='BUNDLE_JSON',
                               help='explicitly recompute observations with the installed oracle')
+    replay_modes.add_argument('--replay-repair-evidence', metavar='BUNDLE_JSON',
+                              help='reconstruct an L7 decision offline from a captured repair bundle')
     args = parser.parse_args()
     replay_names = ('capture_replay', 'inspect_replay', 'export_replay',
-                    'replay_bundle', 'reevaluate_bundle')
+                    'replay_bundle', 'reevaluate_bundle', 'replay_repair_evidence')
     selected = [name for name in replay_names if getattr(args, name) is not None]
     if selected:
         if any(value is not None and value is not False for name, value in vars(args).items()
@@ -234,6 +236,24 @@ def main() -> int:
         if selected[0] in ('replay_bundle', 'reevaluate_bundle'):
             from .oracle_replay_cli import run_oracle_replay_command
             return run_oracle_replay_command(selected[0], getattr(args, selected[0]))
+        if selected[0] == 'replay_repair_evidence':
+            path = Path(getattr(args, selected[0])).expanduser()
+            try:
+                from .repair_evidence import MAX_EVIDENCE_BYTES
+                if path.stat().st_size > MAX_EVIDENCE_BYTES:
+                    raise ValueError('bundle byte limit exceeded')
+                with path.open(encoding='utf-8') as stream:
+                    bundle = json.load(stream)
+                from .repair_evidence_replay import replay_repair_evidence
+                result = replay_repair_evidence(bundle)
+            except (OSError, UnicodeError, json.JSONDecodeError, RecursionError, ValueError):
+                result = {
+                    'schema_version': 'crucible-repair-evidence-replay/v1',
+                    'status': 'INVALID_EVIDENCE',
+                    'reason': 'bundle-read-or-shape-failed',
+                }
+            _emit(result, args.human)
+            return 0 if result.get('status') == 'MATCH' else 1
         from .replay_cli import run_replay_command
         return run_replay_command(selected[0], getattr(args, selected[0]))
     if args.include_coverage and not args.scan_installed:
