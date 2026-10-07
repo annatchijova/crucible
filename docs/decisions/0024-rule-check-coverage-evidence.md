@@ -25,14 +25,23 @@ contracts change; low if limited to a new audit finding.
 ## Decision under consideration
 
 Do not make check/workflow classification the sole basis for requirement
-coverage. Prototype a three-state audit contract: no check candidate, check
-candidate with rule linkage unknown, and rule-check link evidenced. Only the
-third state may support a claim that a specific rule has a verification path.
+coverage. Prototype distinct relation states: no check candidate; link unknown;
+link declared or proposed with source provenance; and link adjudicated with
+scope and evidence. A declaration or proposal alone is not verified coverage.
 
 Keep the L1 extractor deterministic and structural during the prototype. Compare
 explicit annotations, deterministic references, and separate confirmation
 artifacts as possible sources of link evidence. This proposal does not yet
 choose among them and authorizes no persisted schema change.
+
+The current preference is to keep source declarations, deterministic candidates,
+model observations, and human adjudications as distinct provenance states. An
+author declaration or model proposal alone is not proof that a check adequately
+verifies a rule. The model must not change the sealed L2 verdict; any returned
+IDs must be validated against the input artifact. A separate versioned relation
+artifact may avoid changing the L1 IR, but its relationship to the L2 audit and
+composite report is unresolved. See the mechanism and consumer-impact comparison
+in the linked experiment record.
 
 ## Alternatives considered
 
@@ -55,6 +64,15 @@ choose among them and authorizes no persisted schema change.
   fixture because both rules share a generic noun with the check. Best point:
   deterministic lexical links are cheap, explainable, and may still be useful
   as candidate evidence when they are not treated as proof.
+- **Treat an author annotation as verified coverage.** Rejected as an
+  unqualified claim: the annotation is a source declaration, not evidence that
+  the check's oracle is adequate. Best point: a stable author-owned ID is
+  precise, deterministic, and supports imported or reviewed documents that
+  voluntarily adopt the convention.
+- **Let L2.5 decide the L2 coverage verdict.** Rejected by the existing
+  deterministic-core contract. Best point: the model can inspect paraphrases
+  and whole-skill context that deterministic links miss; retain it as a separate
+  observation or a review aid, never as an automatic mutation of L2.
 
 ## Assumption
 
@@ -72,11 +90,12 @@ impact, and whether link proposals can be confirmed in L2.5.
 
 ## Revisit trigger
 
-Accept, revise, or reject this proposal after the adversarial fixture matrix is
-run and the candidate link mechanisms are compared for positive, negative, and
-partial coverage. Any implementation proposal must include consumer inventory,
-artifact compatibility treatment, and corpus impact evidence before changing
-the auditor.
+Accept, revise, or reject this proposal after the candidate link mechanisms
+are exercised on a fresh, independently adjudicated fixture set that includes
+positive, negative, ambiguous, and partial coverage. Any implementation
+proposal must include consumer inventory, artifact compatibility treatment,
+corpus impact evidence, and a validated human/model output contract before
+changing the auditor.
 
 ## Evidence
 

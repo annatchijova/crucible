@@ -73,6 +73,23 @@ contains no `idempotent` token. A tokenizer that removes common words still
 leaves `request` on both sides. This is a hand-inspected counterexample to
 plain lexical overlap, not a benchmark of every lexical linker.
 
+We also ran the existing deterministic Jaccard token primitive on those exact
+three strings. After the current stopword filter, each rule tokenizes to two
+tokens (`request` plus its property); the check tokenizes to six tokens. Both
+rule-to-check scores are exactly `1/7`. In this partial-coverage fixture, a
+threshold at or below `1/7` proposes both edges (one correct of two); a higher
+threshold proposes neither. No threshold on this feature separates the
+covered rule from the uncovered one. This is an evaluation of one transparent
+baseline on one adversarial case, not a general accuracy claim.
+
+On this same partial fixture, the trivial edge baselines are explicit: “no
+edges” has zero recall (precision is undefined with no predictions); “connect
+every check to every rule” has 1/2 precision and full recall; the Jaccard
+baseline ties both possible edges and can only produce one of those two
+outcomes at a scalar threshold. An author annotation can declare the intended
+single edge, but remains a declaration and still requires adequacy review. The
+model alternative has no measured result in this offline run.
+
 The first harness attempt passed a temporary directory with no `SKILL.md` and
 was rejected by `compile_corpus` (`corpus contains no SKILL.md files`). The
 fixture was moved under a temporary skill directory and rerun. No repository
@@ -124,15 +141,18 @@ relationship evidence, or it must report that relationship as unresolved.
 
 ## Candidate integral design, not yet adopted
 
-Keep extraction structural and deterministic. Separate coverage into three
-states at the audit boundary:
+Keep extraction structural and deterministic. Separate relation provenance at
+the audit boundary:
 
-1. **No check candidate extracted** — retain the existing missing-check
-   candidate, with its current coarse scope stated.
-2. **Check candidate exists; rule linkage unknown** — emit an explicitly
-   unresolved coverage candidate rather than silently suppressing the gap.
-3. **Rule-check link evidenced** — only this state can support a coverage
-   claim.
+1. **No check candidate extracted** — retain a structural missing-check
+   candidate, with that limited scope stated.
+2. **Link unknown** — a check candidate exists but no relation has been
+   established; emit unresolved coverage rather than silently suppressing it.
+3. **Link declared or proposed** — retain provenance (`author`, `deterministic`,
+   or `model`) and do not call this verified coverage.
+4. **Link adjudicated** — record who/what reviewed the relation, evidence and
+   limits. Even this is text-level or behavior-level evidence within its stated
+   scope, not universal proof that the check is sufficient.
 
 Possible link evidence needs its own comparison: explicit source annotations,
 deterministic rule references, and confirmation-layer proposals all have
@@ -143,11 +163,81 @@ deterministic L2 audit. The current L2.5 prompt for
 `REQUIREMENT_WITHOUT_CHECK` assumes there are zero extracted checks, so it
 cannot simply be reused for an unresolved rule-check relation.
 
+## Link-source comparison and consumer impact
+
+This comparison is architectural, not an accuracy benchmark. No fresh labeled
+corpus or network model run was available; no external API was called.
+
+| Link source | What it establishes | Failure mode / cost | Current consumer fit |
+|---|---|---|---|
+| Author-declared stable IDs in source | The author explicitly claims a rule-check relation. | Declaration can be wrong or stale; imported skills remain unannotated; generated `rule-0001` IDs are not a stable author contract. | Parsing into L1 would change `skill-ir/v1`; alternatively keep declarations in a separate versioned source map. |
+| Deterministic lexical candidate | A repeatable string-level association worth review. | Generic shared terms over-link; paraphrases miss; the partial fixture has equal shared-term evidence for covered and uncovered rules. It cannot prove semantic coverage. | Could be produced in L2 as candidates, but counts/precision/recall are unmeasured. Avoid persisting candidate relations in L1 until utility is shown. |
+| L2.5 model proposal | A model's contextual observation about which check may address a rule. | Non-deterministic, may miss/overstate links, and must not directly change L2's verdict. No Nebius call was made. | Current prompt builder for `REQUIREMENT_WITHOUT_CHECK` asserts zero extracted checks and asks only whether the skill has missed checks; it does not ask for per-rule links or return check IDs. `MockConfirmExecutor` uses non-empty-line count for single-skill prompts, not semantics. A new typed prompt/output contract is required. |
+| Human adjudication | A reviewer accepts/rejects a proposed rule-check relation with source context. | Reviewer time and fatigue; requires a usable diff and provenance. | The intended links in these fixtures were assigned by this reviewer, not independently adjudicated. Any production review should be separately recorded and must not mutate source or audit artifacts silently. |
+
+The prompt was built offline with a hypothetical unresolved-link finding. The
+observed user prompt contained both normative rules and the check, but still
+asked whether the skill had “zero extracted checks”; it did not ask for a
+rule-to-check relation or check IDs. This falsifies reuse of the existing
+`REQUIREMENT_WITHOUT_CHECK` confirmation prompt for partial coverage. The
+confirmation artifact can carry observations separately, but any proposed
+check ID must be validated against the source IR's actual check IDs before it
+is accepted as a relation record. Skill text remains untrusted data; prompt
+envelopes alone are not an authorization control.
+
+### Local consumer-count probe
+
+Compiled `tests/fixtures` (11 skills) and counted skills with at least one
+normative rule and at least one extracted check: two (`fastapi`: 5 rules/2
+checks; `developing-with-streamlit`: 1 rule/4 checks). The existing audit
+produced four `REQUIREMENT_WITHOUT_CHECK` findings in that fixture corpus.
+These are curated test fixtures, not a representative corpus. The result only
+shows that adding one unresolved-link finding per rule could add up to six
+records in this tiny set; it is not a useful production-volume estimate.
+
+### Compatibility surface inspected
+
+- **L1 IR:** adding rule/check links to each skill changes persisted IR content
+  and its digest. `graph.py` currently requires exactly `skill-ir/v1`; it would
+  need an explicit reader/migration plan if L1 changes.
+- **L2 audit:** an added per-rule finding can fit the current finding shape,
+  but changes the class taxonomy and audit digest. If structured `check_ids` or
+  relations are added, audit version and readers need review.
+- **L2.5 confirmation:** new finding class needs a prompt builder and trust-safe
+  parser. Structured proposed links require a confirmation schema version
+  decision and ID validation. The current mock cannot evaluate semantic links.
+- **L8/report and human output:** the HTML/API/report paths render arbitrary
+  finding classes generically, but the composite report summarizes counts and
+  seals downstream digests; new evidence changes those digests even if shape
+  stays the same.
+- **Bob repair:** `RuleBasedProposer` handles the existing
+  `REQUIREMENT_WITHOUT_CHECK` class by inserting generic checks. A new
+  unresolved-link class has no deterministic repair pattern, which is safer
+  than pretending a generic added check resolves a particular rule. LLM repair
+  behavior still needs a separate gate and relationship-aware re-audit.
+- **Mutation lab:** the check-removal mutation expects the existing
+  `REQUIREMENT_WITHOUT_CHECK` class. Preserve this invariant if the class is
+  narrowed to “no check candidate extracted”; add a separate mutation for a
+  deleted or wrong rule-check link if relation records are implemented.
+- **Consolidation:** current merge coverage preserves rules and checks as text
+  items, not their cross-relations. Any persisted link map must be merged with
+  source provenance or explicitly rejected when it cannot be preserved.
+
+This favors an additive, versioned relation artifact over changing the L1 IR
+immediately, but does not settle where the eventual relation belongs. A
+candidate shape is `crucible-coverage-map/v1` referencing both source digests
+and carrying rule ID, check ID, relation state, evidence provenance and
+adjudication. This artifact could preserve the deterministic L2 audit while a
+new L2 consumer reports unresolved or adjudicated coverage; whether that
+creates an unacceptable second audit authority remains open. The main unresolved
+choice is which relation source can support each named status.
+
 This design could add a finding class or alter the meaning of an existing one.
-Before implementation, inventory all readers (`auditor`, `confirm`, `graph`,
-`consolidation`, reports, CLI) and replay finding-count and artifact-digest
-changes. If persisted IR fields are added, apply schema-evolution rules rather
-than assuming the `skill-ir/v1` digest is unaffected.
+The first consumer inventory is recorded above; before implementation, validate
+it against the exact proposed artifact shape and replay finding-count and
+artifact-digest changes. If persisted IR fields are added, apply
+schema-evolution rules rather than assuming the `skill-ir/v1` digest is
+unaffected.
 
 ## Next discriminating experiment
 
