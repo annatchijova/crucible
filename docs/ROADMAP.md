@@ -82,7 +82,9 @@ UNBOUNDED_RETRY, LLM_IN_DECISION_PATH, OVERCLAIM, MISSING_FAILURE_MODE,
 NON_DETERMINISTIC_INSTRUCTION, IRREVERSIBLE_WITHOUT_REVIEW)
 and zero are abstained. All checks are now emitted. SEMANTIC_REDUNDANCY
 uses a deterministic lexical base (Jaccard with Fraction, no floats); an
-LLM confirmation layer is deferred. CONDITIONAL_CONTRADICTION uses
+optional L2.5 confirmation path is implemented and records executor
+verdicts as separate observations without modifying the L2 audit.
+CONDITIONAL_CONTRADICTION uses
 pattern-based condition extraction (except for, when, unless, if, for,
 during, while) with effective polarity computation. SCOPE_TRIGGER_MISMATCH
 uses trigger extraction from the description and zero-overlap comparison

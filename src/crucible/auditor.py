@@ -533,10 +533,10 @@ def _check_semantic_redundancy(
     pair with overlap >= 2/3 is a CANDIDATE finding: the two skills may
     cover the same ground.
 
-    The LLM confirmation layer (deferred) would take each candidate and
-    ask the model whether the two skills are semantically redundant. The
-    deterministic check produces the candidate; the LLM confirms or
-    rejects. The LLM never enters the decision path alone.
+    The optional L2.5 confirmation path in ``confirm.py`` can consume each
+    candidate and record an executor verdict in a separate confirmation
+    artifact. That verdict is an observation, not proof of semantic
+    equivalence, and it never modifies the deterministic L2 audit.
     """
     if len(skills) < 2:
         return []
@@ -583,8 +583,9 @@ def _check_semantic_redundancy(
                 limitation=(
                     "lexical token overlap is not semantic equivalence; "
                     "two skills may share vocabulary while governing "
-                    "different scopes; an LLM confirmation layer is "
-                    "deferred and would confirm or reject each candidate"
+                    "different scopes; optional L2.5 confirmation records "
+                    "an executor verdict as a separate observation and "
+                    "does not modify the deterministic L2 audit"
                 ),
             ))
     return findings

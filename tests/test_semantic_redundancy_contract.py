@@ -227,9 +227,10 @@ def test_redundancy_evidence_names_both_skills() -> None:
 
 
 def test_redundancy_has_limitation_documented() -> None:
-    """Invariant: the finding documents that lexical overlap is not
-    semantic equivalence and that an LLM layer is deferred.
-    Mutation: claim full coverage -> red."""
+    """The finding preserves lexical limits and the separate confirmation contract.
+
+    Mutation: claim semantic equivalence or say confirmation is deferred -> red.
+    """
     audit = _audit({
         "alpha": (
             "---\nname: alpha\ndescription: Retry strategies for distributed systems.\n"
@@ -247,8 +248,11 @@ def test_redundancy_has_limitation_documented() -> None:
     redundancy = _findings_by_class(audit, "SEMANTIC_REDUNDANCY")
     assert len(redundancy) >= 1
     assert redundancy[0]["limitation"] is not None
-    assert "lexical" in redundancy[0]["limitation"].lower()
-    assert "llm" in redundancy[0]["limitation"].lower()
+    limitation = redundancy[0]["limitation"].lower()
+    assert "lexical" in limitation
+    assert "optional l2.5 confirmation" in limitation
+    assert "separate observation" in limitation
+    assert "deferred" not in limitation
 
 
 # ---------------------------------------------------------------------------
