@@ -116,6 +116,13 @@ accounting and remain outside the sealed audit. This does not yet unify the
 independent nested-collection envelope, expose exclusions by reason in every
 mode, or establish cross-mode equivalence for arbitrary directory layouts.
 
+Nested-repository fixture: `scan_directory()` now allows `compile_corpus()` to
+perform its bounded recursive discovery instead of rejecting repositories
+whose `SKILL.md` files sit below a grouping directory. A two-package nested
+fixture yields matching discovered/analyzed counts in directory and independent
+collection modes. Installed direct-child mode intentionally has narrower scope;
+this fixture does not claim equivalence for that mode.
+
 Implemented increment: installed scans now also search `~/.codex/skills` for
 direct child packages. Successful API results include source paths, discovered,
 analyzed and skipped counts, and PARTIAL coverage when duplicate package names

@@ -432,6 +432,12 @@ scans use the shared count keys `scope`, `status`, `discovered`, `analyzed`,
 details. This is input accounting, not a claim that the discovered corpus is
 complete or semantically correct.
 
+Directory scans discover `SKILL.md` recursively below the requested root,
+subject to the compiler's traversal and byte limits. A `SKILL.md` may therefore
+live below a grouping directory. This differs from the legacy installed scan,
+which considers direct-child packages only; use independent collection mode to
+account for nested packages under installed roots.
+
 ```bash
 pip install -e ".[api]"
 PYTHONPATH=src python3 -m crucible.cli --serve 127.0.0.1:8000

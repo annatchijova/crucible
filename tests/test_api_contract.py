@@ -12,6 +12,7 @@ import pytest
 from crucible.api import (
     create_app,
     scan_directory,
+    scan_installed_collection,
     scan_installed_skills,
     scan_skill_text,
 )
@@ -147,6 +148,27 @@ def test_scan_directory_multiple_skills(tmp_path: Path) -> None:
         'scope': 'local-directory-skills', 'status': 'COMPLETE',
         'discovered': 2, 'analyzed': 2, 'skipped': 0, 'errors': 0,
     }
+
+
+def test_nested_repository_coverage_matches_independent_collection(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Nested SKILL.md files compile as a directory corpus and collection.
+
+    Mutation: keep the shallow precheck in _validate_directory -> red.
+    """
+    repo = tmp_path / 'repo'
+    _write_skill(repo / 'group-a', 'alpha',
+                 '---\nname: alpha\ndescription: Alpha.\n---\n1. Validate input.\n')
+    _write_skill(repo / 'group-b', 'beta',
+                 '---\nname: beta\ndescription: Beta.\n---\n1. Validate output.\n')
+    monkeypatch.setattr('crucible.api._standard_skill_dirs', lambda: [repo])
+
+    directory = scan_directory(str(repo))
+    collection = scan_installed_collection()
+
+    assert directory['coverage']['discovered'] == directory['coverage']['analyzed'] == 2
+    assert collection['coverage']['discovered'] == collection['coverage']['analyzed'] == 2
 
 
 def test_scan_directory_rejects_nonexistent() -> None:

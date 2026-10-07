@@ -430,14 +430,8 @@ def _validate_directory(directory: str) -> None:
     path = Path(directory).resolve()
     if not path.is_dir():
         raise ValueError(f"directory does not exist: {directory}")
-    # Check for at least one SKILL.md.
-    has_skill = any(
-        (p / "SKILL.md").exists()
-        for p in path.iterdir()
-        if p.is_dir()
-    )
-    if not has_skill:
-        raise ValueError(f"no SKILL.md files found in: {directory}")
+    # compile_corpus performs bounded recursive discovery and rejects an
+    # empty corpus. A shallow precheck here would reject nested repositories.
 
 
 def create_app() -> Any:
