@@ -80,6 +80,7 @@ def test_rule_based_proposer_fixes_requirement_without_check() -> None:
     assert report["repaired_finding_count"] == 0
     assert report["proposal"]["proposer"] == "rule-based"
     assert report["proposal"]["proposed_text"] is not None
+    assert "scripts/check_requirement.sh" not in report["proposal"]["proposed_text"]
 
 
 def test_repair_reduces_finding_count_to_zero() -> None:
@@ -183,6 +184,21 @@ def test_llm_proposer_blocked_does_not_simulate(monkeypatch) -> None:
     assert report["outcome"] == OUTCOME_BLOCKED
     assert report["original_finding_gone"] is False
     assert report["repaired_finding_count"] == report["original_finding_count"]
+
+
+@pytest.mark.parametrize(
+    "finding_class", ["METHODOLOGICAL_VACUITY", "REQUIREMENT_WITHOUT_CHECK"]
+)
+def test_repair_prompt_uses_behavioral_questions(finding_class: str) -> None:
+    """Invariant: repair guidance avoids bare command-oracle checks and
+    fabricated artifacts. Mutation: restore verb-led guidance -> red."""
+    prompt = LLMProposer(api_key="test-only")._build_prompt(
+        {"class": finding_class, "skill": "retrier"},
+        "---\nname: retrier\ndescription: test\nlicense: Apache-2.0\n---\n",
+        {},
+    )
+    assert "`?`" in prompt
+    assert "Do not invent script paths" in prompt
 
 
 def test_llm_proposer_rejects_null_provider_content(monkeypatch) -> None:

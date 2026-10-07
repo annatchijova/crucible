@@ -44,10 +44,27 @@ An earlier attempt inside the restricted shell recorded a single
 - The recorded digest detects changes only relative to this local bundle; it
   is not a provider signature or an externally anchored proof.
 
-## Next engineering step
+## Prompt follow-up
 
-Review why the proposal introduced five command oracles without artifacts,
-then improve the proposer prompt or fixture guidance and add a regression
-case. After that, repeat the captured run and require a proposal to pass the
-deterministic gate before using another live call to exercise both behavioral
-requests. Keep raw captures private.
+Inspection of the captured proposal showed five checks starting with
+verification verbs (`Verify`, `Check`, `Assert`, `Confirm`, `Demonstrate`). The
+repair guidance itself asked for those verbs. The compiler classifies them as
+command oracles, and the auditor requires a named artifact for that class; the
+proposal named none. The rejection was correct, while the prompt guidance was
+misaligned with the auditor's contract.
+
+The LLM guidance for both `METHODOLOGICAL_VACUITY` and
+`REQUIREMENT_WITHOUT_CHECK` now asks for at most three observable behavioral
+questions ending in `?`, and forbids inventing script paths or unsupported
+commands. The deterministic proposer also stopped emitting the nonexistent
+`scripts/check_requirement.sh` path and now uses bounded behavioral questions.
+Regression coverage checks both prompt classes and reproduces the five-check
+rejection shape, including the guarantee that L7 stops before behavioral
+replay. The deterministic proposer no longer emits a nonexistent script path.
+The full local pytest suite passes.
+
+This local fix does not by itself prove that Nemotron follows the revised
+guidance. A follow-up private capture should confirm the proposal has no
+`COMMAND_ORACLE_WITHOUT_ARTIFACT` or other new findings. Only if it passes the
+deterministic gate will that run exercise the two behavioral requests. Keep raw
+captures private.

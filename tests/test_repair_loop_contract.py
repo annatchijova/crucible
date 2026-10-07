@@ -88,6 +88,34 @@ def test_repair_introducing_new_finding_is_rejected() -> None:
     assert "BROKEN_REFERENCE" in report["repaired_findings"]
 
 
+def test_bare_verb_checks_from_live_failure_are_rejected() -> None:
+    """Regression: the five verb-led checks from the captured Nebius
+    proposal create five command-oracle findings and must never pass L6."""
+    class BareVerbChecksProposer:
+        def propose(self, finding, skill_text, context):
+            proposed = (
+                skill_text.rstrip()
+                + "\n\n## Steps\n\n"
+                + "1. Identify the applicable requirement.\n"
+                + "2. Apply it to the operation.\n"
+                + "3. Stop and report if it is not met.\n\n"
+                + "## Checks\n\n"
+                + "- Verify retry attempts stay within the finite budget.\n"
+                + "- Check that read-only work is the only exception to the budget.\n"
+                + "- Assert idempotency before retrying an operation.\n"
+                + "- Confirm success stops further retries.\n"
+                + "- Demonstrate exhaustion stops retries with an error.\n"
+            )
+            return {"proposed_text": proposed, "rationale": "captured failure shape"}
+
+    report = run_repair_loop(proposer=BareVerbChecksProposer(), executor=LocalExecutor())
+    assert report["outcome"] == OUTCOME_REJECTED
+    assert report["rejection_reason"] == "NEW_FINDINGS"
+    assert report["original_finding_gone"] is True
+    assert report["repaired_findings"].count("COMMAND_ORACLE_WITHOUT_ARTIFACT") == 5
+    assert report["behavioral_replay"] is None
+
+
 # ---------------------------------------------------------------------------
 # Rejection: behavioral regression
 # ---------------------------------------------------------------------------

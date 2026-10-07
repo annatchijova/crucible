@@ -42,15 +42,23 @@ REPAIR_SYSTEM_PROMPT = (
 
 _REPAIR_FORMAT_GUIDANCE = {
     "METHODOLOGICAL_VACUITY": (
-        "Add a `## Steps` section with numbered actionable steps and a `## Checks` "
-        "section with bullet checks that begin with `Verify`, `Check`, `Test`, "
-        "`Assert`, `Confirm`, `Demonstrate`, `Prove`, `Run`, `Query`, or `Inspect`. "
-        "Make each check state a concrete pass/fail condition tied to the rules."
+        "Add a `## Steps` section with numbered, task-specific actions and a "
+        "`## Checks` section with at most three behavioral questions. Each check "
+        "must be a bullet that ends with `?` and states an observable pass/fail "
+        "condition tied to a supplied rule. Do not write bare verification-verb "
+        "checks (`Verify`, `Check`, `Test`, `Assert`, etc.): the auditor treats "
+        "those as command oracles and requires a real artifact. Do not invent "
+        "script paths or commands; only cite an executable artifact explicitly "
+        "present in the supplied skill."
     ),
     "REQUIREMENT_WITHOUT_CHECK": (
-        "Add a `## Checks` or `## Validation` section with bullet checks that begin "
-        "with a recognized verification verb and state a concrete pass/fail "
-        "condition for the existing requirement."
+        "Add a `## Checks` or `## Validation` section with at most three "
+        "behavioral-question bullets. Each check must end with `?` and state an "
+        "observable pass/fail condition for the existing requirement. Do not write "
+        "bare verification-verb checks (`Verify`, `Check`, `Test`, `Assert`, etc.): "
+        "the auditor treats those as command oracles and requires a real artifact. "
+        "Do not invent script paths or commands; only cite an executable artifact "
+        "explicitly present in the supplied skill."
     ),
 }
 
@@ -151,8 +159,8 @@ class RuleBasedProposer:
         # Insert a Checks section before the end of the skill text.
         check_section = (
             "\n## Checks\n\n"
-            "- Verify the requirement is satisfied before proceeding: "
-            "run `scripts/check_requirement.sh`.\n"
+            "- Does each applicable requirement hold in the context described by this skill?\n"
+            "- Is an observable pass/fail outcome available for each requirement?\n"
         )
         if "## Composes with" in skill_text:
             proposed = skill_text.replace(
@@ -195,8 +203,8 @@ class RuleBasedProposer:
         if "## Checks" not in skill_text:
             check_section = (
                 "\n## Checks\n\n"
-                "- Verify the requirement is satisfied before proceeding: "
-                "run `scripts/check_requirement.sh`.\n"
+                "- Does each applicable requirement hold in the context described by this skill?\n"
+                "- Is an observable pass/fail outcome available for each requirement?\n"
             )
             if "## Composes with" in proposed:
                 proposed = proposed.replace(
