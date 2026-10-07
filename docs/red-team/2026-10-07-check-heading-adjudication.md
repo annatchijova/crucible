@@ -48,7 +48,48 @@ about what Crucible means by “check.” The prior approximate count of 128
 substring-matching headings was not recomputed here and is not evidence that
 128 extractions are false positives.
 
-## Disposition
+### CHECK-CONSUMER-01 — workflow extraction suppresses a missing-check finding
+
+**Level:** CONFIRMED BY INDUCTION for the fixture below. **Class:** correctness
+bug in the audit's evidence accounting, not a demonstrated security bypass.
+
+**Threat model:** a skill author controls Markdown input; Crucible code and the
+audit implementation are unchanged. No claim is made about malicious intent.
+
+**Prediction:** a skill with a normative `MUST` rule and only a workflow item
+under `Live Odds Check` will get a check-shaped IR record, causing the
+requirement-without-check audit to treat the requirement as covered.
+
+**Experiment:** compiled and audited this local fixture:
+
+```markdown
+Requests MUST be reviewed against an approved policy.
+
+## Live Odds Check
+
+1. Search markets for the requested event.
+```
+
+Observed: `checks` contains “Search markets for the requested event.” with
+`oracle_kind: unknown`; the same source line is also a `procedural_steps` item.
+The audit emits `CHECK_WITHOUT_ORACLE` and `MISSING_FAILURE_MODE`, but omits
+`REQUIREMENT_WITHOUT_CHECK`. The mechanism is visible in
+`_check_requirement_without_check`: any nonempty `checks` list skips the skill.
+This confirms a missed candidate finding for this input; it does not establish
+that every check/workflow collision has the same effect or that an attacker
+can control any downstream action.
+
+The corpus pilot supplies corroborating scope evidence: all 14 sports records
+were provisionally labeled WORKFLOW, and a replay against the pinned 427-file
+set found their source lines also present in `procedural_steps`. This is a
+single-reviewer, previously inspected set, so it is not an independent error
+rate. A broader change cannot treat `oracle_kind: unknown` as “not a check”:
+condition statements such as an exact response-status criterion can be valid
+checks without a question, checkbox, or verification verb. Keep the fix open
+until the check/workflow distinction has an explicit contract, focused
+negative/positive cases, and a version/consumer plan if persisted IR changes.
+
+## Disposition and open work
 
 No parser patch is made. A broad title-shape filter risks dropping real
 domain-specific headings such as `Live Odds Check`; preserving all titles
