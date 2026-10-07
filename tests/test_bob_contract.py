@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from crucible.bob import (
     BOB_FIXTURE,
     BOB_VERSION,
@@ -217,6 +219,108 @@ def test_llm_proposer_rejects_null_provider_content(monkeypatch) -> None:
     assert proposal["proposed_text"] is None
     assert proposal["error"] == "provider returned non-text content: NoneType"
     assert proposal["finish_reason"] == "length"
+
+
+def test_llm_proposer_rejects_length_limited_text(monkeypatch) -> None:
+    """A plausible partial repair must not enter deterministic acceptance."""
+    payload = {
+        "id": "proposal-truncated",
+        "choices": [{
+            "finish_reason": "length",
+            "message": {"content": BOB_FIXTURE["retrier"] + "\n## Checks\n- Verify."},
+        }],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 100,
+                  "total_tokens": 110},
+    }
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self) -> bytes:
+            return json.dumps(payload).encode("utf-8")
+
+    monkeypatch.setattr("urllib.request.urlopen", lambda request, timeout: FakeResponse())
+    proposal = LLMProposer(api_key="test-key").propose(
+        {"class": "REQUIREMENT_WITHOUT_CHECK", "skill": "retrier"},
+        BOB_FIXTURE["retrier"],
+        {},
+    )
+
+    assert proposal["proposed_text"] is None
+    assert proposal["truncated"] is True
+    assert proposal["error"] == "provider response incomplete: finish_reason=length"
+
+
+@pytest.mark.parametrize('defect', ['missing-id', 'missing-usage', 'inconsistent-usage'])
+def test_llm_proposer_rejects_incomplete_runtime_metadata(monkeypatch, defect) -> None:
+    payload = {
+        "id": "proposal-complete",
+        "choices": [{"finish_reason": "stop",
+                     "message": {"content": BOB_FIXTURE["retrier"] + "\n## Checks\n- Verify."}}],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 100,
+                  "total_tokens": 110},
+    }
+    if defect == 'missing-id':
+        payload.pop('id')
+    elif defect == 'missing-usage':
+        payload.pop('usage')
+    else:
+        payload['usage']['total_tokens'] = 111
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self) -> bytes:
+            return json.dumps(payload).encode("utf-8")
+
+    monkeypatch.setattr("urllib.request.urlopen", lambda request, timeout: FakeResponse())
+    proposal = LLMProposer(api_key="test-key").propose(
+        {"class": "REQUIREMENT_WITHOUT_CHECK", "skill": "retrier"},
+        BOB_FIXTURE["retrier"],
+        {},
+    )
+
+    assert proposal["proposed_text"] is None
+    assert proposal["error"].startswith("provider response incomplete:")
+
+
+def test_llm_proposer_accepts_complete_provider_metadata(monkeypatch) -> None:
+    output = BOB_FIXTURE["retrier"] + "\n## Checks\n- Verify."
+    payload = {
+        "id": "proposal-complete",
+        "choices": [{"finish_reason": "stop", "message": {"content": output}}],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 100,
+                  "total_tokens": 110},
+    }
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self) -> bytes:
+            return json.dumps(payload).encode("utf-8")
+
+    monkeypatch.setattr("urllib.request.urlopen", lambda request, timeout: FakeResponse())
+    proposal = LLMProposer(api_key="test-key").propose(
+        {"class": "REQUIREMENT_WITHOUT_CHECK", "skill": "retrier"},
+        BOB_FIXTURE["retrier"],
+        {},
+    )
+
+    assert proposal["proposed_text"] == output
+    assert proposal["response_id"] == "proposal-complete"
+    assert proposal["usage"]["total_tokens"] == 110
 
 
 # ---------------------------------------------------------------------------

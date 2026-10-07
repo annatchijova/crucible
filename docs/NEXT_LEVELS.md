@@ -76,6 +76,14 @@ synthetic task and one provider session, not evidence of general repair
 accuracy or stability. Integrated release verification remains open. See the
 [L7 evidence contract](REPAIR_EVIDENCE.md) and [27-day plan](27_DAY_BUILD_PLAN.md).
 
+L7 correctness increment: the ordinary repair loop is now version 2. It rejects
+length-limited or metadata-incomplete Nebius proposals before re-audit and
+returns `ERROR / INCOMPLETE_PROVIDER_RESPONSE` if either behavioral response
+cannot support an observation. A response is usable only with stop completion,
+no truncation, nonempty output/response ID, and consistent usage counts. This is
+local contract evidence; a new live Nebius repair run is still needed to verify
+the current integration end to end.
+
 ### Selection and closure discipline
 
 - Every work block names its product outcome, prerequisite, executable exit

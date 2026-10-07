@@ -19,11 +19,15 @@ consistency offline; it does not authenticate Nebius or anchor the digest
 outside the local evidence directory.
 
 Incomplete, malformed, errored, or truncated provider responses are retained.
-They are not eligible to produce a proposal or behavioral observation, and an
-otherwise `ACCEPTED` L7 report is downgraded to `ERROR` if any captured response
-lacks complete response status, finish reason, usage, or non-truncation. The
-existing L7 deterministic/behavioral policy is otherwise unchanged. Rejected,
-blocked, and error reports remain evidence outcomes, not successful repairs.
+They are not eligible to produce a proposal or behavioral observation. Loop v2
+also applies this gate in the ordinary repair loop: a Nebius response must have
+`finish_reason=stop`, `truncated=false`, a nonempty response ID and output, and
+consistent token usage before its observations can support `ACCEPTED`. A
+length-limited or metadata-incomplete LLM proposal is not passed to re-audit.
+Captured runs retain every attempted exchange; ordinary runs return
+`ERROR / INCOMPLETE_PROVIDER_RESPONSE` without claiming the response was
+captured. Rejected, blocked, and error reports remain evidence outcomes, not
+successful repairs. Historical v1 loop reports are unchanged.
 
 Captures can contain the full skill text, task, and provider response. Keep the
 directory private and apply the provider's data-handling rules. Do not commit

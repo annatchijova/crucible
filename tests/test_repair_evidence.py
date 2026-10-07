@@ -68,6 +68,25 @@ def test_incomplete_response_is_not_usable():
                         "finish_reason": "length", "usage": {}, "error": None})
     assert not _usable({"status": "ERROR", "truncated": None,
                         "finish_reason": None, "usage": None, "error": "invalid"})
+    assert not _usable({"status": "COMPLETED", "truncated": False,
+                        "finish_reason": "content_filter", "usage": {},
+                        "output": "text", "error": None})
+    assert not _usable({"status": "COMPLETED", "truncated": False,
+                        "finish_reason": "stop", "usage": {},
+                        "output": "", "error": None})
+
+
+def test_complete_response_requires_identity_and_consistent_usage():
+    response = {
+        "status": "COMPLETED", "truncated": False, "finish_reason": "stop",
+        "usage": {"prompt_tokens": 2, "completion_tokens": 3, "total_tokens": 5},
+        "output": "complete output", "error": None,
+    }
+    assert not _usable(response)
+    response["response_id"] = "response-1"
+    assert _usable(response)
+    response["usage"]["total_tokens"] = 6
+    assert not _usable(response)
 
 
 def test_captured_run_downgrades_acceptance_if_any_response_is_truncated(tmp_path, monkeypatch):
@@ -82,7 +101,7 @@ def test_captured_run_downgrades_acceptance_if_any_response_is_truncated(tmp_pat
             "original skill", {"finding_index": 0, "total_findings": 1,
                                "all_findings": []})
         kwargs["executor"].execute("original", "task")
-        return {"loop_version": "crucible-repair-loop/v1", "outcome": "ACCEPTED",
+        return {"loop_version": "crucible-repair-loop/v2", "outcome": "ACCEPTED",
                 "rejection_reason": None, "proposal_seen": proposal.get("proposed_text"),
                 "loop_digest": "placeholder"}
 

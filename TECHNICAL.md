@@ -400,8 +400,12 @@ its adversarial review and negative-control evidence are recorded in
 [the review log](docs/red-team/2026-10-01-r3-replay-code-review.md). R4 now has
 one privately captured live fixture run, including an accepted outcome and the
 earlier truncated attempt; neither bundle authenticates provider identity or
-proves general repair quality. The [active plan](docs/NEXT_LEVELS.md) keeps
-held-out evaluation and integrated release verification open.
+proves general repair quality. The L7 loop is now version 2: incomplete Nebius
+proposals and behavioral responses cannot support acceptance without
+stop-completion, non-truncation, response identity, and consistent usage.
+This local gate change still needs a fresh live Nebius repair run. The
+[active plan](docs/NEXT_LEVELS.md) keeps held-out evaluation and integrated
+release verification open.
 
 ## 17. Runtime and API operations
 

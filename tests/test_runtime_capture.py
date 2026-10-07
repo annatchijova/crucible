@@ -33,6 +33,20 @@ def test_characterizes_existing_empty_guidance_and_missing_usage(monkeypatch):
     result = NebiusExecutor(api_key='dummy').execute('', 'task')
     assert json.loads(requests[0].data)['messages'][0]['content'] == 'You are a helpful assistant.'
     assert result['usage'] == dict(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+    assert result['runtime_metadata_complete'] is False
+
+
+def test_complete_nebius_metadata_is_marked_usable(monkeypatch):
+    payload = {
+        'id': 'response-complete',
+        'choices': [{'message': {'content': 'completed answer'}, 'finish_reason': 'stop'}],
+        'usage': {'prompt_tokens': 2, 'completion_tokens': 3, 'total_tokens': 5},
+    }
+    transport(monkeypatch, json.dumps(payload).encode())
+
+    result = NebiusExecutor(api_key='dummy').execute('guide', 'task')
+
+    assert result['runtime_metadata_complete'] is True
 
 
 @pytest.mark.parametrize('raw', [

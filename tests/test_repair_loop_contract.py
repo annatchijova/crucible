@@ -6,6 +6,8 @@ describes what would make the test go red if the invariant is violated.
 
 from __future__ import annotations
 
+import pytest
+
 from crucible.behavioral import LocalExecutor, TASK_FIXTURE
 from crucible.bob import RuleBasedProposer
 from crucible.repair_loop import (
@@ -13,7 +15,7 @@ from crucible.repair_loop import (
     OUTCOME_BEHAVIORAL_REGRESSION,
     run_repair_loop,
 )
-from crucible.bob import OUTCOME_ACCEPTED, OUTCOME_REJECTED, OUTCOME_BLOCKED
+from crucible.bob import OUTCOME_ACCEPTED, OUTCOME_REJECTED, OUTCOME_BLOCKED, OUTCOME_ERROR
 
 
 # ---------------------------------------------------------------------------
@@ -123,6 +125,34 @@ def test_behavioral_regression_is_rejected() -> None:
     # The regression must be in P3 (no unbounded retry).
     regression_props = [r["property_id"] for r in report["behavioral_replay"]["regressions"]]
     assert "P3-no-unbounded-retry" in regression_props
+
+
+@pytest.mark.parametrize('metadata_claim', [False, True])
+def test_incomplete_nebius_replay_cannot_accept_repair(metadata_claim) -> None:
+    """A length-limited provider response is not a behavioral observation."""
+
+    class TruncatedNebiusExecutor(LocalExecutor):
+        provider = "nebius-token-factory"
+        model = "test-model"
+
+        def execute(self, system_prompt, user_prompt):
+            result = super().execute(system_prompt, user_prompt)
+            result.update(
+                provider=self.provider,
+                model=self.model,
+                response_id="response-truncated",
+                finish_reason="length",
+                truncated=True,
+                runtime_metadata_complete=metadata_claim,
+            )
+            return result
+
+    report = run_repair_loop(executor=TruncatedNebiusExecutor())
+
+    assert report["outcome"] == OUTCOME_ERROR
+    assert report["rejection_reason"] == "INCOMPLETE_PROVIDER_RESPONSE"
+    assert report["behavioral_replay"]["complete"] is False
+    assert report["behavioral_replay"]["completion_errors"]
 
 
 # ---------------------------------------------------------------------------

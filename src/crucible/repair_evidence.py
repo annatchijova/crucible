@@ -207,14 +207,26 @@ class _CapturedExecutor:
                 "provider": self.provider, "temperature": self.temperature,
                 "max_tokens": self.max_tokens, "usage": response.get("usage"),
                 "response_id": response.get("response_id"),
-                "finish_reason": response.get("finish_reason"), "truncated": False}
+                "finish_reason": response.get("finish_reason"), "truncated": False,
+                "runtime_metadata_complete": True}
 
 
 def _usable(response: dict[str, Any]) -> bool:
+    usage = response.get("usage")
+    usage_is_complete = (
+        isinstance(usage, dict)
+        and all(type(usage.get(key)) is int and usage[key] >= 0
+                for key in ("prompt_tokens", "completion_tokens", "total_tokens"))
+        and usage["total_tokens"] == usage["prompt_tokens"] + usage["completion_tokens"]
+    )
     return (response.get("status") == "COMPLETED"
             and response.get("truncated") is False
-            and response.get("finish_reason") is not None
-            and response.get("usage") is not None
+            and response.get("finish_reason") == "stop"
+            and isinstance(response.get("response_id"), str)
+            and bool(response.get("response_id"))
+            and isinstance(response.get("output"), str)
+            and bool(response.get("output").strip())
+            and usage_is_complete
             and response.get("error") is None)
 
 

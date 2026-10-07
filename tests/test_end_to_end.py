@@ -209,4 +209,4 @@ def test_all_artifacts_are_versioned() -> None:
 
     from crucible.repair_loop import run_repair_loop
     loop_report = run_repair_loop(executor=LocalExecutor())
-    assert loop_report["loop_version"] == "crucible-repair-loop/v1"
+    assert loop_report["loop_version"] == "crucible-repair-loop/v2"

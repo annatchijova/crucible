@@ -336,6 +336,19 @@ class NebiusExecutor:
             return invalid_response("usage token counts must be non-negative integers")
         if finish_reason is not None and not isinstance(finish_reason, str):
             return invalid_response("choices[0].finish_reason must be a string or null")
+        response_id = result.get("id")
+        usage_complete = (
+            isinstance(usage, dict)
+            and all(key in usage for key in token_counts)
+            and all(type(usage[key]) is int and usage[key] >= 0 for key in token_counts)
+            and usage["total_tokens"] == usage["prompt_tokens"] + usage["completion_tokens"]
+        )
+        runtime_metadata_complete = (
+            isinstance(response_id, str) and bool(response_id)
+            and finish_reason == "stop"
+            and usage_complete
+            and isinstance(output, str) and bool(output.strip())
+        )
         response = {
             "output": output,
             "error": None,
@@ -344,9 +357,10 @@ class NebiusExecutor:
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
             "usage": token_counts,
-            "response_id": result.get("id", ""),
+            "response_id": response_id if isinstance(response_id, str) else "",
             "finish_reason": finish_reason,
             "truncated": finish_reason == "length",
+            "runtime_metadata_complete": runtime_metadata_complete,
         }
         if not isinstance(output, str):
             response["output"] = ""

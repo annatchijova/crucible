@@ -61,7 +61,7 @@ from .bob import (
 )
 from .ir import digest_payload
 
-LOOP_VERSION = "crucible-repair-loop/v1"
+LOOP_VERSION = "crucible-repair-loop/v2"
 
 # ---------------------------------------------------------------------------
 # Outcome codes
@@ -76,7 +76,10 @@ REJECTION_REASONS = {
     "NO_PROPOSAL": "the proposer did not generate a repair",
     "PROPOSAL_ERROR": "the proposer raised an error",
     "BEHAVIORAL_REGRESSION": "the repair fails a property that the original passed",
+    "INCOMPLETE_PROVIDER_RESPONSE": "a provider response was incomplete and cannot support acceptance",
 }
+
+INCOMPLETE_PROVIDER_RESPONSE = "INCOMPLETE_PROVIDER_RESPONSE"
 
 
 # ---------------------------------------------------------------------------
@@ -208,6 +211,15 @@ def run_repair_loop(
             executor=executor, nebius_blocked=nebius_blocked, block_reason=block_reason,
         )
 
+    if not behavioral_replay["complete"]:
+        return _build_report(
+            base_audit_digest, repaired_audit_digest, finding, proposal,
+            OUTCOME_ERROR, INCOMPLETE_PROVIDER_RESPONSE,
+            findings, repaired_findings,
+            behavioral_replay=behavioral_replay,
+            executor=executor, nebius_blocked=nebius_blocked, block_reason=block_reason,
+        )
+
     return _build_report(
         base_audit_digest, repaired_audit_digest, finding, proposal,
         OUTCOME_ACCEPTED, None,
@@ -277,6 +289,42 @@ def _run_behavioral_replay(
     original_result = executor.execute(original_prompt, user_prompt)
     repaired_result = executor.execute(repaired_prompt, user_prompt)
 
+    completion_errors = []
+    for label, result in (("original", original_result), ("repaired", repaired_result)):
+        provider = result.get("provider", getattr(executor, "provider", "unknown"))
+        if provider != "nebius-token-factory":
+            continue
+        if result.get("error"):
+            completion_errors.append({"run": label, "reason": "provider-error"})
+        elif result.get("runtime_metadata_complete") is not True:
+            completion_errors.append({"run": label, "reason": "incomplete-runtime-metadata"})
+        elif result.get("truncated") is not False or result.get("finish_reason") != "stop":
+            completion_errors.append({"run": label, "reason": "provider-response-not-complete"})
+        elif not isinstance(result.get("response_id"), str) or not result["response_id"]:
+            completion_errors.append({"run": label, "reason": "missing-response-id"})
+        elif not _valid_usage_metadata(result.get("usage")):
+            completion_errors.append({"run": label, "reason": "invalid-usage-metadata"})
+        elif not isinstance(result.get("output"), str) or not result["output"].strip():
+            completion_errors.append({"run": label, "reason": "empty-provider-output"})
+
+    if completion_errors:
+        return {
+            "skill_name": skill_name,
+            "original_observations": [],
+            "repaired_observations": [],
+            "original_properties": {},
+            "repaired_properties": {},
+            "regressions": [],
+            "regression": False,
+            "complete": False,
+            "completion_errors": completion_errors,
+            "executor": {
+                "type": type(executor).__name__,
+                "model": getattr(executor, "model", "unknown"),
+                "provider": getattr(executor, "provider", "unknown"),
+            },
+        }
+
     original_output = original_result.get("output", "")
     repaired_output = repaired_result.get("output", "")
 
@@ -305,7 +353,18 @@ def _run_behavioral_replay(
         "repaired_properties": repaired_props,
         "regressions": regressions,
         "regression": len(regressions) > 0,
+        "complete": True,
+        "completion_errors": [],
     }
+
+
+def _valid_usage_metadata(usage: Any) -> bool:
+    if not isinstance(usage, dict):
+        return False
+    keys = ("prompt_tokens", "completion_tokens", "total_tokens")
+    if any(type(usage.get(key)) is not int or usage[key] < 0 for key in keys):
+        return False
+    return usage["total_tokens"] == usage["prompt_tokens"] + usage["completion_tokens"]
 
 
 def _build_system_prompt(skill_text: str) -> str:
