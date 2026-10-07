@@ -56,10 +56,19 @@ containing a check-family word risks extracting ordinary workflow steps.
 
 The operational criterion was then applied as a single-reviewer pilot to 48
 current check records associated with check-family headings in 427 source
-files: 17 clear checks, 22 workflow steps, 8 reference statements, and 1
-abstention. All 14 such records in the sports slice were judged workflow steps
+files: 18 checks, 22 workflow steps, 8 reference statements, and no
+abstentions after reviewing the full ONNX source context. All 14 such records
+in the sports slice were judged workflow steps
 under that criterion; labels are provisional and the sample was already
-inspected. The complete source, method, subgroup counts, and limits are in the
+inspected. The ONNX Example 1 introductory line says to compare outputs,
+but the adjacent code uses `np.testing.assert_allclose` with `rtol=1e-3`
+and `atol=1e-5`, and
+the prose says a mismatch raises. Under the stated operational criterion this
+is a CHECK; the earlier ABSTAIN label used only the extracted line and missed
+the example's local oracle. This remains a one-reviewer adjudication. Four
+source-informed route fixtures now cover a positive and WORKFLOW control for
+each extraction route; they characterize existing behavior and do not claim
+semantic accuracy. Full counts, source pins, and limits are in the
 [held-out pilot evaluation](../evidence/2026-10-07-check-heading-evaluation.md).
 
 This supports a measurable false-positive hypothesis in the selected slice,

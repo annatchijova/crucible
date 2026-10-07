@@ -1011,3 +1011,64 @@ def test_check_extraction_trace_identifies_both_paths(tmp_path: Path) -> None:
     compiled_checks = compile_corpus(tmp_path)["skills"][0]["checks"]
     assert compiled_checks == checks
     assert all("extraction_method" not in item for item in compiled_checks)
+
+
+def test_check_extraction_routes_have_positive_and_workflow_control_fixtures(
+    tmp_path: Path,
+) -> None:
+    """Characterize both extraction routes with a clear criterion and a
+    workflow-shaped negative control each. The extractor currently emits
+    all four; labels are adjudication notes, not classifier output. The
+    section-list positive mirrors validation criteria, while its negative
+    mirrors the sports ``Live Odds Check`` workflow. The starter positive is
+    a direct verification instruction; its negative is a run-and-present
+    workflow. See the 2026-10-07 evaluation note for the one-reviewer limits."""
+    cases = [
+        (
+            "section-positive",
+            "## Validation Criteria\n\n- The response status is exactly 200.\n",
+            "section-list",
+            "validation criteria",
+            "The response status is exactly 200.",
+        ),
+        (
+            "section-workflow-control",
+            "## Live Odds Check\n\n1. Search markets for the requested event.\n",
+            "section-list",
+            "live odds check",
+            "Search markets for the requested event.",
+        ),
+        (
+            "starter-positive",
+            "## Instructions\n\nVerify the detached signature matches the publisher key.\n",
+            "verification-starter",
+            "instructions",
+            "Verify the detached signature matches the publisher key.",
+        ),
+        (
+            "starter-workflow-control",
+            "## Instructions\n\nRun the export, then print the generated artifact path.\n",
+            "verification-starter",
+            "instructions",
+            "Run the export, then print the generated artifact path.",
+        ),
+    ]
+
+    for name, body, expected_route, expected_title, expected_text in cases:
+        skill_dir = _write_skill(
+            tmp_path,
+            name,
+            f"---\nname: {name}\ndescription: Check route case.\n---\n\n{body}",
+        )
+        path = skill_dir / "SKILL.md"
+        lines = path.read_text(encoding="utf-8").splitlines()
+        _, body_start = _parse_frontmatter(lines, f"{name}/SKILL.md")
+        trace: list[dict[str, object]] = []
+        checks = _extract_checks(
+            lines, _section_ranges(lines, body_start), body_start,
+            check_trace=trace,
+        )
+        assert [item["text"] for item in checks] == [expected_text], name
+        assert len(trace) == 1, name
+        assert trace[0]["extraction_method"] == expected_route, name
+        assert trace[0]["section_title"] == expected_title, name

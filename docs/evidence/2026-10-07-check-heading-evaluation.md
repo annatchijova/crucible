@@ -48,32 +48,56 @@ for all 427 files and returned identical check records.
 
 | Provisional label | Records | Source groups |
 |---|---:|---|
-| CHECK | 17 | `arcjet` (1, L145); `dns-record-analyzer` (4, L81–84); `pci-dss-compliance` (12, L262–273) |
+| CHECK | 18 | `arcjet` (1, L145); `dns-record-analyzer` (4, L81–84); `pci-dss-compliance` (12, L262–273); `onnx` Example 1 (1, L123 + local code) |
 | WORKFLOW | 22 | Sports workflows: `cricket-data` (3, L78–80), `kalshi` (3, L73–75), `polymarket` (3, L79–81), `sports-news` (2, L59–60), `tennis-data` (3, L56–58); `braintrust` (1, L234); `regression-tester` (6, L43–51); `typescript` compiler-version step (1, L33) |
 | REFERENCE | 8 | `envoy` static-configuration notes (5, L130–134); `typescript` CI type-check notes (3, L143–145) |
-| ABSTAIN | 1 | `onnx` example comparing outputs without a stated tolerance (1, L123) |
+| ABSTAIN | 0 | none after source-level review of the ONNX example |
 | **Total** | **48** | **14 skill/heading pairs** |
 
 | Corpus slice | CHECK | WORKFLOW | REFERENCE | ABSTAIN | Total |
 |---|---:|---:|---:|---:|---:|
 | Sports skills | 0 | 14 | 0 | 0 | 14 |
-| TerminalSkills sample | 17 | 8 | 8 | 1 | 34 |
+| TerminalSkills sample | 18 | 8 | 8 | 0 | 34 |
 
 | Extraction route | CHECK | WORKFLOW | REFERENCE | ABSTAIN | Total |
 |---|---:|---:|---:|---:|---:|
 | `section-list` | 16 | 20 | 8 | 0 | 44 |
-| `verification-starter` | 1 | 2 | 0 | 1 | 4 |
+| `verification-starter` | 2 | 2 | 0 | 0 | 4 |
 
 The current output labels all 48 records as `checks`. Under the provisional
-criterion, 17/48 (35.4%) are clear checks, 30/48 (62.5%) are clear workflow or
-reference material, and one is unresolved. If the unresolved case is a check,
-the corresponding share is 18/48 (37.5%). These are counts in this selected,
+criterion, 18/48 (37.5%) are checks and 30/48 (62.5%) are workflow or
+reference material. The ONNX Example 1 record is classified as CHECK after
+reviewing its full context: the adjacent code calls `np.testing.assert_allclose`
+with `rtol=1e-3` and `atol=1e-5`, and the text states that a mismatch raises.
+The introductory sentence at L123 omits that criterion, but the complete
+instruction/example supplies it. This is a single-reviewer adjudication, not
+independent ground truth. These are counts in this selected,
 consumed slice, not corpus-wide precision or recall estimates. No confidence
 interval is reported because the records are not a probability sample and
 labels have one reviewer. Recall is not measured: the review did not enumerate
 all sections or lines that the current extractor omitted.
 
-The current regression controls both pass: an `Example N:` heading with
+## Route fixtures and adjudication
+
+Four source-informed fixtures now characterize each extraction route with a
+CHECK positive and a WORKFLOW negative control. The test asserts exact text,
+route, and section title; it does not implement or validate a semantic
+classifier. The two negative controls are expected to be emitted by today's
+extractor, making the semantic gap visible rather than hiding it. They are
+development fixtures, not an independent or held-out evaluation set.
+
+| Route | Fixture | Provisional label | Reason |
+|---|---|---|---|
+| `section-list` | `Validation Criteria` / exact response status | CHECK | Observable condition with a judgeable value |
+| `section-list` | `Live Odds Check` / search markets | WORKFLOW | Data gathering without an acceptance condition |
+| `verification-starter` | Verify detached signature against publisher key | CHECK | Direct operation with a determinate comparison |
+| `verification-starter` | Run export and print artifact path | WORKFLOW | Execution/presentation only |
+
+The ONNX example was separately adjudicated CHECK from its full source context,
+including the executable tolerance assertion; retain the single-reviewer
+qualification above.
+
+Existing regression controls pass: an `Example N:` heading with
 check-family words is not extracted through the section-list path, and a
 non-Example check heading keeps its existing extraction behavior. These tests
 confirm those specific behaviors; they do not establish that every retained
@@ -85,8 +109,8 @@ the global verification-starter path.
 This pilot establishes a usable criterion and error surface, but the labels
 remain single-reviewer and do not support a safe semantic rule patch. The
 diagnostic trace now separates the two extraction routes without changing
-serialized data. The next step is to turn clear cases from both routes into
-positive and negative fixtures and adjudicate the ONNX comparison case
-independently. Reuse this pinned set only as spent validation; reserve a new
-corpus or shard for later evaluation. Do not claim general precision or recall
-from this pilot.
+serialized data. The next step is independent review of the source-informed
+route fixtures and repeated evaluation on a fresh pinned corpus. Reuse this
+set only as
+spent validation; reserve a new corpus or shard for later evaluation. Do not
+claim general precision or recall from this pilot.
