@@ -446,10 +446,16 @@ docker build -t crucible .
 docker run -p 127.0.0.1:8000:8000 crucible
 ```
 
-Custom roots and external plugin caches are not automatically discovered.
+Custom roots and external plugin caches are not part of default discovery.
 Legacy installed scans retain name precedence; `--include-coverage` exposes
 omissions and partial scans warn on stderr. Independent collection scans retain
 homonyms by path and exit 1 for partial or empty coverage.
+
+Local Python callers may pass explicit directories to
+`scan_installed_skills(roots=[...])`. Roots must already exist, be directories,
+not be symlinks, and be unique; at most 256 are accepted. This parameter is not
+exposed by the HTTP route or CLI. The independent collection scanner still uses
+the standard roots.
 
 ## 18. Algorithms and verification entry points
 

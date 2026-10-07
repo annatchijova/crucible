@@ -17,7 +17,7 @@ import os
 import stat
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 from .auditor import audit_corpus
 from .compiler import (
@@ -29,6 +29,7 @@ from .ir import digest_payload
 _MAX_COLLECTION_DIRECTORIES = 10_000
 _MAX_COLLECTION_DISCOVERY_ENTRIES = 100_000
 _MAX_COLLECTION_BYTES = 20_000_000
+_MAX_EXPLICIT_SCAN_ROOTS = 256
 
 
 def _coverage_summary(scope: str, discovered: int) -> dict[str, Any]:
@@ -113,7 +114,9 @@ def _installed_children(root: Path, budget: _TraversalBudget,
     return sorted(paths)
 
 
-def scan_installed_skills() -> dict[str, Any]:
+def scan_installed_skills(
+    roots: Iterable[str | os.PathLike[str]] | None = None,
+) -> dict[str, Any]:
     """Scan the user's installed skills.
 
     Searches the standard skill directories:
@@ -124,7 +127,13 @@ def scan_installed_skills() -> dict[str, Any]:
 
     Returns the audit artifact with the L1 IR and L3 graph.
     """
-    skill_dirs = _find_installed_skill_dirs()
+    if roots is None:
+        search_roots = _standard_skill_dirs()
+        skill_dirs = _find_installed_skill_dirs()
+    else:
+        search_roots = _normalize_explicit_roots(roots)
+        skill_dirs = search_roots
+
     def coverage_report(items: list[dict[str, str]], analyzed: int) -> dict[str, Any]:
         skipped = sum(item['status'] == 'SKIPPED_DUPLICATE' for item in items)
         return {
@@ -135,7 +144,7 @@ def scan_installed_skills() -> dict[str, Any]:
             'skipped': skipped,
             'errors': 0,
             'items': items,
-            'searched': [str(p) for p in _standard_skill_dirs()],
+            'searched': [str(p) for p in search_roots],
         }
 
     if not skill_dirs:
@@ -145,9 +154,7 @@ def scan_installed_skills() -> dict[str, Any]:
             "graph": None,
             "error": "no installed skills found in standard directories",
             "skipped_duplicates": [],
-            "searched": [
-                str(p) for p in _standard_skill_dirs()
-            ],
+            "searched": [str(p) for p in search_roots],
             "coverage": coverage_report([], 0),
         }
     # Stage only compiler inputs, with source identity and byte checks before
@@ -346,6 +353,39 @@ def _standard_skill_dirs() -> list[Path]:
         home / ".local" / "share" / "devin" / "skills",
         home / ".codex" / "skills",
     ]
+
+
+def _normalize_explicit_roots(
+    roots: Sequence[str | os.PathLike[str]],
+) -> list[Path]:
+    """Validate caller-selected local scan roots without following symlinks."""
+    if isinstance(roots, (str, bytes, os.PathLike)) or not isinstance(roots, Sequence):
+        raise ValueError('explicit scan roots must be a sequence of directory paths')
+    if not roots:
+        raise ValueError('explicit scan roots must not be empty')
+    if len(roots) > _MAX_EXPLICIT_SCAN_ROOTS:
+        raise ValueError('explicit scan root limit exceeded')
+
+    normalized: list[Path] = []
+    seen: set[Path] = set()
+    for value in roots:
+        if not isinstance(value, (str, os.PathLike)) or not str(value).strip():
+            raise ValueError('explicit scan root must be a non-empty path')
+        candidate = Path(value).expanduser()
+        candidate = Path(os.path.abspath(candidate))
+        try:
+            info = candidate.stat(follow_symlinks=False)
+        except OSError as exc:
+            raise ValueError(f'explicit scan root is unavailable: {candidate}') from exc
+        if stat.S_ISLNK(info.st_mode):
+            raise ValueError(f'explicit scan root must not be a symlink: {candidate}')
+        if not stat.S_ISDIR(info.st_mode):
+            raise ValueError(f'explicit scan root must be a directory: {candidate}')
+        if candidate in seen:
+            raise ValueError(f'explicit scan root is duplicated: {candidate}')
+        seen.add(candidate)
+        normalized.append(candidate)
+    return normalized
 
 
 def _find_installed_skill_dirs() -> list[Path]:

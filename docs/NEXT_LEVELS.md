@@ -123,6 +123,13 @@ fixture yields matching discovered/analyzed counts in directory and independent
 collection modes. Installed direct-child mode intentionally has narrower scope;
 this fixture does not claim equivalence for that mode.
 
+Explicit-root increment: the local Python API `scan_installed_skills(roots=...)`
+can scan caller-selected roots. It rejects missing paths, files, symlink roots,
+duplicate roots, scalar/empty arguments, and lists above 256 entries. Default
+root selection is unchanged. The HTTP route and CLI do not accept caller-picked
+roots; explicit roots for independent collection mode and custom Codex homes
+remain open.
+
 Implemented increment: installed scans now also search `~/.codex/skills` for
 direct child packages. Successful API results include source paths, discovered,
 analyzed and skipped counts, and PARTIAL coverage when duplicate package names

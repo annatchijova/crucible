@@ -250,6 +250,49 @@ def test_installed_codex_discovery(tmp_path, monkeypatch):
     assert result['coverage']['discovered'] == 1
 
 
+def test_installed_scan_accepts_explicit_roots_and_reports_scope(tmp_path, monkeypatch):
+    monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path / 'home'))
+    custom_root = tmp_path / 'external' / 'agent-skills'
+    _write_skill(custom_root, 'custom',
+                 '---\nname: custom\ndescription: Custom.\n---\n1. Validate input.\n')
+
+    result = scan_installed_skills(roots=[custom_root])
+
+    assert [skill['identity']['name'] for skill in result['ir']['skills']] == ['custom']
+    assert result['coverage']['searched'] == [str(custom_root)]
+    assert result['coverage']['discovered'] == result['coverage']['analyzed'] == 1
+
+
+@pytest.mark.parametrize('root_kind', ['missing', 'file', 'symlink'])
+def test_installed_scan_rejects_invalid_explicit_root(tmp_path, root_kind):
+    root = tmp_path / 'custom-root'
+    if root_kind == 'file':
+        root.write_text('not a directory')
+    elif root_kind == 'symlink':
+        target = tmp_path / 'target'
+        target.mkdir()
+        root.symlink_to(target, target_is_directory=True)
+
+    with pytest.raises(ValueError, match='explicit scan root'):
+        scan_installed_skills(roots=[root])
+
+
+def test_installed_scan_bounds_explicit_root_list(tmp_path, monkeypatch):
+    from crucible import api
+
+    root = tmp_path / 'root'
+    root.mkdir()
+    monkeypatch.setattr(api, '_MAX_EXPLICIT_SCAN_ROOTS', 1)
+    with pytest.raises(ValueError, match='root limit'):
+        scan_installed_skills(roots=[root, root.parent])
+
+
+@pytest.mark.parametrize('roots', [[], 'single-path'])
+def test_installed_scan_rejects_ambiguous_explicit_root_argument(roots):
+    with pytest.raises(ValueError, match='explicit scan roots'):
+        scan_installed_skills(roots=roots)
+
+
 def test_installed_duplicate_coverage_preserves_origins(tmp_path, monkeypatch):
     monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))
     for root in ('.claude/skills', '.codex/skills'):
