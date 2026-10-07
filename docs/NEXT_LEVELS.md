@@ -109,6 +109,13 @@ not persist its full confirmation artifact; the summary is not a replay bundle.
 Existing API paths cover uploaded skill text, a local directory, and installed
 collections. They need a common coverage contract before broader UI promises.
 
+Increment: uploaded-text and local-directory API results now expose the same
+coverage count keys (`scope`, `status`, `discovered`, `analyzed`, `skipped`,
+`errors`) as installed direct-child scans. These fields describe input
+accounting and remain outside the sealed audit. This does not yet unify the
+independent nested-collection envelope, expose exclusions by reason in every
+mode, or establish cross-mode equivalence for arbitrary directory layouts.
+
 Implemented increment: installed scans now also search `~/.codex/skills` for
 direct child packages. Successful API results include source paths, discovered,
 analyzed and skipped counts, and PARTIAL coverage when duplicate package names

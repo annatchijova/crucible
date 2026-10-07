@@ -31,6 +31,18 @@ _MAX_COLLECTION_DISCOVERY_ENTRIES = 100_000
 _MAX_COLLECTION_BYTES = 20_000_000
 
 
+def _coverage_summary(scope: str, discovered: int) -> dict[str, Any]:
+    """Return the shared coverage counts without changing the sealed audit."""
+    return {
+        'scope': scope,
+        'status': 'COMPLETE' if discovered else 'EMPTY',
+        'discovered': discovered,
+        'analyzed': discovered,
+        'skipped': 0,
+        'errors': 0,
+    }
+
+
 class _CollectionLimitError(ValueError):
     """A whole-scan limit, not an error confined to one package."""
 from .graph import build_composition_graph
@@ -59,6 +71,7 @@ def scan_skill_text(skill_text: str, skill_name: str = "uploaded") -> dict[str, 
             "audit": audit,
             "ir": _redact_ir(ir),
             "graph": graph,
+            "coverage": _coverage_summary('single-skill-text', len(ir['skills'])),
         }
 
 
@@ -78,6 +91,7 @@ def scan_directory(directory: str) -> dict[str, Any]:
         "audit": audit,
         "ir": _redact_ir(ir),
         "graph": graph,
+        "coverage": _coverage_summary('local-directory-skills', len(ir['skills'])),
     }
 
 
@@ -119,6 +133,7 @@ def scan_installed_skills() -> dict[str, Any]:
             'discovered': len(items),
             'analyzed': analyzed,
             'skipped': skipped,
+            'errors': 0,
             'items': items,
             'searched': [str(p) for p in _standard_skill_dirs()],
         }

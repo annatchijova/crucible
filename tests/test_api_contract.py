@@ -43,6 +43,16 @@ def test_scan_skill_text_returns_audit(tmp_path: Path) -> None:
     assert result["audit"]["audit_version"] == "crucible-audit/v1"
 
 
+def test_scan_skill_text_reports_scope_coverage() -> None:
+    result = scan_skill_text(
+        "---\nname: test\ndescription: A test.\n---\n\n1. Validate input.\n"
+    )
+    assert result['coverage'] == {
+        'scope': 'single-skill-text', 'status': 'COMPLETE',
+        'discovered': 1, 'analyzed': 1, 'skipped': 0, 'errors': 0,
+    }
+
+
 def test_scan_skill_text_detects_defects(tmp_path: Path) -> None:
     """Invariant: scanning a defective skill produces findings.
     Mutation: skip the audit -> this test goes red."""
@@ -133,6 +143,10 @@ def test_scan_directory_multiple_skills(tmp_path: Path) -> None:
     )
     result = scan_directory(str(tmp_path))
     assert len(result["ir"]["skills"]) == 2
+    assert result['coverage'] == {
+        'scope': 'local-directory-skills', 'status': 'COMPLETE',
+        'discovered': 2, 'analyzed': 2, 'skipped': 0, 'errors': 0,
+    }
 
 
 def test_scan_directory_rejects_nonexistent() -> None:

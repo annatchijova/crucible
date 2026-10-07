@@ -414,8 +414,8 @@ uses local behavior and mock confirmation even when a provider key exists.
 | HTTP route | Input and behavior |
 |---|---|
 | `GET /health` | Health status |
-| `POST /scan/skill` | JSON `skill_text`, optional `skill_name` (default `uploaded`); returns IR, audit and graph |
-| `POST /scan/directory` | JSON `directory`; scans a path on the server filesystem |
+| `POST /scan/skill` | JSON `skill_text`, optional `skill_name` (default `uploaded`); returns IR, audit, graph, and scope coverage counts |
+| `POST /scan/directory` | JSON `directory`; scans a path on the server filesystem and returns scope coverage counts |
 | `GET /scan/installed` | Legacy combined installed-skill scan |
 | `GET /` | Interactive local demo |
 
@@ -425,6 +425,12 @@ normalized. The API has no public-service authorization boundary. Directory and
 installed scans access the server's files: keep it on loopback and do not publish
 it without a separately designed access-control and resource-isolation layer.
 The HTML artifact viewer is distinct from the interactive demo.
+
+Coverage is response metadata outside the sealed audit. Text and directory
+scans use the shared count keys `scope`, `status`, `discovered`, `analyzed`,
+`skipped`, and `errors`; installed modes report additional mode-specific
+details. This is input accounting, not a claim that the discovered corpus is
+complete or semantically correct.
 
 ```bash
 pip install -e ".[api]"
