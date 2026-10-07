@@ -35,6 +35,22 @@ def test_characterizes_existing_empty_guidance_and_missing_usage(monkeypatch):
     assert result['usage'] == dict(prompt_tokens=0, completion_tokens=0, total_tokens=0)
 
 
+@pytest.mark.parametrize('raw', [
+    b'not JSON',
+    b'\xff\x00',
+    b'[]',
+    b'{"choices":[null]}',
+    b'{"choices":[{"message":null}]}',
+    b'{"choices":[{"message":{"content":"ok"}}],"usage":[]}',
+    b'{"choices":[{"message":{"content":"ok"}}],"usage":{"prompt_tokens":"1"}}',
+])
+def test_malformed_provider_envelopes_return_explicit_error(monkeypatch, raw):
+    transport(monkeypatch, raw)
+    result = NebiusExecutor(api_key='dummy').execute('guide', 'task')
+    assert result['output'] == ''
+    assert result['error'].startswith('invalid provider response:')
+
+
 def test_capture_exact_bytes_and_actual_request_without_authorization(monkeypatch):
     raw = b'{ "choices": [], "id": "test" }\n'
     requests = transport(monkeypatch, raw)

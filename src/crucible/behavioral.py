@@ -273,6 +273,36 @@ class NebiusExecutor:
                 "model": self.model,
                 "provider": "nebius-token-factory",
             }
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return {
+                "output": "",
+                "error": "invalid provider response: body is not UTF-8 JSON",
+                "model": self.model,
+                "provider": "nebius-token-factory",
+                "temperature": self.temperature,
+                "max_tokens": self.max_tokens,
+                "usage": {},
+                "response_id": "",
+                "finish_reason": None,
+                "truncated": False,
+            }
+
+        def invalid_response(reason: str) -> dict[str, Any]:
+            return {
+                "output": "",
+                "error": f"invalid provider response: {reason}",
+                "model": self.model,
+                "provider": "nebius-token-factory",
+                "temperature": self.temperature,
+                "max_tokens": self.max_tokens,
+                "usage": {},
+                "response_id": result.get("id", "") if isinstance(result, dict) else "",
+                "finish_reason": None,
+                "truncated": False,
+            }
+
+        if not isinstance(result, dict):
+            return invalid_response("root must be an object")
         choices = result.get("choices")
         if not isinstance(choices, list) or not choices:
             return {
@@ -288,10 +318,24 @@ class NebiusExecutor:
                 "truncated": False,
             }
         choice = choices[0]
-        message = choice.get("message", {})
-        output = message.get("content") if isinstance(message, dict) else None
+        if not isinstance(choice, dict):
+            return invalid_response("choices[0] must be an object")
+        message = choice.get("message")
+        if not isinstance(message, dict):
+            return invalid_response("choices[0].message must be an object")
+        output = message.get("content")
         finish_reason = choice.get("finish_reason")
         usage = result.get("usage", {})
+        if not isinstance(usage, dict):
+            return invalid_response("usage must be an object")
+        token_counts = {
+            key: usage.get(key, 0)
+            for key in ("prompt_tokens", "completion_tokens", "total_tokens")
+        }
+        if any(type(value) is not int or value < 0 for value in token_counts.values()):
+            return invalid_response("usage token counts must be non-negative integers")
+        if finish_reason is not None and not isinstance(finish_reason, str):
+            return invalid_response("choices[0].finish_reason must be a string or null")
         response = {
             "output": output,
             "error": None,
@@ -299,11 +343,7 @@ class NebiusExecutor:
             "provider": "nebius-token-factory",
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
-            "usage": {
-                "prompt_tokens": usage.get("prompt_tokens", 0),
-                "completion_tokens": usage.get("completion_tokens", 0),
-                "total_tokens": usage.get("total_tokens", 0),
-            },
+            "usage": token_counts,
             "response_id": result.get("id", ""),
             "finish_reason": finish_reason,
             "truncated": finish_reason == "length",
