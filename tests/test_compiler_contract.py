@@ -541,15 +541,14 @@ def test_example_heading_with_check_vocabulary_is_not_a_checks_section(
     assert artifact["skills"][0]["checks"] == []
 
 
-def test_non_example_heading_with_check_vocabulary_still_a_checks_section(
+def test_non_example_heading_with_check_vocabulary_keeps_legacy_extraction(
     tmp_path: Path,
 ) -> None:
-    """Negative control: a genuine Checks-shaped heading that is NOT an
-    Example sub-heading must still be recognized, even though its title
-    has the same "N-word phrase ending in Check" shape as the excluded
-    case above -- the _EXAMPLE_HEADING exclusion must be specific to the
-    "Example" prefix, not a general narrowing of the title match.
-    Mutation: over-broaden the exclusion -> this test goes red."""
+    """Compatibility control: this non-Example title currently extracts
+    even though the held-out pilot did not establish that this source shape
+    is a check rather than a workflow. This test protects existing behavior;
+    it does not provide semantic ground truth. Change it only with an
+    explicit, adjudicated section-extraction contract."""
     _write_skill(
         tmp_path,
         "futures-market-check",

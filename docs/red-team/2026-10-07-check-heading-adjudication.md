@@ -37,7 +37,8 @@ specific Example-heading route.
 The held-out `kalshi` section is under `Workflows` and lists market retrieval,
 sorting, and presentation steps. Reading it supports the hypothesis that it is
 a workflow rather than verification criteria. However, the heading explicitly
-calls it a “Check,” and the tests currently treat its shape as admissible.
+calls it a “Check.” The compatibility test preserves extraction for this
+non-Example title shape but explicitly does not claim semantic ground truth.
 Neither substring matching nor the section text alone supplies a stable
 ground-truth rule for this distinction.
 
@@ -52,16 +53,29 @@ substring-matching headings was not recomputed here and is not evidence that
 No parser patch is made. A broad title-shape filter risks dropping real
 domain-specific headings such as `Live Odds Check`; preserving all titles
 containing a check-family word risks extracting ordinary workflow steps.
-Before changing the rule, define a falsifiable labeling criterion and apply it
-to a source-pinned sample that includes both forms. Keep the result as
-`CANDIDATE` evidence until that adjudication exists.
+
+The operational criterion was then applied as a single-reviewer pilot to 48
+current check records associated with check-family headings in 427 source
+files: 17 clear checks, 22 workflow steps, 8 reference statements, and 1
+abstention. All 14 such records in the sports slice were judged workflow steps
+under that criterion; labels are provisional and the sample was already
+inspected. The complete source, method, subgroup counts, and limits are in the
+[held-out pilot evaluation](../evidence/2026-10-07-check-heading-evaluation.md).
+
+This supports a measurable false-positive hypothesis in the selected slice,
+but does not isolate the title matcher from the global verification-starter
+path: current IR records do not retain extraction provenance. The next code
+increment should expose that provenance, then add fixtures for clear checks,
+workflow headings, and incidental title phrases. Keep the broader metric
+`CANDIDATE` until that distinction and the one abstention are adjudicated
+independently.
 
 ## Reproduction
 
 ```text
 ./.venv/bin/python -m pytest -q \
   tests/test_compiler_contract.py::test_example_heading_with_check_vocabulary_is_not_a_checks_section \
-  tests/test_compiler_contract.py::test_non_example_heading_with_check_vocabulary_still_a_checks_section
+  tests/test_compiler_contract.py::test_non_example_heading_with_check_vocabulary_keeps_legacy_extraction
 ```
 
 Observed: **2 passed**. This establishes the tested extraction behavior, not

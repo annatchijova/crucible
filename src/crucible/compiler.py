@@ -1185,12 +1185,14 @@ def _extract_checks(
     usage walkthroughs under a top-level "## Examples" section, not a
     normative checklist, the same non-normative role "## Examples"
     already has everywhere else in this compiler. A title-shape filter
-    alone cannot otherwise separate this from a genuine, non-Example
-    checks section with a similarly check-flavored name ("Futures Market
-    Check", "Live Odds Check" -- real 3-step verification procedures,
-    confirmed by reading their content) -- the title match had to gain a
-    narrow, principled exception, not become shape-aware in general. See
-    docs/evidence/2026-10-04-held-out-corpora-my-classes/FINDINGS.md.
+    alone cannot separate this from non-Example sections with a similarly
+    check-flavored name ("Futures Market Check", "Live Odds Check").
+    Existing fixtures preserve extraction for that title shape, but a later
+    single-reviewer held-out pilot classified the sports examples as
+    workflow steps under the criterion used there. This remains a design
+    question, not confirmed semantic ground truth. See
+    docs/red-team/2026-10-07-check-heading-adjudication.md and
+    docs/evidence/2026-10-07-check-heading-evaluation.md.
 
     Code blocks and headings are skipped. Lines already extracted from
     a Checks/Verification/Validation section are not re-extracted.

@@ -23,8 +23,13 @@ for methodological accuracy or release readiness.
 |---|---|---|---|
 | Audit one skill, a repository or installed packages with honest scope | Local APIs/CLI, sealed independent collection, ingestion regression cases | Shared cross-mode coverage contract, explicit roots, missing-context reporting, equivalence fixtures | Implemented in part; gate open |
 | Inspect and replay a bounded model experiment without recontacting the provider | Saved real L5 run; v2 bundles with source/oracle links; journal, export, pinned replay and explicit re-evaluation | Integrated release verification; repeated/held-out repair evaluation | **R1–R4 exercised locally/live; two accepted synthetic L7 captures, one v2 decision replay MATCH** |
-| Justify findings and repair decisions independently | Seeded mutations, external-corpus fixtures, local repair loop | Held-out adjudication, class-level denominators, repeated pinned experiments, real repair evidence | Gate open; not benchmarked |
+| Justify findings and repair decisions independently | Seeded mutations, external-corpus fixtures, local repair loop, single-reviewer check-heading pilot | Independent held-out adjudication, class-level denominators, repeated pinned experiments, real repair evidence | Gate open; not benchmarked |
 | Use and publish the complete workflow | CLI, API and read-only viewer | End-to-end user tasks, accessibility, deployment/privacy review and release evidence | Gate open; not release-ready |
+
+The current check-heading pilot is a spent validation slice, not an independent
+benchmark. Its labeling criterion, baseline counts, subgroup results, and
+single-reviewer limits are recorded in the
+[2026-10-07 evaluation note](evidence/2026-10-07-check-heading-evaluation.md).
 
 ### Active block: runtime evidence and replay
 
