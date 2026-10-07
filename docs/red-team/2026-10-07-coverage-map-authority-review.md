@@ -135,3 +135,7 @@ accepted API/schema. Before persistence, decide source ownership and stable IDs;
 before any adjudicated state or recommendation effect, establish reviewer
 authentication, fresh independent labels, and a versioned downstream report
 contract.
+
+The subsequent [reviewer trust and evidence review](2026-10-07-coverage-reviewer-trust-review.md)
+found no local trust root and records a bounded Ed25519 probe plus a proposed
+textual adjudication protocol. It does not change the gates above.

@@ -363,6 +363,14 @@ trust. The harness tests structural rejection paths only; it has no semantic
 accuracy metric and does not call a model. No production code or persisted
 schema changed.
 
+The next [reviewer trust review](../red-team/2026-10-07-coverage-reviewer-trust-review.md)
+found no local signer trust root and ran a disposable Ed25519 probe. A pinned
+key verifies, an untrusted key and modified payload are rejected, and a
+self-supplied public key produces a cryptographically valid but unauthorized
+signature. The probe's allowlist mutation made the negative-control assertion
+fail. This separates artifact integrity from attribution, reviewer authority,
+and semantic truth; it does not supply the missing human labels.
+
 This experiment confirms current behavior on six local fixtures. Human labels
 for the four route controls come from a single-reviewer, consumed pilot; the
 unrelated and partial fixtures have intended links authored for this

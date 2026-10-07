@@ -51,6 +51,11 @@ review](../red-team/2026-10-07-coverage-map-authority-review.md).
 The validator-only prototype currently accepts declared/proposed links but
 cannot emit or consume an adjudicated state; its digest is unkeyed and its
 evidence locator is not verified.
+The follow-up trust review found no local reviewer trust root: Git signing is
+not configured and the inspected commits are unsigned. A detached Ed25519
+probe confirms byte/key binding only; it does not authenticate a human or prove
+the relation. Keep adjudication disabled until both a trusted key-to-role
+policy and independently reviewed labels exist.
 
 ## Alternatives considered
 
@@ -119,4 +124,5 @@ recommendation path.
 
 See [the local hypothesis experiment](../evidence/2026-10-07-check-coverage-hypothesis-experiment.md)
 and the prior [check-heading adjudication](../red-team/2026-10-07-check-heading-adjudication.md),
-plus the [coverage-map authority review](../red-team/2026-10-07-coverage-map-authority-review.md).
+plus the [coverage-map authority review](../red-team/2026-10-07-coverage-map-authority-review.md)
+and [reviewer trust review](../red-team/2026-10-07-coverage-reviewer-trust-review.md).
