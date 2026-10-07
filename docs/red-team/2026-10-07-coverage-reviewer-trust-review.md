@@ -95,7 +95,7 @@ review must never be rendered as proof that an external implementation passed.
 This is a proposal for a future evidence set, not implemented policy:
 
 1. Freeze exact IR/audit digests, rule/check IDs, their text digests, source
-   spans, and `coverage-criterion/v1` before review.
+   spans, and the packet's `coverage-text/v1` criterion before review.
 2. Keep model and lexical proposals hidden from adjudicators until their labels
    are frozen, to reduce anchoring. Give each reviewer the original context,
    not only extracted snippets.

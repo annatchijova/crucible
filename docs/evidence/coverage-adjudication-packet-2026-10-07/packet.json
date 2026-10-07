@@ -1,0 +1,133 @@
+{
+  "schema_version": "coverage-adjudication-packet/v1",
+  "rubric_version": "coverage-text/v1",
+  "annotation_state": "UNLABELED",
+  "scope": "synthetic text-level rule/check relations; not a corpus sample",
+  "calibration": [
+    {
+      "case_id": "case-2f8a",
+      "source_text": "The exported file MUST have the same SHA-256 checksum as the source.\n\n## Validation\n\n- The SHA-256 value in the export manifest equals the source file's SHA-256 value.\n",
+      "rules": [{"id": "r1", "text": "The exported file MUST have the same SHA-256 checksum as the source."}],
+      "checks": [{"id": "c1", "section": "Validation", "text": "The SHA-256 value in the export manifest equals the source file's SHA-256 value."}],
+      "pairs": [{"pair_id": "case-2f8a/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-9c31",
+      "source_text": "Only clients with a valid account credential MAY access the archive.\n\n## Security Tests\n\n- Submit a request with a valid credential and verify that the archive returns 200; submit an unknown credential and verify that it returns 403.\n",
+      "rules": [{"id": "r1", "text": "Only clients with a valid account credential MAY access the archive."}],
+      "checks": [{"id": "c1", "section": "Security Tests", "text": "Submit a request with a valid credential and verify that the archive returns 200; submit an unknown credential and verify that it returns 403."}],
+      "pairs": [{"pair_id": "case-9c31/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-61bd",
+      "source_text": "The importer MUST preserve the original line endings.\n\n## Checks\n\n- Verify the detached signature against the publisher's public key.\n",
+      "rules": [{"id": "r1", "text": "The importer MUST preserve the original line endings."}],
+      "checks": [{"id": "c1", "section": "Checks", "text": "Verify the detached signature against the publisher's public key."}],
+      "pairs": [{"pair_id": "case-61bd/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-a42e",
+      "source_text": "Each retry MUST wait at least 800 ms and the operation MUST stop after four attempts.\n\n## Acceptance Checks\n\n- Assert that the operation makes no more than four attempts.\n",
+      "rules": [{"id": "r1", "text": "Each retry MUST wait at least 800 ms and the operation MUST stop after four attempts."}],
+      "checks": [{"id": "c1", "section": "Acceptance Checks", "text": "Assert that the operation makes no more than four attempts."}],
+      "pairs": [{"pair_id": "case-a42e/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-17d0",
+      "source_text": "Imported rows MUST have a non-empty customer identifier.\n\n## Data Quality Check\n\n1. Load the source table.\n2. Display a sample of ten rows.\n",
+      "rules": [{"id": "r1", "text": "Imported rows MUST have a non-empty customer identifier."}],
+      "checks": [{"id": "c1", "section": "Data Quality Check", "text": "Load the source table."}],
+      "pairs": [{"pair_id": "case-17d0/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-d803",
+      "source_text": "External identifiers MUST be unique within the imported dataset.\n\n## Verification\n\n- Run the import and print the number of rows processed.\n",
+      "rules": [{"id": "r1", "text": "External identifiers MUST be unique within the imported dataset."}],
+      "checks": [{"id": "c1", "section": "Verification", "text": "Run the import and print the number of rows processed."}],
+      "pairs": [{"pair_id": "case-d803/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-4b6e",
+      "source_text": "A successful resource creation MUST return status 201.\n\n## Validation Criteria\n\n- The response is successful when its status is any 2xx code.\n",
+      "rules": [{"id": "r1", "text": "A successful resource creation MUST return status 201."}],
+      "checks": [{"id": "c1", "section": "Validation Criteria", "text": "The response is successful when its status is any 2xx code."}],
+      "pairs": [{"pair_id": "case-4b6e/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-b095",
+      "source_text": "Administrative endpoints MUST require multi-factor authentication.\n\n## Test\n\n- Request an administrative endpoint without a session and confirm the server returns 401.\n",
+      "rules": [{"id": "r1", "text": "Administrative endpoints MUST require multi-factor authentication."}],
+      "checks": [{"id": "c1", "section": "Test", "text": "Request an administrative endpoint without a session and confirm the server returns 401."}],
+      "pairs": [{"pair_id": "case-b095/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-3e72",
+      "source_text": "The service MUST reject the eleventh request made within one minute.\n\n## Rate Limit Test\n\n- Send eleven requests in one minute and assert that request eleven returns 429 with a Retry-After value.\n",
+      "rules": [{"id": "r1", "text": "The service MUST reject the eleventh request made within one minute."}],
+      "checks": [{"id": "c1", "section": "Rate Limit Test", "text": "Send eleven requests in one minute and assert that request eleven returns 429 with a Retry-After value."}],
+      "pairs": [{"pair_id": "case-3e72/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    }
+  ],
+  "heldout": [
+    {
+      "case_id": "case-8a14",
+      "source_text": "An expired session MUST NOT authorize a protected request.\n\n## Checks\n\n- Submit a request with a valid session and verify that the response is 200.\n",
+      "rules": [{"id": "r1", "text": "An expired session MUST NOT authorize a protected request."}],
+      "checks": [{"id": "c1", "section": "Checks", "text": "Submit a request with a valid session and verify that the response is 200."}],
+      "pairs": [{"pair_id": "case-8a14/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-5c20",
+      "source_text": "A backup MUST run only after approval from the system owner.\n\n## Review Check\n\n- Review the backup request against the approved policy.\n",
+      "rules": [{"id": "r1", "text": "A backup MUST run only after approval from the system owner."}],
+      "checks": [{"id": "c1", "section": "Review Check", "text": "Review the backup request against the approved policy."}],
+      "pairs": [{"pair_id": "case-5c20/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-f179",
+      "source_text": "When access is denied, the service MUST return 403 and MUST emit an audit event containing the request identifier.\n\n## Checks\n\n- Assert that the denied request returns 403.\n",
+      "rules": [{"id": "r1", "text": "When access is denied, the service MUST return 403 and MUST emit an audit event containing the request identifier."}],
+      "checks": [{"id": "c1", "section": "Checks", "text": "Assert that the denied request returns 403."}],
+      "pairs": [{"pair_id": "case-f179/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-0d63",
+      "source_text": "Access tokens MUST be removed from records before they are persisted.\n\n## Storage Test\n\n- Store a record containing the canary `tok-canary-17` and assert that the persisted record does not contain `tok-canary-17`.\n",
+      "rules": [{"id": "r1", "text": "Access tokens MUST be removed from records before they are persisted."}],
+      "checks": [{"id": "c1", "section": "Storage Test", "text": "Store a record containing the canary `tok-canary-17` and assert that the persisted record does not contain `tok-canary-17`."}],
+      "pairs": [{"pair_id": "case-0d63/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-c835",
+      "source_text": "The agent MUST make no DNS requests while processing a local-only task.\n\n## Network Test\n\n- Capture DNS traffic during a local-only task and assert that the query count is zero.\n",
+      "rules": [{"id": "r1", "text": "The agent MUST make no DNS requests while processing a local-only task."}],
+      "checks": [{"id": "c1", "section": "Network Test", "text": "Capture DNS traffic during a local-only task and assert that the query count is zero."}],
+      "pairs": [{"pair_id": "case-c835/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    },
+    {
+      "case_id": "case-6ae1",
+      "source_text": "Uploads MUST be no larger than 10 MiB.\nUploads MUST use the `.csv` extension.\n\n## Upload Checks\n\n- Reject a 10 MiB + 1 byte upload.\n- Reject a file named `data.exe`.\n",
+      "rules": [
+        {"id": "r1", "text": "Uploads MUST be no larger than 10 MiB."},
+        {"id": "r2", "text": "Uploads MUST use the `.csv` extension."}
+      ],
+      "checks": [
+        {"id": "c1", "section": "Upload Checks", "text": "Reject a 10 MiB + 1 byte upload."},
+        {"id": "c2", "section": "Upload Checks", "text": "Reject a file named `data.exe`."}
+      ],
+      "pairs": [
+        {"pair_id": "case-6ae1/r1/c1", "rule_id": "r1", "check_id": "c1"},
+        {"pair_id": "case-6ae1/r1/c2", "rule_id": "r1", "check_id": "c2"},
+        {"pair_id": "case-6ae1/r2/c1", "rule_id": "r2", "check_id": "c1"},
+        {"pair_id": "case-6ae1/r2/c2", "rule_id": "r2", "check_id": "c2"}
+      ]
+    },
+    {
+      "case_id": "case-74d2",
+      "source_text": "The deployment MUST reject certificates that expire before the configured retention period.\n\n## Certificate Validation\n\n- Validate that the certificate is currently within its validity dates.\n",
+      "rules": [{"id": "r1", "text": "The deployment MUST reject certificates that expire before the configured retention period."}],
+      "checks": [{"id": "c1", "section": "Certificate Validation", "text": "Validate that the certificate is currently within its validity dates."}],
+      "pairs": [{"pair_id": "case-74d2/r1/c1", "rule_id": "r1", "check_id": "c1"}]
+    }
+  ]
+}

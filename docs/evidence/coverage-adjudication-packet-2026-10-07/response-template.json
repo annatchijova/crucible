@@ -1,0 +1,30 @@
+{
+  "schema_version": "coverage-adjudication-response/v1",
+  "packet_schema_version": "coverage-adjudication-packet/v1",
+  "rubric_version": "coverage-text/v1",
+  "packet_digest": "sha256:82d8e9758966eab173a83909bd81972c3a79a70b96a11d4261e7ec5e05ccf367",
+  "reviewer_label": null,
+  "reviewer_key_id": null,
+  "authenticity_status": "UNVERIFIED",
+  "assessments": [
+    {"pair_id": "case-2f8a/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-9c31/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-61bd/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-a42e/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-17d0/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-d803/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-4b6e/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-b095/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-3e72/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-8a14/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-5c20/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-f179/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-0d63/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-c835/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-6ae1/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-6ae1/r1/c2", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-6ae1/r2/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-6ae1/r2/c2", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null},
+    {"pair_id": "case-74d2/r1/c1", "outcome": null, "covered_rule_clauses": [], "oracle": null, "evidence_quotes": [], "rationale": null}
+  ]
+}

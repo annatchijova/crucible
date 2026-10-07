@@ -371,6 +371,15 @@ signature. The probe's allowlist mutation made the negative-control assertion
 fail. This separates artifact integrity from attribution, reviewer authority,
 and semantic truth; it does not supply the missing human labels.
 
+An unlabeled review packet is now prepared at
+[`coverage-adjudication-packet-2026-10-07`](coverage-adjudication-packet-2026-10-07/PROTOCOL.md):
+16 fresh synthetic cases, 19 full-matrix pair judgments, split into nine
+calibration and seven heldout cases. The response template binds packet digest
+`sha256:82d8e9758966eab173a83909bd81972c3a79a70b96a11d4261e7ec5e05ccf367`.
+The structural validator passed, rejected temporary answer-key and digest
+mutations, and passed again after restoration. This is a preparation result;
+no reviewers have submitted labels and the packet is not a corpus benchmark.
+
 This experiment confirms current behavior on six local fixtures. Human labels
 for the four route controls come from a single-reviewer, consumed pilot; the
 unrelated and partial fixtures have intended links authored for this

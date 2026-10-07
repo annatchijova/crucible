@@ -109,7 +109,7 @@ def main() -> None:
             "skill": "synthetic-skill",
             "rule_id": "rule-0001",
             "check_id": "check-0001",
-            "review_criterion": "coverage-criterion/v1",
+            "review_criterion": "coverage-text/v1",
             "review_outcome": "COVERS",
             "reviewer_key_id": fingerprint_a,
         }
