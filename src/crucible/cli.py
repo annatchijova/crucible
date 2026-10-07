@@ -225,9 +225,12 @@ def main() -> int:
                               help='explicitly recompute observations with the installed oracle')
     replay_modes.add_argument('--replay-repair-evidence', metavar='BUNDLE_JSON',
                               help='reconstruct an L7 decision offline from a captured repair bundle')
+    replay_modes.add_argument('--verify-repair-evidence-dir', metavar='JOURNAL_DIR',
+                              help='verify a captured L7 journal, raw exchanges and bundle agree offline')
     args = parser.parse_args()
     replay_names = ('capture_replay', 'inspect_replay', 'export_replay',
-                    'replay_bundle', 'reevaluate_bundle', 'replay_repair_evidence')
+                    'replay_bundle', 'reevaluate_bundle', 'replay_repair_evidence',
+                    'verify_repair_evidence_dir')
     selected = [name for name in replay_names if getattr(args, name) is not None]
     if selected:
         if any(value is not None and value is not False for name, value in vars(args).items()
@@ -254,6 +257,11 @@ def main() -> int:
                     'status': 'INVALID_EVIDENCE',
                     'reason': 'bundle-read-or-shape-failed',
                 }
+            _emit(result, args.human)
+            return 0 if result.get('status') == 'MATCH' else 1
+        if selected[0] == 'verify_repair_evidence_dir':
+            from .repair_evidence_journal import verify_repair_evidence_journal
+            result = verify_repair_evidence_journal(getattr(args, selected[0]))
             _emit(result, args.human)
             return 0 if result.get('status') == 'MATCH' else 1
         from .replay_cli import run_replay_command

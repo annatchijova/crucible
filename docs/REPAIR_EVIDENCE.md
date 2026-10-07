@@ -36,6 +36,15 @@ bundle byte limit while reading the file. See the [L7 replay parser red-team
 review](red-team/2026-10-07-l7-repair-replay.md) for the reproduced negative
 control and its scope.
 
+For an evidence directory produced by the capture command,
+`crucible --verify-repair-evidence-dir JOURNAL_DIR` checks that `bundle.json`,
+`events.jsonl`, and every `raw-captures/NNNN.json` file represent the same
+ordered exchanges. `MATCH` means these local copies agree; `DIVERGED` means a
+raw file, event journal, or expected file set differs; invalid structure,
+symlinks, or read failures return `INVALID_EVIDENCE`. The check is offline and
+prints only a summary. It does not establish provider authenticity or protect
+the directory from replacement after verification.
+
 Incomplete, malformed, errored, or truncated provider responses are retained.
 They are not eligible to produce a proposal or behavioral observation. Loop v2
 also applies this gate in the ordinary repair loop: a Nebius response must have

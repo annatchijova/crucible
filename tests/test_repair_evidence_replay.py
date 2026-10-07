@@ -222,3 +222,58 @@ def test_cli_rejects_duplicate_json_keys(tmp_path, monkeypatch, capsys):
 
     assert cli.main() == 1
     assert json.loads(capsys.readouterr().out)["status"] == "INVALID_EVIDENCE"
+
+
+def test_journal_verification_reconciles_raw_events_and_bundle(tmp_path, monkeypatch):
+    _accepted_bundle(tmp_path, monkeypatch)
+    from crucible.repair_evidence_journal import verify_repair_evidence_journal
+
+    result = verify_repair_evidence_journal(tmp_path / "captured")
+
+    assert result["status"] == "MATCH"
+    assert result["event_count"] == 3
+
+
+def test_journal_verification_detects_changed_raw_capture(tmp_path, monkeypatch):
+    _accepted_bundle(tmp_path, monkeypatch)
+    raw_capture = tmp_path / "captured" / "raw-captures" / "0000.json"
+    raw_capture.write_bytes(raw_capture.read_bytes() + b" ")
+    from crucible.repair_evidence_journal import verify_repair_evidence_journal
+
+    result = verify_repair_evidence_journal(tmp_path / "captured")
+
+    assert result["status"] == "DIVERGED"
+    assert result["reason"] == "raw-capture-content-differs"
+
+
+def test_journal_verification_rejects_symlinked_raw_capture(tmp_path, monkeypatch):
+    _accepted_bundle(tmp_path, monkeypatch)
+    raw_capture = tmp_path / "captured" / "raw-captures" / "0000.json"
+    outside = tmp_path / "outside.json"
+    outside.write_bytes(raw_capture.read_bytes())
+    raw_capture.unlink()
+    raw_capture.symlink_to(outside)
+    from crucible.repair_evidence_journal import verify_repair_evidence_journal
+
+    result = verify_repair_evidence_journal(tmp_path / "captured")
+
+    assert result["status"] == "INVALID_EVIDENCE"
+
+
+def test_cli_journal_verification_is_offline_and_summary_only(
+    tmp_path, monkeypatch, capsys
+):
+    _accepted_bundle(tmp_path, monkeypatch)
+    monkeypatch.setattr(
+        sys, "argv", ["crucible", "--verify-repair-evidence-dir", str(tmp_path / "captured")]
+    )
+    monkeypatch.setattr(
+        NebiusExecutor, "capture_exchange",
+        lambda *_args, **_kwargs: pytest.fail("journal verification contacted Nebius"),
+    )
+
+    assert cli.main() == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["status"] == "MATCH"
+    assert result["event_count"] == 3
+    assert "finite retry budget" not in json.dumps(result)

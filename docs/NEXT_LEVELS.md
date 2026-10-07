@@ -81,6 +81,10 @@ synthetic task and one model session, not evidence of general repair accuracy
 or stability. Independent evaluation and integrated release verification
 remain open. See the
 [L7 evidence contract](REPAIR_EVIDENCE.md) and [27-day plan](27_DAY_BUILD_PLAN.md).
+The offline `--verify-repair-evidence-dir` command also reconciles the bundle,
+ordered JSONL events, and raw captures; it verifies local copy agreement, not
+provider origin or independent repair quality. Its mutation and symlink
+controls are recorded in the [journal red-team review](red-team/2026-10-07-l7-journal-reconciliation.md).
 
 L7 correctness increment: the ordinary repair loop is now version 2. It rejects
 length-limited or metadata-incomplete Nebius proposals before re-audit and
