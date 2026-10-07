@@ -31,6 +31,10 @@ exits zero only for `MATCH` and prints a summary without captured prompts or
 outputs. Decision comparison omits only executor class labels, so raw loop
 digests can differ while decision digests match. This remains local
 recomputation, not provider authentication or an external timestamp/signature.
+The CLI rejects duplicate JSON keys and non-finite constants and enforces the
+bundle byte limit while reading the file. See the [L7 replay parser red-team
+review](red-team/2026-10-07-l7-repair-replay.md) for the reproduced negative
+control and its scope.
 
 Incomplete, malformed, errored, or truncated provider responses are retained.
 They are not eligible to produce a proposal or behavioral observation. Loop v2

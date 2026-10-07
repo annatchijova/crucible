@@ -206,3 +206,19 @@ def test_cli_maps_deeply_nested_json_to_invalid_evidence(tmp_path, monkeypatch, 
 
     assert cli.main() == 1
     assert json.loads(capsys.readouterr().out)["status"] == "INVALID_EVIDENCE"
+
+
+def test_cli_rejects_duplicate_json_keys(tmp_path, monkeypatch, capsys):
+    bundle = _accepted_bundle(tmp_path, monkeypatch)
+    serialized = json.dumps(bundle)
+    serialized = serialized.replace(
+        '"provider": "nebius-token-factory"',
+        '"provider": "untrusted-alternate", "provider": "nebius-token-factory"',
+        1,
+    )
+    path = tmp_path / "duplicate.json"
+    path.write_text(serialized, encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["crucible", "--replay-repair-evidence", str(path)])
+
+    assert cli.main() == 1
+    assert json.loads(capsys.readouterr().out)["status"] == "INVALID_EVIDENCE"

@@ -1,6 +1,8 @@
 # Red-Team Charter
 
-**Status: planned; execution begins after the first integrated implementation.**
+**Status: active; reviews target implemented boundaries and record execution evidence.**
+
+Review log: [L7 repair replay parser boundary review, 2026-10-07](2026-10-07-l7-repair-replay.md).
 
 This project will not call a scanner result a vulnerability or a methodology defect merely because the text looks suspicious. Findings must carry an epistemic level and a reproducible path.
 

@@ -240,10 +240,12 @@ def main() -> int:
             path = Path(getattr(args, selected[0])).expanduser()
             try:
                 from .repair_evidence import MAX_EVIDENCE_BYTES
-                if path.stat().st_size > MAX_EVIDENCE_BYTES:
+                from .capture_contract import strict_json
+                with path.open('rb') as stream:
+                    raw_bundle = stream.read(MAX_EVIDENCE_BYTES + 1)
+                if len(raw_bundle) > MAX_EVIDENCE_BYTES:
                     raise ValueError('bundle byte limit exceeded')
-                with path.open(encoding='utf-8') as stream:
-                    bundle = json.load(stream)
+                bundle = strict_json(raw_bundle.decode('utf-8'))
                 from .repair_evidence_replay import replay_repair_evidence
                 result = replay_repair_evidence(bundle)
             except (OSError, UnicodeError, json.JSONDecodeError, RecursionError, ValueError):
