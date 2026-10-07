@@ -68,7 +68,9 @@ def test_directory_replacement_preserves_valid_neighbor(root, monkeypatch):
     monkeypatch.setattr(api, '_scan_corpus_directory', swap)
     result = api.scan_installed_collection()
     assert result['status'] == 'PARTIAL'
-    assert result['coverage'] == {'discovered': 2, 'analyzed': 1, 'errors': 1}
+    assert result['coverage']['discovered'] == 2
+    assert result['coverage']['analyzed'] == 1
+    assert result['coverage']['errors'] == 1
     assert [e['skill_name'] for e in result['entries'] if e['status'] == 'ANALYZED'] == ['good']
 
 

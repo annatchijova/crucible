@@ -21,13 +21,43 @@ def test_nested_homonyms_are_all_audited(tmp_path, monkeypatch):
     package(tmp_path, '.codex/skills/parent')
     result = scan_installed_collection()
     assert result['status'] == 'COMPLETE'
-    assert result['coverage'] == {'discovered': 4, 'analyzed': 4, 'errors': 0}
+    assert result['coverage']['discovered'] == result['coverage']['analyzed'] == 4
+    assert result['coverage']['errors'] == 0
     assert len({e['source_path'] for e in result['entries']}) == 4
     assert all(len(e['ir']['skills']) == 1 for e in result['entries'])
     assert any(f['class'] == 'SECRET_IN_OUTPUT' for e in result['entries'] for f in e['audit']['findings'])
     assert result == scan_installed_collection()
     digest = result.pop('collection_digest')
     assert digest == digest_payload(result)
+
+
+def test_explicit_collection_root_is_sealed_in_v2_coverage(tmp_path):
+    custom_root = tmp_path / 'external' / 'claude-skills'
+    package(custom_root, 'namespace/skill')
+
+    result = scan_installed_collection(roots=[custom_root])
+
+    assert result['schema_version'] == 'crucible-installed-collection/v2'
+    assert result['coverage'] == {
+        'scope': 'independent-packages', 'status': 'COMPLETE',
+        'discovered': 1, 'analyzed': 1, 'skipped': 0, 'errors': 0,
+        'searched': [str(custom_root)],
+    }
+    digest = result.pop('collection_digest')
+    assert digest == digest_payload(result)
+
+
+def test_empty_explicit_collection_root_is_visible_in_coverage(tmp_path):
+    custom_root = tmp_path / 'external' / 'empty'
+    custom_root.mkdir(parents=True)
+
+    result = scan_installed_collection(roots=[custom_root])
+
+    assert result['status'] == 'EMPTY'
+    assert result['coverage']['status'] == 'EMPTY'
+    assert result['coverage']['searched'] == [str(custom_root)]
+    assert result['coverage']['discovered'] == result['coverage']['analyzed'] == 0
+    assert result['coverage']['errors'] == 0
 
 
 def test_bad_package_does_not_hide_valid_neighbor(tmp_path, monkeypatch):

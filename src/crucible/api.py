@@ -115,7 +115,7 @@ def _installed_children(root: Path, budget: _TraversalBudget,
 
 
 def scan_installed_skills(
-    roots: Iterable[str | os.PathLike[str]] | None = None,
+    roots: Sequence[str | os.PathLike[str]] | None = None,
 ) -> dict[str, Any]:
     """Scan the user's installed skills.
 
@@ -234,12 +234,19 @@ def scan_installed_skills(
         }
 
 
-def scan_installed_collection() -> dict[str, Any]:
+def scan_installed_collection(
+    roots: Sequence[str | os.PathLike[str]] | None = None,
+) -> dict[str, Any]:
     """Audit nested packages independently; names need not be globally unique.
 
     Directory symlinks are recorded but never followed. Per-package errors
     remain in coverage; this mode makes no cross-package composition claim.
+    Explicit roots are supported for local Python callers; omitted roots retain
+    standard discovery.
     """
+    search_roots = (
+        _standard_skill_dirs() if roots is None else _normalize_explicit_roots(roots)
+    )
     entries = []
     directories_seen = 0
     discovery_entries_seen = 0
@@ -291,7 +298,7 @@ def scan_installed_collection() -> dict[str, Any]:
             yield directory, files
             pending.extend(sorted(dirs, reverse=True))
 
-    for root in _standard_skill_dirs():
+    for root in search_roots:
         try:
             root_info = root.stat(follow_symlinks=False)
         except FileNotFoundError:
@@ -331,13 +338,21 @@ def scan_installed_collection() -> dict[str, Any]:
             add_entry(entry)
     entries.sort(key=lambda entry: entry['source_path'])
     analyzed = sum(e['status'] == 'ANALYZED' for e in entries)
+    status = 'EMPTY' if not entries else ('COMPLETE' if analyzed == len(entries) else 'PARTIAL')
     payload = {
-        'schema_version': 'crucible-installed-collection/v1',
+        'schema_version': 'crucible-installed-collection/v2',
         'scope': 'independent-packages',
-        'status': 'EMPTY' if not entries else ('COMPLETE' if analyzed == len(entries) else 'PARTIAL'),
+        'status': status,
         'entries': entries,
-        'coverage': {'discovered': len(entries), 'analyzed': analyzed,
-                     'errors': len(entries) - analyzed},
+        'coverage': {
+            'scope': 'independent-packages',
+            'status': status,
+            'discovered': len(entries),
+            'analyzed': analyzed,
+            'skipped': 0,
+            'errors': len(entries) - analyzed,
+            'searched': [str(p) for p in search_roots],
+        },
         'limitations': ['Cross-package composition is not evaluated.'],
     }
     payload['collection_digest'] = digest_payload(payload)

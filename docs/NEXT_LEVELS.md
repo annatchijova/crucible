@@ -123,12 +123,14 @@ fixture yields matching discovered/analyzed counts in directory and independent
 collection modes. Installed direct-child mode intentionally has narrower scope;
 this fixture does not claim equivalence for that mode.
 
-Explicit-root increment: the local Python API `scan_installed_skills(roots=...)`
-can scan caller-selected roots. It rejects missing paths, files, symlink roots,
-duplicate roots, scalar/empty arguments, and lists above 256 entries. Default
-root selection is unchanged. The HTTP route and CLI do not accept caller-picked
-roots; explicit roots for independent collection mode and custom Codex homes
-remain open.
+Explicit-root increment: local Python callers can pass roots to both
+`scan_installed_skills(roots=...)` and `scan_installed_collection(roots=...)`.
+The shared validator rejects missing paths, files, symlink roots, duplicate
+roots, scalar/empty arguments, and lists above 256 entries. Default root
+selection is unchanged. The collection artifact now seals its searched roots
+and common coverage fields as `crucible-installed-collection/v2`; historical
+v1 artifacts are not rewritten. The HTTP route and CLI do not accept
+caller-picked roots, and automatic custom Codex-home discovery remains open.
 
 Implemented increment: installed scans now also search `~/.codex/skills` for
 direct child packages. Successful API results include source paths, discovered,
