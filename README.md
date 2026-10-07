@@ -110,6 +110,9 @@ Installed collection scanning audits packages independently, retaining homonymou
 skills; it does not evaluate cross-package composition. Partial or empty coverage
 exits with code 1. Reader limits and legacy name precedence are documented in the
 [technical reader contract](TECHNICAL.md#15-collection-reader-and-known-limitations).
+For local installed scans, repeat `--scan-root DIR` to select explicit roots
+with either `--scan-installed` or `--scan-installed-collection`. These modes are
+mutually exclusive; the HTTP API continues to use standard roots.
 
 For the local HTTP interface, install its optional dependencies:
 

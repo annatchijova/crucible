@@ -210,6 +210,8 @@ def main() -> int:
     )
     parser.add_argument('--scan-installed-collection', action='store_true',
                         help='audit nested installed packages independently, including homonyms')
+    parser.add_argument('--scan-root', action='append', metavar='DIR',
+                        help='scan this explicit local root (repeatable; requires one installed scan mode)')
     replay_modes = parser.add_mutually_exclusive_group()
     replay_modes.add_argument('--capture-replay', metavar='NEW_DIRECTORY',
                               help='make a new four-variant Nebius experiment in a private journal (may call provider)')
@@ -236,13 +238,20 @@ def main() -> int:
         return run_replay_command(selected[0], getattr(args, selected[0]))
     if args.include_coverage and not args.scan_installed:
         parser.error('--include-coverage requires --scan-installed')
+    if args.scan_installed and args.scan_installed_collection:
+        parser.error('--scan-installed and --scan-installed-collection are mutually exclusive')
+    if args.scan_root and not (args.scan_installed or args.scan_installed_collection):
+        parser.error('--scan-root requires one installed scan mode')
+    if args.scan_root and args.root is not None:
+        parser.error('--scan-root cannot be combined with a corpus path')
     if args.repair_evidence and not args.repair_loop:
         parser.error('--repair-evidence requires --repair-loop')
 
     if args.scan_installed_collection:
         from .api import scan_installed_collection
         try:
-            result = scan_installed_collection()
+            result = (scan_installed_collection(roots=args.scan_root)
+                      if args.scan_root else scan_installed_collection())
         except (ValueError, OSError) as exc:
             _emit({'status': 'ERROR', 'error': str(exc)}, args.human)
             return 1
@@ -279,7 +288,12 @@ def main() -> int:
     if args.scan_installed:
         import sys
         from .api import scan_installed_skills
-        result = scan_installed_skills()
+        try:
+            result = (scan_installed_skills(roots=args.scan_root)
+                      if args.scan_root else scan_installed_skills())
+        except (ValueError, OSError) as exc:
+            _emit({'error': str(exc)}, args.human)
+            return 1
         if result.get("error"):
             output = result
             if not args.include_coverage:

@@ -453,9 +453,11 @@ homonyms by path and exit 1 for partial or empty coverage.
 
 Local Python callers may pass explicit directories to
 `scan_installed_skills(roots=[...])`. Roots must already exist, be directories,
-not be symlinks, and be unique; at most 256 are accepted. This parameter is not
-exposed by the HTTP route or CLI. The independent collection scanner accepts
-the same argument. Its v2 collection digest covers the searched roots and common
+not be symlinks, and be unique; at most 256 are accepted. The CLI exposes the
+same selection with repeatable `--scan-root DIR` for exactly one of
+`--scan-installed` or `--scan-installed-collection`. The HTTP route continues
+to use standard roots. The independent collection scanner accepts the same
+Python argument. Its v2 collection digest covers searched roots and common
 coverage fields; prior v1 artifacts remain historical and are not rewritten.
 Default discovery still uses standard roots.
 

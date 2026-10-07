@@ -129,8 +129,9 @@ The shared validator rejects missing paths, files, symlink roots, duplicate
 roots, scalar/empty arguments, and lists above 256 entries. Default root
 selection is unchanged. The collection artifact now seals its searched roots
 and common coverage fields as `crucible-installed-collection/v2`; historical
-v1 artifacts are not rewritten. The HTTP route and CLI do not accept
-caller-picked roots, and automatic custom Codex-home discovery remains open.
+v1 artifacts are not rewritten. The CLI exposes repeated `--scan-root DIR`
+for exactly one installed mode; the HTTP route continues to use standard roots.
+Automatic custom Codex-home discovery remains open.
 
 Implemented increment: installed scans now also search `~/.codex/skills` for
 direct child packages. Successful API results include source paths, discovered,
@@ -139,7 +140,7 @@ are omitted. Existing root precedence is retained. This coverage is API envelope
 metadata, not part of the sealed audit. The independent collection mode now
 discovers nested packages (including `.system`), retains homonyms and seals
 COMPLETE/PARTIAL/EMPTY coverage; bounds and identity checks are documented in
-the READMEs. External plugin caches/custom roots, custom Codex homes and a common
+the READMEs. Automatic external plugin/custom Codex-home discovery and a common
 cross-mode coverage envelope remain pending. The CLI preserves
 its audit-only JSON by default and warns on stderr when coverage is PARTIAL.
 `--scan-installed --include-coverage` emits an envelope with `audit` and `coverage`;
