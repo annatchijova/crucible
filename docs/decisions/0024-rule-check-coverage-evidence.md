@@ -38,10 +38,16 @@ The current preference is to keep source declarations, deterministic candidates,
 model observations, and human adjudications as distinct provenance states. An
 author declaration or model proposal alone is not proof that a check adequately
 verifies a rule. The model must not change the sealed L2 verdict; any returned
-IDs must be validated against the input artifact. A separate versioned relation
-artifact may avoid changing the L1 IR, but its relationship to the L2 audit and
-composite report is unresolved. See the mechanism and consumer-impact comparison
-in the linked experiment record.
+IDs must be validated against the input artifact. Source review of the existing
+L2.5-to-L15 path shows that a separate evidence artifact can feed a downstream
+recommendation while leaving L2 immutable. Therefore, “never affect any
+recommendation” is not the required boundary; the consumer, authority, and
+claim must be explicit. A coverage map that changes an L2 finding is rejected.
+A separately versioned L15 input remains a candidate design, not an accepted
+decision, and must bind both source digests, validate IDs/conflicts, authenticate
+adjudication provenance, and appear in the composite report's digest chain.
+See the mechanism/consumer comparison and the [authority boundary red-team
+review](../red-team/2026-10-07-coverage-map-authority-review.md).
 
 ## Alternatives considered
 
@@ -86,12 +92,13 @@ narrowed instead.
 Accepted for the experiment: missing links remain explicitly unknown; no
 heuristic will be described as semantic ground truth. Deferred: the finding
 taxonomy, annotation syntax, IR schema version, consumer migration, corpus
-impact, and whether link proposals can be confirmed in L2.5.
+impact, and whether link proposals can be consumed by L15.
 
 ## Revisit trigger
 
-The first mechanism comparison is now recorded in the linked experiment, using
-six synthetic fixtures with five labeled cases and one explicit abstention.
+The first mechanism comparison and a source-confirmed authority-boundary review
+are recorded in the linked experiment and its red-team companion. The matrix
+uses six synthetic fixtures with five labeled cases and one explicit abstention.
 It confirms the predicted threshold trade-off but is not independent
 validation: thresholds were informed by an earlier consumed fixture, labels
 were authored for this exercise, and no model was run. Do not treat this
@@ -105,4 +112,5 @@ output contract before changing the auditor.
 ## Evidence
 
 See [the local hypothesis experiment](../evidence/2026-10-07-check-coverage-hypothesis-experiment.md)
-and the prior [check-heading adjudication](../red-team/2026-10-07-check-heading-adjudication.md).
+and the prior [check-heading adjudication](../red-team/2026-10-07-check-heading-adjudication.md),
+plus the [coverage-map authority review](../red-team/2026-10-07-coverage-map-authority-review.md).

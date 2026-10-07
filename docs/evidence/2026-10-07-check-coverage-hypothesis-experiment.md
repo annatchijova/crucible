@@ -316,6 +316,27 @@ for the next fixture-level experiment.
 
 ## Limits
 
+### Authority-boundary follow-up
+
+The focused code trace and negative control are recorded in
+[`coverage-map authority review`](../red-team/2026-10-07-coverage-map-authority-review.md).
+They falsify the broad statement that any separate relation evidence would
+necessarily become a second L2 authority: Crucible already keeps L2 sealed and
+lets a distinct, source-bound L2.5 confirmation artifact influence a separately
+digested L15 recommendation. They do not show that a coverage artifact is
+accurate or authorized. A map that mutates L2 is out of contract; a new L15
+coverage input is a new consequential decision path and would need explicit
+versioning, source digests, strict ID/conflict checks, authorized adjudication
+provenance, and inclusion in the final report digest chain.
+
+The inherited stale-source recommendation test passed, failed under a temporary
+negative-control mutation that disabled the digest-mismatch guard, and passed
+after restoration. This is evidence for that existing guard only. No proposed
+coverage-map validator or consumer was tested, and no independent reviewer was
+available. The next engineering step is a validator-only schema prototype;
+consumer integration remains gated on independent labels and an explicit
+authority contract.
+
 This experiment confirms current behavior on six local fixtures. Human labels
 for the four route controls come from a single-reviewer, consumed pilot; the
 unrelated and partial fixtures have intended links authored for this
