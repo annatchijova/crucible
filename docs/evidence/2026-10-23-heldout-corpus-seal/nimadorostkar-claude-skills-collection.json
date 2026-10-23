@@ -1,10 +1,10 @@
 {
  "consumed_by": [],
  "corpus_id": "nimadorostkar-claude-skills-collection",
- "input_artifact_digest": "sha256:330fe166974eb515a885cb921452d41d245a5cac9a0efb944d7c5433050ebc6d",
- "input_schema_version": "skill-ir/v1",
+ "input_artifact_digest": "sha256:791813ab72d68005b0a469db62fccf3084668d6271ae1b16243525a8921a918e",
+ "input_schema_version": "skill-ir/v2",
  "manifest_digest": "sha256:1580384c68df8f3cdd8fa1055d8b18b77530350414dbedb5f935f84c5fabd899",
- "provenance_digest": "sha256:1b1653ad35a165bec6ef4a3021ecfa14708c0085c425b86290f1ba30532b7744",
+ "provenance_digest": "sha256:0843f779ad4cf06f8264482a15f5544d11cf9d317955675d10a397de8860da6a",
  "role": "HELDOUT_SEALED",
  "schema_version": "corpus-provenance/v1",
  "skill_count": 138,
