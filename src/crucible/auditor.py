@@ -15,7 +15,7 @@ from typing import Any
 from .compiler import _EXPLICIT_LIST_MARKER, _NORMATIVE_STARTERS, _ORACLE_INLINE_CODE
 from .ir import SCHEMA_VERSION, digest_payload
 
-AUDIT_VERSION = "crucible-audit/v1"
+AUDIT_VERSION = "crucible-audit/v2"
 
 # Modality pairs that constitute a direct contradiction for the same subject.
 _CONFLICT_PAIRS = frozenset({
@@ -28,6 +28,105 @@ _CONFLICT_PAIRS = frozenset({
 # Checks the current IR cannot support, with the reason each is abstained.
 # These are emitted in every artifact so consumers know what was NOT assessed.
 AUDIT_LIMITATIONS: list[dict[str, str]] = []
+
+# A check that produced no findings has two very different reasons for it:
+# the corpus satisfied its precondition and nothing was wrong, or the corpus
+# never supplied the input the check consumes. Only the first is evidence.
+# EXERCISED/ABSTAINED separates them per corpus, so an absent precondition is
+# never reported in the shape of a clean result (CLAUDE.md section 5.3).
+OUTCOME_EXERCISED = "EXERCISED"
+OUTCOME_ABSTAINED = "ABSTAINED"
+
+# check class -> the corpus input it consumes. Each entry is verified against
+# the check's own code, not assumed from its name.
+_CHECK_PRECONDITIONS: tuple[tuple[str, str], ...] = (
+    ("BROKEN_REFERENCE", "declared_relations"),
+    ("COMPOSITION_CYCLE", "declared_relations"),
+    ("CONDITIONAL_CONTRADICTION", "comparable_rule_pairs_by_subject"),
+    ("NORMATIVE_CONFLICT", "comparable_rule_pairs_by_subject"),
+    ("ORPHAN_SKILL", "declared_relations"),
+    ("REQUIREMENT_WITHOUT_CHECK", "rules"),
+    ("SEMANTIC_REDUNDANCY", "comparable_skill_pairs"),
+    ("SELF_COMPOSITION", "declared_relations"),
+)
+
+_PRECONDITION_REASONS: dict[str, str] = {
+    "declared_relations": (
+        "the corpus declares no composes_with or delegates_to relation, so "
+        "this check had no relation to examine"
+    ),
+    "comparable_rule_pairs_by_subject": (
+        "no two extracted rules share a normalized subject, so this check "
+        "compared no rule pair"
+    ),
+    "comparable_skill_pairs": (
+        "fewer than two skills yielded a lexical fingerprint, so this check "
+        "compared no skill pair"
+    ),
+    "rules": (
+        "the corpus yielded no normative rule, so this check had no "
+        "requirement to trace"
+    ),
+}
+
+
+def _corpus_preconditions(skills: list[dict[str, Any]]) -> dict[str, Any]:
+    """Report, per check class, whether this corpus supplied its input.
+
+    Deterministic and integer-only: the counts are structural facts about the
+    compiled IR, so they belong inside the sealed payload. Absence of findings
+    from an ABSTAINED check is not evidence that the corpus is clean.
+
+    The token sets are recomputed here rather than threaded out of
+    ``_check_semantic_redundancy``, to keep that check's behaviour untouched.
+    """
+    rules = [rule for skill in skills for rule in skill.get("rules", [])]
+    subjects: dict[str, int] = {}
+    for rule in rules:
+        subject = rule.get("subject", "")
+        if subject:
+            subjects[subject] = subjects.get(subject, 0) + 1
+    fingerprinted = sum(1 for skill in skills if _skill_token_set(skill))
+    declared = sum(
+        len(skill["relations"].get(key, []))
+        for skill in skills
+        for key in ("composes_with", "delegates_to")
+    )
+    inputs = {
+        "skills": len(skills),
+        "checks": sum(len(skill.get("checks", [])) for skill in skills),
+        "rules": len(rules),
+        "rules_with_subject": sum(subjects.values()),
+        "comparable_rule_pairs_by_subject": sum(
+            total * (total - 1) // 2 for total in subjects.values()
+        ),
+        "skills_with_fingerprint": fingerprinted,
+        "comparable_skill_pairs": fingerprinted * (fingerprinted - 1) // 2,
+        "declared_relations": declared,
+    }
+    checks = []
+    for check_class, requires in _CHECK_PRECONDITIONS:
+        observed = inputs[requires]
+        abstained = observed == 0
+        checks.append({
+            "check_class": check_class,
+            "requires": requires,
+            "observed": observed,
+            "outcome": OUTCOME_ABSTAINED if abstained else OUTCOME_EXERCISED,
+            "reason": _PRECONDITION_REASONS[requires] if abstained else None,
+        })
+    return {
+        "corpus_inputs": inputs,
+        "checks": checks,
+        "abstained_count": sum(
+            1 for check in checks if check["outcome"] == OUTCOME_ABSTAINED
+        ),
+        "limitation": (
+            "an ABSTAINED check produced no findings because this corpus did "
+            "not supply the input it consumes; that is not evidence the corpus "
+            "is free of that defect class"
+        ),
+    }
 
 
 def audit_corpus(artifact: dict[str, Any]) -> dict[str, Any]:
@@ -93,6 +192,7 @@ def audit_corpus(artifact: dict[str, Any]) -> dict[str, Any]:
         "input_schema_version": schema_version,
         "findings": findings,
         "summary": _summarize(findings),
+        "preconditions": _corpus_preconditions(skills),
         "limitations": AUDIT_LIMITATIONS,
     }
     audit_artifact["audit_digest"] = digest_payload(audit_artifact)

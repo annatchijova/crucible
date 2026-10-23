@@ -60,7 +60,7 @@ def compute_recommendations(
 ) -> dict[str, Any]:
     """Compute one recommendation per skill.
 
-    ``audit`` is a sealed ``crucible-audit/v1`` artifact. ``confirmation``,
+    ``audit`` is a sealed ``crucible-audit/v2`` artifact. ``confirmation``,
     if given, is a sealed ``crucible-confirmation/v1`` artifact whose
     ``source_audit_digest`` should match ``audit["audit_digest"]`` --
     a mismatch is recorded, not silently ignored, since a recommendation

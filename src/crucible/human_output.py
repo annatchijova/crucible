@@ -100,9 +100,22 @@ def _format_audit(report: dict[str, Any], c: _Colorizer) -> str:
             f"{c('bold', f.get('class', ''))} — {f.get('skill', '(corpus)')}"
         )
         lines.append(f"      {f.get('evidence', '')}")
+    # "limitations" are permanent design scope, identical for every corpus.
+    # Only "preconditions" reports a check that abstained on this corpus, so
+    # the two must not be rendered with the same words.
+    preconditions = report.get("preconditions", {})
+    abstained = preconditions.get("abstained_count", 0) if isinstance(preconditions, dict) else 0
+    if abstained:
+        classes = ", ".join(
+            check["check_class"] for check in preconditions.get("checks", [])
+            if check.get("outcome") == "ABSTAINED"
+        )
+        lines.append(c("dim", f"  {abstained} check(s) abstained on this corpus: {classes}"))
+        lines.append(c("dim", "  an abstained check found nothing because this corpus "
+                              "supplied no input for it"))
     limitations = report.get("limitations", [])
     if limitations:
-        lines.append(c("dim", f"  {len(limitations)} check(s) abstained (see limitations)"))
+        lines.append(c("dim", f"  {len(limitations)} documented design limitation(s)"))
     lines.append(c("dim", f"  digest: {report.get('audit_digest', '')}"))
     return "\n".join(lines)
 

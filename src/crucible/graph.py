@@ -18,7 +18,7 @@ from typing import Any
 
 from .ir import digest_payload
 
-GRAPH_VERSION = "crucible-graph/v1"
+GRAPH_VERSION = "crucible-graph/v2"
 
 # Trigger phrases in description text, mapped to edge types.
 _DESCRIPTION_TRIGGERS: list[tuple[str, str]] = [
@@ -46,6 +46,59 @@ _SYMMETRIC_TYPES = {"SIBLING_OF", "FAMILY_OF"}
 _HUB_THRESHOLD = 3
 
 # Limitations: what L3 cannot detect with the current IR.
+# GRAPH_LIMITATIONS below are permanent design limitations: they are the same
+# for every corpus. They cannot tell a reader that *this* corpus supplied no
+# relation to analyze, so an empty graph reads like a clean composition result.
+# _composition_precondition reports that separately, per corpus.
+OUTCOME_EXERCISED = "EXERCISED"
+OUTCOME_ABSTAINED = "ABSTAINED"
+
+
+def _composition_precondition(
+    skills: list[dict[str, Any]], edges: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Report whether this corpus declared anything for edge construction.
+
+    Every edge originates in an author naming another skill, either under a
+    ``composes with``/``delegates to`` heading or through a description
+    trigger. A corpus using neither convention yields an empty graph that is
+    not a finding about its methodology, and saying so is the difference
+    between "analyzed, nothing found" and "nothing was analyzed"
+    (CLAUDE.md section 5.3).
+    """
+    declared = sum(
+        len(skill["relations"].get(key, []))
+        for skill in skills
+        for key in ("composes_with", "delegates_to")
+    )
+    triggered = sum(
+        1 for skill in skills
+        if any(
+            re.search(pattern, skill["metadata"].get("description", ""), re.IGNORECASE)
+            for pattern, _ in _DESCRIPTION_TRIGGERS
+        )
+    )
+    abstained = declared == 0 and triggered == 0
+    return {
+        "corpus_inputs": {
+            "skills": len(skills),
+            "declared_section_relations": declared,
+            "description_trigger_matches": triggered,
+            "resolved_edges": sum(1 for edge in edges if edge.get("resolved")),
+            "unresolved_edges": sum(1 for edge in edges if not edge.get("resolved")),
+        },
+        "composition": {
+            "outcome": OUTCOME_ABSTAINED if abstained else OUTCOME_EXERCISED,
+            "reason": (
+                "no skill declares a composes_with or delegates_to relation and "
+                "no description matches a relation trigger, so no composition "
+                "was analyzed; an empty graph here is not evidence that this "
+                "corpus composes cleanly"
+            ) if abstained else None,
+        },
+    }
+
+
 GRAPH_LIMITATIONS: list[dict[str, str]] = [
     {
         "check_class": "CONDITIONAL_CONTRADICTION",
@@ -109,6 +162,7 @@ def build_composition_graph(
         "nodes": nodes,
         "relation_summary": _summarize_relations(edges),
         "graph_properties": properties,
+        "preconditions": _composition_precondition(skills, edges),
         "limitations": GRAPH_LIMITATIONS,
     }
     if audit_artifact is not None:

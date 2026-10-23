@@ -44,7 +44,7 @@ flowchart LR
 
 **Status:** implemented for the checks the current IR can support. The auditor
 consumes the L1 Skill IR, emits findings with source evidence and epistemic
-status, seals an AuditArtifact (`crucible-audit/v1`), and documents five
+status, seals an AuditArtifact (`crucible-audit/v2`), and documents five
 abstained checks as explicit limitations. The real corpus produces 1 finding
 (REQUIREMENT_WITHOUT_CHECK, CANDIDATE) with 5 documented limitations.
 

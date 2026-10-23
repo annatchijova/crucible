@@ -55,7 +55,7 @@ def scan_skill_text(skill_text: str, skill_name: str = "uploaded") -> dict[str, 
     The skill is written to a temporary directory, compiled, audited, and
     the temporary directory is removed. No input is retained.
 
-    Returns the audit artifact (crucible-audit/v1) with the L3 graph.
+    Returns the audit artifact (crucible-audit/v2) with the L3 graph.
     The full L1 IR (including body_text) is NOT returned to prevent
     information disclosure (RT-03).
     """

@@ -190,3 +190,48 @@ def test_color_codes_are_absent_without_a_tty() -> None:
     }
     out = format_human(report)
     assert "\x1b[" not in out
+
+
+def test_abstention_and_design_limits_are_rendered_as_different_things() -> None:
+    """Invariant: the renderer must not call a static design limitation an
+    abstention. Mutation: render both from "limitations" again -> red."""
+    report = {
+        "audit_digest": "sha256:abc",
+        "findings": [],
+        "limitations": [{"check_class": "SEMANTIC_REDUNDANCY", "reason": "by design"}],
+        "preconditions": {
+            "abstained_count": 2,
+            "checks": [
+                {"check_class": "BROKEN_REFERENCE", "outcome": "ABSTAINED"},
+                {"check_class": "ORPHAN_SKILL", "outcome": "ABSTAINED"},
+                {"check_class": "REQUIREMENT_WITHOUT_CHECK", "outcome": "EXERCISED"},
+            ],
+        },
+    }
+    text = format_human(report)
+    assert "2 check(s) abstained on this corpus" in text
+    assert "BROKEN_REFERENCE" in text and "ORPHAN_SKILL" in text
+    assert "REQUIREMENT_WITHOUT_CHECK" not in text
+    assert "1 documented design limitation(s)" in text
+    assert "limitation(s) abstained" not in text
+
+
+def test_a_report_without_abstentions_claims_none() -> None:
+    """Invariant: zero abstentions renders no abstention line at all."""
+    report = {
+        "audit_digest": "sha256:abc",
+        "findings": [],
+        "limitations": [],
+        "preconditions": {"abstained_count": 0, "checks": []},
+    }
+    assert "abstained" not in format_human(report)
+
+
+def test_a_legacy_audit_without_preconditions_still_renders() -> None:
+    """Invariant: a v1 artifact kept on disk must not crash the renderer."""
+    text = format_human({
+        "audit_digest": "sha256:abc", "findings": [],
+        "limitations": [{"check_class": "X", "reason": "y"}],
+    })
+    assert "1 documented design limitation(s)" in text
+    assert "abstained" not in text

@@ -41,7 +41,7 @@ def test_scan_skill_text_returns_audit(tmp_path: Path) -> None:
     assert "audit" in result
     assert "ir" in result
     assert "graph" in result
-    assert result["audit"]["audit_version"] == "crucible-audit/v1"
+    assert result["audit"]["audit_version"] == "crucible-audit/v2"
 
 
 def test_scan_skill_text_reports_scope_coverage() -> None:

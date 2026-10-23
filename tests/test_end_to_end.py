@@ -66,14 +66,14 @@ def test_full_pipeline_l1_through_l6() -> None:
 
         # L2: audit (consumes L1 IR).
         audit = audit_corpus(ir)
-        assert audit["audit_version"] == "crucible-audit/v1"
+        assert audit["audit_version"] == "crucible-audit/v2"
         assert audit["input_artifact_digest"] == ir_digest
         audit_digest = audit["audit_digest"]
         assert audit_digest.startswith("sha256:")
 
         # L3: graph (consumes L1 IR + L2 audit).
         graph = build_composition_graph(ir, audit)
-        assert graph["graph_version"] == "crucible-graph/v1"
+        assert graph["graph_version"] == "crucible-graph/v2"
         assert graph["input_ir_digest"] == ir["artifact_digest"]
         assert graph["input_audit_digest"] == audit_digest
         assert len(graph["edges"]) >= 1  # retrier -> gate
@@ -195,8 +195,8 @@ def test_all_artifacts_are_versioned() -> None:
         graph = build_composition_graph(ir, audit)
 
     assert ir["schema_version"] == "skill-ir/v1"
-    assert audit["audit_version"] == "crucible-audit/v1"
-    assert graph["graph_version"] == "crucible-graph/v1"
+    assert audit["audit_version"] == "crucible-audit/v2"
+    assert graph["graph_version"] == "crucible-graph/v2"
 
     mutation_report = run_mutation_lab()
     assert mutation_report["mutation_version"] == "crucible-mutation/v1"
