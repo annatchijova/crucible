@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from .ir import digest_payload
+from .ir import SCHEMA_VERSION, digest_payload
 
 GRAPH_VERSION = "crucible-graph/v2"
 
@@ -138,9 +138,9 @@ def build_composition_graph(
     graph artifact for chain-of-custody. The audit artifact is not modified.
     """
     schema_version = artifact.get("schema_version")
-    if schema_version != "skill-ir/v1":
+    if schema_version != SCHEMA_VERSION:
         raise ValueError(
-            f"expected schema_version skill-ir/v1, got {schema_version!r}"
+            f"expected schema_version {SCHEMA_VERSION}, got {schema_version!r}"
         )
     if "artifact_digest" not in artifact:
         raise ValueError("input artifact is missing artifact_digest")

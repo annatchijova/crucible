@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 import os
 import re
 from contextlib import contextmanager
@@ -340,14 +341,42 @@ def _discover_corpus(root: Path, max_skills: int | None,
     return sorted(paths, key=lambda p: p.relative_to(root).as_posix())
 
 
-def compile_corpus(root: Path | str, max_skills: int | None = None) -> dict[str, Any]:
+# A corpus may give two skills the same declared name. The analysis layers key
+# skills by name, so the name must stay unique within one compiled artifact --
+# but discarding an entire corpus over a few collisions is not the honest
+# response either. ON_DUPLICATE_ERROR keeps the strict default; the explicit
+# ON_DUPLICATE_SKIP opt-in analyzes the unambiguous skills and records every
+# exclusion, mirroring how scan_installed_collection already reports
+# SKIPPED_DUPLICATE for installed packages.
+ON_DUPLICATE_ERROR = "error"
+ON_DUPLICATE_SKIP = "skip"
+
+# Dropping a byte-identical republication of a skill loses nothing. Dropping a
+# homonym loses a real methodology, so coverage is only honest if the artifact
+# says which of the two happened.
+EXCLUDED_IDENTICAL = "DUPLICATE_NAME_IDENTICAL_CONTENT"
+EXCLUDED_DISTINCT = "DUPLICATE_NAME_DISTINCT_CONTENT"
+
+
+def compile_corpus(root: Path | str, max_skills: int | None = None, *,
+                   on_duplicate_name: str = ON_DUPLICATE_ERROR) -> dict[str, Any]:
     """Compile every ``SKILL.md`` below *root* into a canonical artifact.
 
     If *max_skills* is set and the corpus contains more SKILL.md files
     than the limit, a ValueError is raised to prevent resource exhaustion
     (RT-04 fix). Discovery entries, directories and cumulative input bytes
     are bounded even when *max_skills* is None.
+
+    Two skills declaring the same name are ambiguous for every layer that
+    keys on name. With *on_duplicate_name* at ``ON_DUPLICATE_ERROR`` (the
+    default) the corpus is refused, naming the opt-in. With
+    ``ON_DUPLICATE_SKIP`` the first skill by sorted source path is kept, the
+    rest are recorded in ``excluded``, and whether each exclusion lost real
+    content is stated. ``excluded`` is always present so that an artifact
+    never implies complete coverage it does not have.
     """
+    if on_duplicate_name not in (ON_DUPLICATE_ERROR, ON_DUPLICATE_SKIP):
+        raise ValueError(f"unsupported on_duplicate_name: {on_duplicate_name!r}")
     corpus_root = Path(root).resolve()
     if not corpus_root.is_dir():
         raise ValueError(f"corpus root is not a directory: {root}")
@@ -367,17 +396,56 @@ def compile_corpus(root: Path | str, max_skills: int | None = None) -> dict[str,
         )
         bytes_seen += len(raw_bytes)
         skills.append(_compile_skill(path, corpus_root, raw_bytes=raw_bytes))
-    names = [skill["identity"]["name"] for skill in skills]
-    duplicates = sorted({name for name in names if names.count(name) > 1})
-    if duplicates:
-        raise ValueError(f"duplicate skill name(s): {', '.join(duplicates)}")
+    skills, excluded = _resolve_duplicate_names(skills, on_duplicate_name)
 
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "skills": skills,
+        "excluded": excluded,
     }
     payload["artifact_digest"] = digest_payload(payload)
     return payload
+
+
+def _resolve_duplicate_names(
+    skills: list[dict[str, Any]], on_duplicate_name: str
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Keep one skill per declared name, or refuse the corpus.
+
+    Order is by sorted source path, so which skill survives a collision is
+    deterministic and does not depend on filesystem traversal order.
+    """
+    counts = Counter(skill["identity"]["name"] for skill in skills)
+    duplicates = sorted(name for name, total in counts.items() if total > 1)
+    if not duplicates:
+        return skills, []
+    if on_duplicate_name == ON_DUPLICATE_ERROR:
+        raise ValueError(
+            f"duplicate skill name(s): {', '.join(duplicates)}; "
+            f"pass on_duplicate_name={ON_DUPLICATE_SKIP!r} "
+            f"(CLI: --skip-duplicate-names) to analyze the rest and record "
+            f"every exclusion"
+        )
+    kept: dict[str, dict[str, Any]] = {}
+    excluded: list[dict[str, Any]] = []
+    for skill in sorted(skills, key=lambda s: s["identity"]["source_path"]):
+        identity = skill["identity"]
+        name = identity["name"]
+        incumbent = kept.get(name)
+        if incumbent is None:
+            kept[name] = skill
+            continue
+        same = incumbent["identity"]["content_digest"] == identity["content_digest"]
+        excluded.append({
+            "name": name,
+            "source_path": identity["source_path"],
+            "content_digest": identity["content_digest"],
+            "kept_source_path": incumbent["identity"]["source_path"],
+            "reason": EXCLUDED_IDENTICAL if same else EXCLUDED_DISTINCT,
+        })
+    retained = [kept[name] for name in sorted(kept)]
+    excluded.sort(key=lambda entry: (entry["source_path"], entry["name"]))
+    return retained, excluded
 
 
 def _open_path_descriptor(path: Path, *, directory: bool = False,

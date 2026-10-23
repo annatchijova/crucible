@@ -59,7 +59,7 @@ def test_full_pipeline_l1_through_l6() -> None:
 
         # L1: compile.
         ir = compile_corpus(root)
-        assert ir["schema_version"] == "skill-ir/v1"
+        assert ir["schema_version"] == "skill-ir/v2"
         assert len(ir["skills"]) == 2
         ir_digest = ir["artifact_digest"]
         assert ir_digest.startswith("sha256:")
@@ -194,7 +194,7 @@ def test_all_artifacts_are_versioned() -> None:
         audit = audit_corpus(ir)
         graph = build_composition_graph(ir, audit)
 
-    assert ir["schema_version"] == "skill-ir/v1"
+    assert ir["schema_version"] == "skill-ir/v2"
     assert audit["audit_version"] == "crucible-audit/v2"
     assert graph["graph_version"] == "crucible-graph/v2"
 

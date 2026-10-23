@@ -6,7 +6,7 @@ import hashlib
 import json
 from typing import Any
 
-SCHEMA_VERSION = "skill-ir/v1"
+SCHEMA_VERSION = "skill-ir/v2"
 
 
 def canonical_bytes(value: Any) -> bytes:

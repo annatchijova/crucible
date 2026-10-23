@@ -10,7 +10,7 @@ from typing import Any
 from .auditor import audit_corpus
 from .behavioral import LocalExecutor, NebiusExecutor, run_behavioral_differential
 from .bob import LLMProposer, RuleBasedProposer, run_bob_workflow
-from .compiler import compile_corpus
+from .compiler import ON_DUPLICATE_ERROR, ON_DUPLICATE_SKIP, compile_corpus
 from .confirm import (
     MockConfirmExecutor,
     NebiusConfirmExecutor,
@@ -51,7 +51,34 @@ def _emit(data: Any, human: bool) -> None:
         print(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True))
 
 
+class _CompileError(Exception):
+    """A refused corpus, reported like the scan modes rather than as a traceback."""
+
+
+def _compile(args: Any) -> dict[str, Any]:
+    """Compile the corpus root under the duplicate-name policy the user chose."""
+    try:
+        return compile_corpus(
+            args.root,
+            on_duplicate_name=(
+                ON_DUPLICATE_SKIP if args.skip_duplicate_names else ON_DUPLICATE_ERROR
+            ),
+        )
+    except ValueError as exc:
+        # The duplicate-name refusal names its own opt-in; a traceback buries it.
+        raise _CompileError(str(exc)) from exc
+
+
 def main() -> int:
+    try:
+        return _main()
+    except _CompileError as exc:
+        import sys
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+
+def _main() -> int:
     parser = argparse.ArgumentParser(
         prog="crucible",
         description="Compile, audit, analyze, mutation-test, behaviorally evaluate, repair, close the loop, report, and view a skill corpus.",
@@ -77,6 +104,17 @@ def main() -> int:
         "--no-graph",
         action="store_true",
         help="emit L1 + L2 audit without L3 composition graph",
+    )
+    parser.add_argument(
+        "--skip-duplicate-names",
+        action="store_true",
+        help=(
+            "analyze a corpus that declares the same skill name twice instead "
+            "of refusing it; the first skill by sorted source path is kept and "
+            "every exclusion is recorded in the artifact's 'excluded' list, "
+            "stating whether the dropped copy was byte-identical or a distinct "
+            "methodology sharing a name"
+        ),
     )
     parser.add_argument(
         "--mutate",
@@ -404,7 +442,7 @@ def main() -> int:
     if args.confirm:
         if not args.root:
             parser.error("root is required with --confirm")
-        artifact = compile_corpus(args.root)
+        artifact = _compile(args)
         audit = audit_corpus(artifact)
         if args.mock_confirm:
             executor = MockConfirmExecutor()
@@ -419,7 +457,7 @@ def main() -> int:
             parser.error("--consolidate and --consolidate-all are mutually exclusive")
         if not args.root:
             parser.error("root is required with --consolidate/--consolidate-all")
-        artifact = compile_corpus(args.root)
+        artifact = _compile(args)
         audit = audit_corpus(artifact)
         root_path = Path(args.root).resolve()
         corpus = {
@@ -488,7 +526,7 @@ def main() -> int:
     if not args.root:
         parser.error("root is required unless --mutate/--behave/--bob/--repair-loop/--report/--view/--render-report is given")
 
-    artifact = compile_corpus(args.root)
+    artifact = _compile(args)
     if args.compile_only:
         _emit(artifact, args.human)
         return 0

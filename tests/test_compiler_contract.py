@@ -27,7 +27,7 @@ def test_compiler_emits_versioned_source_addressable_ir(tmp_path: Path) -> None:
 
     artifact = compile_corpus(tmp_path)
 
-    assert artifact["schema_version"] == "skill-ir/v1"
+    assert artifact["schema_version"] == "skill-ir/v2"
     assert artifact["skills"][0]["identity"]["name"] == "bounded-retries"
     assert artifact["skills"][0]["identity"]["content_digest"].startswith("sha256:")
     assert [rule["modality"] for rule in artifact["skills"][0]["rules"]] == ["MUST", "SHOULD"]

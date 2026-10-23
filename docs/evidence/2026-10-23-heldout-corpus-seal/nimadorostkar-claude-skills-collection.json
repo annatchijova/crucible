@@ -1,0 +1,707 @@
+{
+ "consumed_by": [],
+ "corpus_id": "nimadorostkar-claude-skills-collection",
+ "input_artifact_digest": "sha256:330fe166974eb515a885cb921452d41d245a5cac9a0efb944d7c5433050ebc6d",
+ "input_schema_version": "skill-ir/v1",
+ "manifest_digest": "sha256:1580384c68df8f3cdd8fa1055d8b18b77530350414dbedb5f935f84c5fabd899",
+ "provenance_digest": "sha256:1b1653ad35a165bec6ef4a3021ecfa14708c0085c425b86290f1ba30532b7744",
+ "role": "HELDOUT_SEALED",
+ "schema_version": "corpus-provenance/v1",
+ "skill_count": 138,
+ "skills": [
+  {
+   "content_digest": "sha256:6056a51d0f85edcbbd400053c0af9e2e5eb2b0a47b6fc5b6de9b22d32c19a0b0",
+   "name": "agent-instructions",
+   "source_path": "skills/agent-tooling/agent-instructions/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:35af063022d7ac357f384c30effec9ba18d2e1665dddc332caa8a34befb372ae",
+   "name": "agent-memory",
+   "source_path": "skills/agent-tooling/agent-memory/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:0abad40a5006fefc4dd0ae3b2311b148a8e4cb405e77031db924a55e31b70971",
+   "name": "hooks",
+   "source_path": "skills/agent-tooling/hooks/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:afb244dc89cbbb0358b28b7921044decabcbbca0a90c5a9897de57cc877d4622",
+   "name": "plugin-development",
+   "source_path": "skills/agent-tooling/plugin-development/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:01b9b61eafc4b2f528c25287c6790e23a60b0b0e69c7637c42acf9ddccff5322",
+   "name": "skill-authoring",
+   "source_path": "skills/agent-tooling/skill-authoring/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:0044c23e791ce0442c8ff217c80557f72ca5f5e652ac2e27960387dc9fae9b0a",
+   "name": "skill-review",
+   "source_path": "skills/agent-tooling/skill-review/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:b3f7b233f637eee1354fedda0473b456c24f0634706fd67cb21b6a928ca69e63",
+   "name": "slash-commands",
+   "source_path": "skills/agent-tooling/slash-commands/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:df1f9deb65c0140bc65644cd92f024543cc6fe1f5c5b9c4b10cffaa5d6d42b9f",
+   "name": "subagents",
+   "source_path": "skills/agent-tooling/subagents/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:742782839f2ec5cc98004dd90295accfccb01a965cea72de4574082ec93dddb5",
+   "name": "agent-design",
+   "source_path": "skills/ai/agent-design/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:fa62d1bdd794711b14919f75c67485dcd27b1347c1fa4477947675afeda0b0ad",
+   "name": "context-engineering",
+   "source_path": "skills/ai/context-engineering/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:f62c79c275eefd0c03a1c3b32b36ecd63eb5f1a75d72932b685a2914c4d107a2",
+   "name": "fine-tuning",
+   "source_path": "skills/ai/fine-tuning/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:8c390c3994d63dbed8fd0caef2ea95ae9bffe2d0954c9cd4a54ea86357ed5e9d",
+   "name": "llm-cost-optimization",
+   "source_path": "skills/ai/llm-cost-optimization/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:bd4f48049f842853f8ad61caaf0ff96f514d1db2acac633d69d156fbec8ceaa1",
+   "name": "llm-evaluation",
+   "source_path": "skills/ai/llm-evaluation/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:076ae28e16c5cdd78d1b1a77cd7291056dca8cc041d836eb1c273c95cd122986",
+   "name": "llm-integration",
+   "source_path": "skills/ai/llm-integration/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:c3da3bd951b33774829e268018a5b416c15611d17639ebf1a7e471a72037dbe5",
+   "name": "mcp-server",
+   "source_path": "skills/ai/mcp-server/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:8a5b02e9c544ec47970a05bc4de700a84d294257ddd461295fb6f767e9de664a",
+   "name": "ml-pipeline",
+   "source_path": "skills/ai/ml-pipeline/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:46480f1164a32976c84cfc500e4c4840e433703f3c5ca58b7bcbf073da20c57c",
+   "name": "model-selection",
+   "source_path": "skills/ai/model-selection/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:c0b47f8e5d2d27f3667b8683dce117a0a2000356f7489800550736e6142b0434",
+   "name": "prompt-engineering",
+   "source_path": "skills/ai/prompt-engineering/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:6c160619cafa9a8af0c2372af622ae99af7a142bba7b8d676b120e146a9e798f",
+   "name": "rag",
+   "source_path": "skills/ai/rag/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:0433ad1ba98b63cc2b023eed5397d751141ea74f2ea638d0c6f17480002f2855",
+   "name": "structured-output",
+   "source_path": "skills/ai/structured-output/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:d4e278227b03fa0c39c112f41730efa774dd435fd3c4eb7bfbcdda2c757bb905",
+   "name": "api-design",
+   "source_path": "skills/backend/api-design/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:d0130d8f44f29d5ceb5aad7f74122d46b5d42e6ea57ac6e7f10e437a16323eea",
+   "name": "background-jobs",
+   "source_path": "skills/backend/background-jobs/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:c9920b678b792ac339882b840225451cf61416118373be900e696558f48a1596",
+   "name": "caching",
+   "source_path": "skills/backend/caching/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:e020534581430304fbd7f5a5cc0c0f04624b782fc6d9ca02bc9953797e9a74a9",
+   "name": "django",
+   "source_path": "skills/backend/django/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:52295eb88208740e0ce0b79cb7f442a121297655e1dab3ff583ddbaf67db740f",
+   "name": "event-driven-architecture",
+   "source_path": "skills/backend/event-driven-architecture/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:ec07bc9ce2bf4a0c2c786c715e3c8dd36fd7fbda855f02d27626527d3813c803",
+   "name": "fastapi",
+   "source_path": "skills/backend/fastapi/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:6d8534be7435ed36cc47ee065c5f0c2e87ac95de9a1a575047790b40d6d20d21",
+   "name": "graphql",
+   "source_path": "skills/backend/graphql/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:1d96568cc343c3bee906bf6d8184aca765b8bce33a4d29d194e21f28ea9eb4be",
+   "name": "microservices",
+   "source_path": "skills/backend/microservices/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:9358e8ecbd37a810ae4b3690c615d25b99175ea88f8d17bb7f1546117a0f540c",
+   "name": "nestjs",
+   "source_path": "skills/backend/nestjs/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:6e824953d6ed886ac036a5b5a41d00a02dd39979202661406c0e0d544c49b6d3",
+   "name": "realtime-websockets",
+   "source_path": "skills/backend/realtime-websockets/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:bab956c17a2bb3d43336d14bc7f2b11000d63b41844a4a70b362ea80d82efb5f",
+   "name": "spring-boot",
+   "source_path": "skills/backend/spring-boot/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:948e175f67fc325bd84453e626e4eb92ac4dc253ddf788ca3aad3111f12ba200",
+   "name": "competitive-analysis",
+   "source_path": "skills/business/competitive-analysis/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:5774b2d3be59d0d41031a52cccfec0b477e80766a231ce2ba74c2d51cc55385b",
+   "name": "lead-research",
+   "source_path": "skills/business/lead-research/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:a761eec7d5577a7202427f2d5a4099ce9d1e49d273e5774345c53b662fee1942",
+   "name": "product-analysis",
+   "source_path": "skills/business/product-analysis/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:6883548f198dcd2a14cdd6a4961ccad3be2cd4dd59a845144c206d02235c7cf8",
+   "name": "resume",
+   "source_path": "skills/business/resume/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:f5c656d9b7c6520fe073c788c009d0d55c0f8ddf6aec5481bea6de6b8c9bc956",
+   "name": "user-research",
+   "source_path": "skills/business/user-research/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:d3409b5b7937c0e344294ebb33c04e5516dc4b11f568da3f119f1d1e59272d3c",
+   "name": "data-modeling",
+   "source_path": "skills/data/data-modeling/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:e9c3787d0008d3cdb030810c0b62d1891a964dac7174fee92592b491c98b5ed6",
+   "name": "data-quality",
+   "source_path": "skills/data/data-quality/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:abbac56232b0945e46338628475675c5991b3a95137f49c45fcf9533e6d8d2aa",
+   "name": "database-performance",
+   "source_path": "skills/data/database-performance/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:911931c2ba595bad16a6b263eabc8fccbd3b52812e9595e48deada7eb9aae8e8",
+   "name": "pandas",
+   "source_path": "skills/data/pandas/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:f3322476ffcd6abfba63a2e0f767599b0e27df8a82d71063eff54fa14807d76f",
+   "name": "postgres",
+   "source_path": "skills/data/postgres/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:7f156063085f619811f323b940730eb09cf5d64d224df63b293ca443420a42b9",
+   "name": "spark",
+   "source_path": "skills/data/spark/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:e9efedfaccbc409daaaf862116341a518c4e797a8bf75ea8aeac5278a03660ff",
+   "name": "brand-guidelines",
+   "source_path": "skills/design/brand-guidelines/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:561b1c15aa1baf93f4f65b1b0ef5f13b85b409d1c660d31e3d37d25852ec3a63",
+   "name": "generative-art",
+   "source_path": "skills/design/generative-art/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:df0e513a2b3f75a954039c20a3710ed0403287c648a619383e5deb1d71d4e295",
+   "name": "theming",
+   "source_path": "skills/design/theming/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:6382a1e8dc01f05d98743e398faf7de64212e3f894db078b0d925a068e62425a",
+   "name": "ui-review",
+   "source_path": "skills/design/ui-review/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:c8c4fb331694413af3a18096aaaf3df89052dc4a839bcf76a8ef71b82ed5ef63",
+   "name": "visual-design",
+   "source_path": "skills/design/visual-design/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:450e46c6590e4566a3e7850ce7ed26437019029b941b6b6c711cea343007a0c2",
+   "name": "architecture-decisions",
+   "source_path": "skills/development/architecture-decisions/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:a69932dc9efef9e5f033cd6be54fca5b0e923687ebac78c2c93ca97370022349",
+   "name": "bug-fix-protocol",
+   "source_path": "skills/development/bug-fix-protocol/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:526f95322c5aefb1eb7b1551252b28602efc11f15af8952ed1b696abbba301df",
+   "name": "cli-development",
+   "source_path": "skills/development/cli-development/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:f9bd46ee6cbcb5e37e98fee58a3c57cfc2ea74acbb0b5c7e3e8300211a6b3d85",
+   "name": "code-review",
+   "source_path": "skills/development/code-review/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:c575ae333e330cf218ac08feee15515eb6383dfda29401f5d04ab2884c36f475",
+   "name": "debugging",
+   "source_path": "skills/development/debugging/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:ced41781dc71691f809b2f69100fc0905cd44f91b2317463f50f43775ff767f8",
+   "name": "design-patterns",
+   "source_path": "skills/development/design-patterns/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:3913387297e83e411c7a5edb8727c309493f6a0b7a9395a62083d4a98e392213",
+   "name": "domain-modeling",
+   "source_path": "skills/development/domain-modeling/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:f98a6e45c418bdf2f2505820fd46f56ca48e87cf379bfcde6768afd73b3ad85b",
+   "name": "git-workflow",
+   "source_path": "skills/development/git-workflow/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:d537372d273e0e95d2f1e753312d3202d5f39afefec6ed1ba47c6ab9398de16b",
+   "name": "legacy-modernization",
+   "source_path": "skills/development/legacy-modernization/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:56c0a4753b2b8fc282c009164899aa95c47e02d82c814d368a926446a14644d3",
+   "name": "refactoring",
+   "source_path": "skills/development/refactoring/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:d05db884ed9d73ab0010f23851a5dd7d5c1c6e17c44a6c3c00718d0d14416602",
+   "name": "repository-exploration",
+   "source_path": "skills/development/repository-exploration/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:54c705ade3d8425e9db727ca229e7060320ca67563e4a0af2e1f16e0dea94495",
+   "name": "simple-design",
+   "source_path": "skills/development/simple-design/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:4c6cb9dc91e8ecf5fa95e040667752647400d8f2e5570bca1aabc4738d85b1ec",
+   "name": "system-design",
+   "source_path": "skills/development/system-design/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:b2237970028fd832a2b9b03697d5bb790eedc6d312572d56bfbefcf49a1ab1a8",
+   "name": "aws-cdk",
+   "source_path": "skills/devops/aws-cdk/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:f068c25fa17528241d6bfebfda78ce4e9cfb1faeb1c1c6d41db4da805d4fb129",
+   "name": "aws-cost-optimization",
+   "source_path": "skills/devops/aws-cost-optimization/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:d0607b139a7f1f3a39f31ee770ead71e87849d95181bb3420d6b41723cc6266a",
+   "name": "aws-serverless",
+   "source_path": "skills/devops/aws-serverless/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:9164dbfea651eead27fd0466573635f6afd5e84de9365b18bee5081d7820f22b",
+   "name": "chaos-engineering",
+   "source_path": "skills/devops/chaos-engineering/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:d227c535fe869f3319392fdb6d718d45e5a3b812ef1cef167dcf7514863b4435",
+   "name": "ci-cd",
+   "source_path": "skills/devops/ci-cd/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:46057d170aa340966432bdd2e06d087f61e138ef2ecfb2bae053b0556f5d3706",
+   "name": "cloud-architecture",
+   "source_path": "skills/devops/cloud-architecture/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:f89c0f766fc07462b5ffb480d6876aa9cf250acc1ce21adc191cdf9bf9546ad4",
+   "name": "containers",
+   "source_path": "skills/devops/containers/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:137fcc43881e7ff1f8de97c745a21d434377ed7a550e781948ffd3617f749963",
+   "name": "incident-response",
+   "source_path": "skills/devops/incident-response/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:d2500a77673f0adadff588899b104fe1dc42d97968aafeedf6392a1ab84fe60d",
+   "name": "kubernetes",
+   "source_path": "skills/devops/kubernetes/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:73638004742fd5bfc0d6c004a26217385cd031815f1439684271fcf05f36e474",
+   "name": "network-troubleshooting",
+   "source_path": "skills/devops/network-troubleshooting/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:e7f045e686c468c7fe20d9a8bb16d237c549e70edcc015ae1c9af0a9c775f220",
+   "name": "observability",
+   "source_path": "skills/devops/observability/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:c9ab5d830baafe0ad5d1af0f6f672ca94001fd2578f8a0df2cf09c876d8a782c",
+   "name": "site-reliability",
+   "source_path": "skills/devops/site-reliability/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:1685211d694030ebda313d668f0be37d7d2798ec233312cc2584abdd939b7a55",
+   "name": "terraform",
+   "source_path": "skills/devops/terraform/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:dde857d23ba3a574ff6baa84cd347076cdcf01582d2ca71d758b2754f82e8509",
+   "name": "diagrams",
+   "source_path": "skills/documents/diagrams/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:7e7ad8504e9e5fc285b4297547926e7920ff712d6037be96f58071cb85434685",
+   "name": "document-conversion",
+   "source_path": "skills/documents/document-conversion/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:f266be2808ef8ec3b654b78d0162a660ed56c4d8f4f9a723bcee4697cf2e6380",
+   "name": "pdf",
+   "source_path": "skills/documents/pdf/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:516578ad7537e93f266d233c81d380fc5ab924a7a7816b3148b47debd96e9989",
+   "name": "presentations",
+   "source_path": "skills/documents/presentations/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:c8a0c8e9a367d10c39befcf0da451dcd4f7ea0bc62eb0ac24b0ca733ed7cde64",
+   "name": "spreadsheets",
+   "source_path": "skills/documents/spreadsheets/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:f7393d80eab60b6da8c4f25c4f1d6c19975360b56cbbeae8e54d783d83bbc858",
+   "name": "word-documents",
+   "source_path": "skills/documents/word-documents/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:339b8011ff93509ae7487a3d8f9011ce10c116980eb5a38fc8967bad53c92329",
+   "name": "backtesting",
+   "source_path": "skills/finance/backtesting/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:d868677a03aff8636f00ab2cce42a119ea4e782f49fad5e0319a9a0b8bc436c7",
+   "name": "earnings-analysis",
+   "source_path": "skills/finance/earnings-analysis/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:be9e5c8062d14d0c3a77ef3e375c027a6d496300d3f6a57bffeb1cbf8f5ddd68",
+   "name": "market-breadth",
+   "source_path": "skills/finance/market-breadth/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:aad901c6b589f77422ff7fdf733744ee40fb0d7d0afec874a0c40856f7244a6b",
+   "name": "market-regime",
+   "source_path": "skills/finance/market-regime/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:5cdb24aa663a93930f6100e277d653c0a09ec284f336b4a2178b8b38279e6c8f",
+   "name": "options-strategy",
+   "source_path": "skills/finance/options-strategy/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:5fc51d823da84e703cb0b1c3850653543c879971241fb4d8511fed9f850090c3",
+   "name": "portfolio-review",
+   "source_path": "skills/finance/portfolio-review/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:31a341a7d4b24635b62c65656f6bb64de0b37b86094c1485b7efbb685acdeea0",
+   "name": "position-sizing",
+   "source_path": "skills/finance/position-sizing/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:3df2b4ae881971839ad47f132c6f46953217bb98836626cacb20e0ee3e59c8f3",
+   "name": "quantitative-analysis",
+   "source_path": "skills/finance/quantitative-analysis/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:29114fc356f0e8e07464613b9bcab1bb2ab1cc986850ecbcf509565d9f3ae1c0",
+   "name": "risk-management",
+   "source_path": "skills/finance/risk-management/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:c9b6774ea3e0f0c3537667884cd002163204c8bdcb783624126ae1f83c4fefa3",
+   "name": "stock-screening",
+   "source_path": "skills/finance/stock-screening/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:9f8adb3ada6890bab2de6595da078eeafa1b5df8fcf736ebd34fe606f0d2b3a2",
+   "name": "technical-analysis",
+   "source_path": "skills/finance/technical-analysis/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:9d1210623c769aa395737537009380d9f006fb40b3ddcad463f45429f82e6bbe",
+   "name": "trade-journal",
+   "source_path": "skills/finance/trade-journal/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:83b1b5b9978d23feaee752dd89050ca4c115d9e60174b4635f638889845e13ff",
+   "name": "accessibility",
+   "source_path": "skills/frontend/accessibility/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:d7673cae387aa7d0ff42ebea4ad28c618ba8405ed714b814fbc6c5bcd16321e8",
+   "name": "angular",
+   "source_path": "skills/frontend/angular/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:48a3572ac62088c57c9ddb95d0be4247bb774c035f03119de9e246df14bfad85",
+   "name": "design-systems",
+   "source_path": "skills/frontend/design-systems/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:9e24e2e0902df9ff868a7f44f8a5e65968987c81eed2c57baac21cddb7b1bd86",
+   "name": "frontend-architecture",
+   "source_path": "skills/frontend/frontend-architecture/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:13a1f3b8b0e42a6a77043821ab5315ad3cc0e91fc8fab6fff1617c8f9dd482e8",
+   "name": "nextjs",
+   "source_path": "skills/frontend/nextjs/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:41306b0ed146a6f18fa1cf138a89760991f1587cfa28c84c7c14a2e4beea84ab",
+   "name": "react",
+   "source_path": "skills/frontend/react/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:236d268359e9c68445542ffb1ab6a4236382e894fde980b304f318febc47ff66",
+   "name": "visual-qa",
+   "source_path": "skills/frontend/visual-qa/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:a09d5d53501b679e166ee99b99ef92f38504ac337ed871ecda38b6c66eb6ba8c",
+   "name": "vue",
+   "source_path": "skills/frontend/vue/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:53e9b84379820d00935e8d9fd5cbb65e3ba487b4d1a16e1f2eeb30735e19f916",
+   "name": "web-performance",
+   "source_path": "skills/frontend/web-performance/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:bd84dba0b127ece66f56b6eac157c02dad2ee00cd85c883626be01bf033a2e56",
+   "name": "cpp",
+   "source_path": "skills/languages/cpp/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:b60d10d69f87c455eee4876fd271c95b5cea66de3f8d90fe557972cacdf0865d",
+   "name": "csharp-dotnet",
+   "source_path": "skills/languages/csharp-dotnet/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:45d39a3e44edc4d134458f66b473061dc9e241eb5ff7e5846d2b16c5cc81424d",
+   "name": "go",
+   "source_path": "skills/languages/go/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:769d4d622ce5079acb36075f4461c3f979207b69f2f68cb703f2c2186d0fd6e8",
+   "name": "java-kotlin",
+   "source_path": "skills/languages/java-kotlin/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:3b91b562e3edb9168cc0b4fd2dea58210640dd73198b9e63aea0fe86a178bc8c",
+   "name": "php",
+   "source_path": "skills/languages/php/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:1f3f1f8585e329bb0f663c7f8c1a9ec28607041f511b73d90eff6f0b4695222d",
+   "name": "python",
+   "source_path": "skills/languages/python/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:447afb9017ac449c835a2487604b4944681cf0ea346f38b365301d0be69d5bc0",
+   "name": "ruby",
+   "source_path": "skills/languages/ruby/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:1067857597c299c9f92a0c16fccb0ee9467d917f0a62410419be872af8f9ef92",
+   "name": "rust",
+   "source_path": "skills/languages/rust/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:42ebdeb7a4501e12e873a4164be7f7ada9dc83c31b58d456a34fbd28d2e1aead",
+   "name": "shell",
+   "source_path": "skills/languages/shell/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:627a1fc7f82488280d13fd88d2b6b0b4eff9dfc901c0c6d0bd46f8c4da5833d0",
+   "name": "sql",
+   "source_path": "skills/languages/sql/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:e7fe3fbbb2b1b0b14c94ae52f760aa4a5768fa741188f3d3082a5c3bc6605f55",
+   "name": "swift",
+   "source_path": "skills/languages/swift/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:4291308eea4c1b7c6531db82851c18bd3a2b63e259fb3710de7e51c14499f875",
+   "name": "typescript",
+   "source_path": "skills/languages/typescript/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:11454ac21377c1876b88860a1942f469915026750d2e1b3bfcc210a4e61ef5a8",
+   "name": "flutter",
+   "source_path": "skills/mobile/flutter/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:90eb73abcef75318ee5fc7cace3101fb509b33aae660e3ba9516770ccf90a09f",
+   "name": "ios",
+   "source_path": "skills/mobile/ios/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:6d115961db0de542cf7e108ef9e729af255683caf689b008609a18a0b4143b84",
+   "name": "mobile-release",
+   "source_path": "skills/mobile/mobile-release/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:67bedd945d8bad4cf253c93f22bdcfe08208abe8c886fecb041c53b553523cbc",
+   "name": "react-native",
+   "source_path": "skills/mobile/react-native/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:c0c68c1b530dea90b1bde38a9032d75df63ef9d1f3066cc84148c710bc47ebe4",
+   "name": "deep-research",
+   "source_path": "skills/productivity/deep-research/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:88f53307c6fa024be877c8b22982a84c7679864e8a711cbdbe2234f3350d6630",
+   "name": "fact-checking",
+   "source_path": "skills/productivity/fact-checking/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:2ead6ba98405e740139b4690aa5abcc09f1548458491ebd9564e0c68dd9f4247",
+   "name": "file-organization",
+   "source_path": "skills/productivity/file-organization/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:e0a720226a29c98e4d4e546e4ea9674812f8484ff133ae7ced52ac49b80fcb02",
+   "name": "meeting-notes",
+   "source_path": "skills/productivity/meeting-notes/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:bae55fdc645586798f9890af393fafba2bb1286ffad8aa70c850d6357ff177b8",
+   "name": "web-data-extraction",
+   "source_path": "skills/productivity/web-data-extraction/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:451eb1105687544f6bea2cd3822e42636703d18ee946acdac5554dc107cdc052",
+   "name": "secrets-management",
+   "source_path": "skills/security/secrets-management/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:4142f64906d3a1a6de72cb38062a4a9e768a53849e4bbbee4bbcb73e17675231",
+   "name": "secure-coding",
+   "source_path": "skills/security/secure-coding/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:5a440a6eeabd68da84e4736c52d7dbb9600115c3b8afdffde1989ab5d59c7966",
+   "name": "security-review",
+   "source_path": "skills/security/security-review/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:f6dbb9bfea7da1768eea434926419f187d4bd134cbe0caa927ee676eb5db8f8b",
+   "name": "supply-chain",
+   "source_path": "skills/security/supply-chain/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:09804e328442bbf6112b2abc2e847c861bf93511dea2de8b5bdfec98162302fd",
+   "name": "threat-modeling",
+   "source_path": "skills/security/threat-modeling/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:dd20ef85457377ce8a675632b409b6b49d50a52e097da7c601ab56f332faddf6",
+   "name": "e2e-playwright",
+   "source_path": "skills/testing/e2e-playwright/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:469ea429d2666af03eb340e127a7454408cf64fa12fa49bdef16bab4f0a64bc6",
+   "name": "performance-testing",
+   "source_path": "skills/testing/performance-testing/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:2c6d109b4a063b7bc1e90f19f0982f3b28f77217668e8e734b431e5ea45b1740",
+   "name": "qa-review",
+   "source_path": "skills/testing/qa-review/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:902136e9dde492af1b73d9e7a15c71720cb3b53e2a047cfbc132ac0c53e076f7",
+   "name": "test-driven-development",
+   "source_path": "skills/testing/test-driven-development/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:092b64511dd685eaeeaa574e96fcd410fdcc7ce8b304fb391aba076692c7d518",
+   "name": "test-strategy",
+   "source_path": "skills/testing/test-strategy/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:70b58ab452df0d496459ca6a6bbf1685adecbae63ade9ee410de5128673d6097",
+   "name": "web-app-testing",
+   "source_path": "skills/testing/web-app-testing/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:3f1b6a46e61d4d722c067cfb86567a7fd157692c53161d30bfdf9ac65de90e88",
+   "name": "changelog",
+   "source_path": "skills/writing/changelog/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:e8a00135233304e1db66cac38b024e962e0d727c0761816f40c37d5885f76c9d",
+   "name": "editing",
+   "source_path": "skills/writing/editing/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:47c4ba26c3374dc7aabe7155e256e36b3406890511ac20fc827593f124dd9df9",
+   "name": "internal-comms",
+   "source_path": "skills/writing/internal-comms/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:9c6982a6547fc42de81000d8ba7eeebe793e0351257460fd002cc0d183881127",
+   "name": "long-form-content",
+   "source_path": "skills/writing/long-form-content/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:0152cea8987746c581579be11192b1e94e39f2cd02bf63f198249cfb4aefb3bf",
+   "name": "technical-documentation",
+   "source_path": "skills/writing/technical-documentation/SKILL.md"
+  },
+  {
+   "content_digest": "sha256:e6cc119528ad83a6bc26a74edb3da6b131f127cd3b79018c5cf41de45b641d11",
+   "name": "skill-name",
+   "source_path": "templates/SKILL.md"
+  }
+ ],
+ "source_reference": {
+  "commit": "238b95e2aff214d992635975ece6ae9844f61dfd",
+  "repository": "https://github.com/nimadorostkar/Claude-Skills-collection"
+ }
+}
