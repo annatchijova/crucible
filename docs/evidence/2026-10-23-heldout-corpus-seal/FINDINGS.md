@@ -1,8 +1,8 @@
 # Held-out corpus selection and seal
 
 **Date:** 2026-10-23  **Branch:** `main`
-**Status:** one corpus sealed held-out; one reclassified as consumed; a
-replacement is still required.
+**Status:** two corpora sealed held-out (1195 skills); one reclassified as
+consumed.
 
 ## Why selection criteria come first
 
@@ -41,10 +41,12 @@ field was trusted on its own.
 
 | Corpus | Commit | Skills | Role | Seal |
 |---|---|---|---|---|
+| [`TerminalSkills/skills`](https://github.com/TerminalSkills/skills) | `20719c32fa1c` | 1057 | `HELDOUT_SEALED` | `sha256:74853339…` |
 | [`nimadorostkar/Claude-Skills-collection`](https://github.com/nimadorostkar/Claude-Skills-collection) | `238b95e2aff2` | 138 | `HELDOUT_SEALED` | `sha256:0843f779…` |
 | [`vantaflow/claude-skills-collection`](https://github.com/vantaflow/claude-skills-collection) | `f88a34d0f75e` | 692 of 696 | `TUNING_CONSUMED` | `sha256:19674c5b…` |
 
-Full records: [`nimadorostkar-claude-skills-collection.json`](nimadorostkar-claude-skills-collection.json)
+Full records: [`terminalskills-skills.json`](terminalskills-skills.json),
+[`nimadorostkar-claude-skills-collection.json`](nimadorostkar-claude-skills-collection.json)
 and [`vantaflow-claude-skills-collection.json`](vantaflow-claude-skills-collection.json).
 Both reproduce `MATCH` on recompilation. The recorded commit is a claim the
 seal binds but does not verify.
@@ -89,11 +91,40 @@ already in hand.
 grounds: no license file, and a self-described curation of "official and
 community-built" skills, which does not establish independent authorship.
 
+## The replacement held-out corpus
+
+`TerminalSkills/skills` @ `20719c32fa1c` replaces `vantaflow`, under the same
+metadata-only criteria:
+
+- Apache-2.0, not archived, not a fork, no parent.
+- 1057 skills, 1057 distinct declared names, so it compiles under the strict
+  duplicate-name default with zero exclusions.
+- 9,385,752 bytes of `SKILL.md`, within the 20 MB corpus bound.
+- Multi-contributor and maintained, which is what separates it from the
+  rejected `lionelsimai` dump: 8 contributors, the top two with 483 and 180
+  commits, and commit activity spread across 33 distinct dates from
+  2026-03-25 to 2026-10-22.
+- Overlap by **content**, not only by name: 0 skills byte-identical to any
+  skill in `mukul975`, the author corpus, `vantaflow` or `nimadorostkar`. It
+  shares 21 declared names with `nimadorostkar` and 6 with `vantaflow`, all
+  with different content; the shared names are generic technology labels
+  (`react`, `vue`, `typescript`, `django`, `rust`, `graphql`), which is
+  natural homonymy between collections covering the same technologies rather
+  than republication.
+
+Name-only overlap would not have settled this. The digest comparison is what
+distinguishes an independent collection from an aggregator, and it was run
+against all four other corpora.
+
 ## What remains open
 
-- One replacement held-out corpus, selected under the same metadata-only
-  criteria, to restore two independent evaluation corpora.
-- 138 skills in the single sealed held-out corpus is thin for per-class
-  denominators. Class-level precision claims should wait for the replacement.
-- Nothing in this record measures detection quality. No audit was run on
-  either corpus for this record.
+- Residual uncertainty on authorship: an organization-run library accepts
+  contributions from many authors, which satisfies independence from this
+  project but is not a claim that every skill was written by a different
+  person. Zero content-identical overlap across four corpora is the evidence;
+  it is not proof of original authorship.
+- `nimadorostkar` at 138 skills remains thin on its own. Per-class
+  denominators should be reported per corpus, not pooled across the two
+  held-out corpora, since they differ in size by almost an order of magnitude.
+- Nothing in this record measures detection quality. No audit was run on any
+  corpus for this record.
