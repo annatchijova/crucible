@@ -1,8 +1,10 @@
 # ADR-0024 — Require rule-to-check evidence for coverage claims
 
 **Date:** 2026-10-07  **Status:** Proposed; experiment required before
-implementation  **Reversibility:** one-way-ish if persisted IR or finding
-contracts change; low if limited to a new audit finding.
+implementation. Revisit trigger corrected 2026-10-23 into two gates, one of
+which is blocked on a prerequisite this ADR defers -- see Revisit trigger.
+**Reversibility:** one-way-ish if persisted IR or finding contracts change;
+low if limited to a new audit finding.
 
 ## Forces at the time
 
@@ -115,10 +117,41 @@ shapes and rejects 10 invalid cases. Neither establishes relation accuracy or
 reviewer identity.
 Thresholds were informed by an earlier consumed fixture, labels were authored
 for this exercise, and no model was run. Do not treat this trigger as
-satisfied. Accept, revise, or reject after an independently adjudicated
-fixture set tests positive, negative, ambiguous, partial, misdeclared, stale,
-and conflicting relations, including explicit abstention behavior. Any
-implementation proposal must include consumer inventory, artifact
+satisfied.
+
+**Corrected 2026-10-23.** This trigger was previously stated as one gate
+requiring adjudicated fixtures for positive, negative, ambiguous, partial,
+misdeclared, stale and conflicting relations. That is unsatisfiable as
+written: misdeclared, stale and conflicting are states of a *declared* link,
+and this ADR defers the annotation syntax under which a link is declared. An
+exit criterion cannot depend on a design decision the same document defers.
+The prepared packet contains no declaration layer at all -- `declar`, `link`,
+`stale` and `conflict` occur zero times in `packet.json` -- so no amount of
+review discharges those three. See the
+[trigger circularity review](../red-team/2026-10-23-coverage-trigger-circularity.md).
+
+The trigger is therefore split into two independent gates.
+
+**Gate A -- text-level rubric.** Independent review of
+`coverage-adjudication-packet/v1` at digest
+`sha256:82d8e9758966eab1...` tests positive, negative, ambiguous, partial and
+explicit-abstention relations between a rule's text and a check's text. Two
+frozen independent assessments under `coverage-text/v1`, following
+`PROTOCOL.md`, discharge Gate A and nothing else. What it buys must be stated
+before the reviewers start: evidence about the rubric on 19 curated synthetic
+pairs, not relation accuracy on any corpus, and not a discharge of this ADR.
+Multi-rule / multi-check coverage within Gate A rests on one case supplying 4
+of the 19 pairs, so treat that as a single observation.
+
+**Gate B -- declaration states.** Misdeclared, stale and conflicting links
+require their own fixture set, which cannot be authored before the annotation
+syntax is chosen. Gate B is therefore blocked on a prerequisite decision, not
+on reviewer supply. Choosing the annotation syntax is the next action for
+Gate B; until then Gate B stays open and no declaration state is claimed to
+be tested.
+
+Passing Gate A alone does not accept, revise or reject this ADR. Any
+implementation proposal must still include consumer inventory, artifact
 compatibility treatment, corpus impact evidence, authenticated adjudication,
 and a validated human/model output contract before changing the auditor or
 recommendation path.
