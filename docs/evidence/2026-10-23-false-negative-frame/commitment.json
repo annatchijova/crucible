@@ -1,0 +1,30 @@
+{
+ "allocation": {
+  "0": 10,
+  "1-2": 8,
+  "3-5": 4,
+  "6+": 2
+ },
+ "commitment_digest": "sha256:b8156ca66b6e4dc2c370bfacb8a71bbd294e64cf3849dd268e18cfab04d96d6a",
+ "corpora": [
+  {
+   "audit_digest": "sha256:5f7ffdf6c5dec2d952d4e6511e33355ec4f98fca1f166908ef289b147225390f",
+   "commit": "238b95e2aff214d992635975ece6ae9844f61dfd",
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "findings_total": 178,
+   "skill_count": 138
+  },
+  {
+   "audit_digest": "sha256:a7091506e005e5ed7b3b5412cdcd77f158c254f45204a5face9759eb713abdbe",
+   "commit": "20719c32fa1cc0bf4598bd3d2c75c058f8c19ddd",
+   "corpus_id": "terminalskills-skills",
+   "findings_total": 837,
+   "skill_count": 1057
+  }
+ ],
+ "frame_digest": "sha256:a41ba9a960ce200e6f487650723a8f130ffe70d7e59dbf4c313ded1c5e05822f",
+ "note": "the frame content is withheld until the review is frozen, so the reviewer cannot learn which skills produced no findings. This digest commits to the stratification and allocation before any review exists.",
+ "packet_digest": "sha256:257b8e9cfda269f8a3aaf9dc92883ffa8553c986f47a38055edb6c5e9d635df6",
+ "schema_version": "false-negative-commitment/v1",
+ "selected_total": 24
+}
