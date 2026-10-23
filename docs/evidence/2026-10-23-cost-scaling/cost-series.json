@@ -1,0 +1,300 @@
+{
+ "records": [
+  {
+   "audit_digest": "sha256:0f81957f3e2f26d3dd483cb9f511eff44ca519fba8ef7af58539023bb8accf03",
+   "corpus_id": "mukul975-first-25-by-path",
+   "corpus_provenance_digest": "sha256:884899070faf9e77856e8eeeb0ebf8b2ab10f66f4fc7234e28c6e80cfe5ce707",
+   "determinism_level": "observation",
+   "limitation": "execution cost is a non-deterministic observation of one machine under one load; it is not reproducible, carries no authority over any finding, verdict or gate, and agreement between records is not evidence of correctness",
+   "range": {
+    "peak_rss_kb": {
+     "max": 1820,
+     "min": 1152
+    },
+    "wall_ns": {
+     "max": 64201406,
+     "min": 63195795
+    }
+   },
+   "record_digest": "sha256:7efce310a8941d3498d05dfbf53ec7e30921b16ba20959d987ff8affc5fae8bc",
+   "run_count": 3,
+   "runs": [
+    {
+     "peak_rss_kb": 1152,
+     "run_index": 0,
+     "wall_ns": 64201406
+    },
+    {
+     "peak_rss_kb": 1556,
+     "run_index": 1,
+     "wall_ns": 63625219
+    },
+    {
+     "peak_rss_kb": 1820,
+     "run_index": 2,
+     "wall_ns": 63195795
+    }
+   ],
+   "runtime_context": {
+    "machine": "x86_64",
+    "max_recursion": 1000,
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "python_version": "3.12.3"
+   },
+   "scale": {
+    "edge_count": 0,
+    "finding_count": 38,
+    "input_bytes": 213098,
+    "skill_count": 25
+   },
+   "schema_version": "cost-record/v1"
+  },
+  {
+   "audit_digest": "sha256:345e3e0be8d4079b060eff14d37fe69b13052342806dd42038e45f6282c8aaa9",
+   "corpus_id": "mukul975-first-50-by-path",
+   "corpus_provenance_digest": "sha256:8e53d530197734423332beb8f590ab25534c15d4694c7644669a1d130caeaed0",
+   "determinism_level": "observation",
+   "limitation": "execution cost is a non-deterministic observation of one machine under one load; it is not reproducible, carries no authority over any finding, verdict or gate, and agreement between records is not evidence of correctness",
+   "range": {
+    "peak_rss_kb": {
+     "max": 1400,
+     "min": 1184
+    },
+    "wall_ns": {
+     "max": 129928597,
+     "min": 125717691
+    }
+   },
+   "record_digest": "sha256:12b540941a4d9f8019678cd912f4344506436e2808625b4a886969306c431386",
+   "run_count": 3,
+   "runs": [
+    {
+     "peak_rss_kb": 1184,
+     "run_index": 0,
+     "wall_ns": 129013536
+    },
+    {
+     "peak_rss_kb": 1184,
+     "run_index": 1,
+     "wall_ns": 129928597
+    },
+    {
+     "peak_rss_kb": 1400,
+     "run_index": 2,
+     "wall_ns": 125717691
+    }
+   ],
+   "runtime_context": {
+    "machine": "x86_64",
+    "max_recursion": 1000,
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "python_version": "3.12.3"
+   },
+   "scale": {
+    "edge_count": 0,
+    "finding_count": 70,
+    "input_bytes": 407728,
+    "skill_count": 50
+   },
+   "schema_version": "cost-record/v1"
+  },
+  {
+   "audit_digest": "sha256:6667c6f0ffd7072d05f0f9fbf67f38816e947c2bd8b3aa7b76de2ff4f21b994a",
+   "corpus_id": "mukul975-first-100-by-path",
+   "corpus_provenance_digest": "sha256:fe49a911bee5b7723488fba223fc7dd0d9e3999d95578371501da93cfd9f5fc2",
+   "determinism_level": "observation",
+   "limitation": "execution cost is a non-deterministic observation of one machine under one load; it is not reproducible, carries no authority over any finding, verdict or gate, and agreement between records is not evidence of correctness",
+   "range": {
+    "peak_rss_kb": {
+     "max": 4756,
+     "min": 3216
+    },
+    "wall_ns": {
+     "max": 288650794,
+     "min": 284442852
+    }
+   },
+   "record_digest": "sha256:a6f91d808c14607027e1a7b4f277ee9296f7f7d50648efa23e09a7c7b215789d",
+   "run_count": 3,
+   "runs": [
+    {
+     "peak_rss_kb": 3216,
+     "run_index": 0,
+     "wall_ns": 284442852
+    },
+    {
+     "peak_rss_kb": 4652,
+     "run_index": 1,
+     "wall_ns": 284902161
+    },
+    {
+     "peak_rss_kb": 4756,
+     "run_index": 2,
+     "wall_ns": 288650794
+    }
+   ],
+   "runtime_context": {
+    "machine": "x86_64",
+    "max_recursion": 1000,
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "python_version": "3.12.3"
+   },
+   "scale": {
+    "edge_count": 0,
+    "finding_count": 157,
+    "input_bytes": 918734,
+    "skill_count": 100
+   },
+   "schema_version": "cost-record/v1"
+  },
+  {
+   "audit_digest": "sha256:61d7fe27b17dde854d91d2f1bdfd3bef4e932eb582f6cb34bf0c27c16c4f869e",
+   "corpus_id": "mukul975-first-200-by-path",
+   "corpus_provenance_digest": "sha256:af398466fe96fcc5222cfdbeb45b5b4eac16ab721e416024dd7b6d16b185e5a0",
+   "determinism_level": "observation",
+   "limitation": "execution cost is a non-deterministic observation of one machine under one load; it is not reproducible, carries no authority over any finding, verdict or gate, and agreement between records is not evidence of correctness",
+   "range": {
+    "peak_rss_kb": {
+     "max": 14524,
+     "min": 8040
+    },
+    "wall_ns": {
+     "max": 679500650,
+     "min": 667409795
+    }
+   },
+   "record_digest": "sha256:d141a45c385c85b2e523c155ab7c5fb4305a5ad977720ee5eda0518e742517c2",
+   "run_count": 3,
+   "runs": [
+    {
+     "peak_rss_kb": 8040,
+     "run_index": 0,
+     "wall_ns": 671507117
+    },
+    {
+     "peak_rss_kb": 14364,
+     "run_index": 1,
+     "wall_ns": 679500650
+    },
+    {
+     "peak_rss_kb": 14524,
+     "run_index": 2,
+     "wall_ns": 667409795
+    }
+   ],
+   "runtime_context": {
+    "machine": "x86_64",
+    "max_recursion": 1000,
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "python_version": "3.12.3"
+   },
+   "scale": {
+    "edge_count": 0,
+    "finding_count": 335,
+    "input_bytes": 1934234,
+    "skill_count": 200
+   },
+   "schema_version": "cost-record/v1"
+  },
+  {
+   "audit_digest": "sha256:c848a7d22b7963fad8dfab0b6e72034722875208974b2354693a2b87a7ac3021",
+   "corpus_id": "mukul975-first-400-by-path",
+   "corpus_provenance_digest": "sha256:ec5db123bf27a4a2a927dd312d678f88805bb0b1da337895d7d03b5a0b24c85e",
+   "determinism_level": "observation",
+   "limitation": "execution cost is a non-deterministic observation of one machine under one load; it is not reproducible, carries no authority over any finding, verdict or gate, and agreement between records is not evidence of correctness",
+   "range": {
+    "peak_rss_kb": {
+     "max": 21820,
+     "min": 7552
+    },
+    "wall_ns": {
+     "max": 1502070930,
+     "min": 1471712692
+    }
+   },
+   "record_digest": "sha256:ad33515bedad52886cfae60022a4541dfec59e19ea08f2b8b58ae425f6ddd55f",
+   "run_count": 3,
+   "runs": [
+    {
+     "peak_rss_kb": 7552,
+     "run_index": 0,
+     "wall_ns": 1471712692
+    },
+    {
+     "peak_rss_kb": 21768,
+     "run_index": 1,
+     "wall_ns": 1502070930
+    },
+    {
+     "peak_rss_kb": 21820,
+     "run_index": 2,
+     "wall_ns": 1497548608
+    }
+   ],
+   "runtime_context": {
+    "machine": "x86_64",
+    "max_recursion": 1000,
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "python_version": "3.12.3"
+   },
+   "scale": {
+    "edge_count": 0,
+    "finding_count": 542,
+    "input_bytes": 3826713,
+    "skill_count": 400
+   },
+   "schema_version": "cost-record/v1"
+  },
+  {
+   "audit_digest": "sha256:6af7b2b7ebe483f2e3dc2f037e7db53b92fe8e380ff1f759cac57c47fe04f1c6",
+   "corpus_id": "mukul975-first-818-by-path",
+   "corpus_provenance_digest": "sha256:6eac33da3021dbb25ca404b013fcbc9c718749081cd14a4790b229ac360013a3",
+   "determinism_level": "observation",
+   "limitation": "execution cost is a non-deterministic observation of one machine under one load; it is not reproducible, carries no authority over any finding, verdict or gate, and agreement between records is not evidence of correctness",
+   "range": {
+    "peak_rss_kb": {
+     "max": 32064,
+     "min": 18656
+    },
+    "wall_ns": {
+     "max": 3811422688,
+     "min": 3769731049
+    }
+   },
+   "record_digest": "sha256:34b3f11e25cb4d27d5262be807539102910194a91b0f36d5d6f4457621bd1ee9",
+   "run_count": 3,
+   "runs": [
+    {
+     "peak_rss_kb": 18656,
+     "run_index": 0,
+     "wall_ns": 3789592104
+    },
+    {
+     "peak_rss_kb": 31820,
+     "run_index": 1,
+     "wall_ns": 3769731049
+    },
+    {
+     "peak_rss_kb": 32064,
+     "run_index": 2,
+     "wall_ns": 3811422688
+    }
+   ],
+   "runtime_context": {
+    "machine": "x86_64",
+    "max_recursion": 1000,
+    "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+    "python_version": "3.12.3"
+   },
+   "scale": {
+    "edge_count": 0,
+    "finding_count": 1056,
+    "input_bytes": 8062052,
+    "skill_count": 818
+   },
+   "schema_version": "cost-record/v1"
+  }
+ ],
+ "runs_per_size": 3,
+ "schema_version": "cost-series/v1"
+}
