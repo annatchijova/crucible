@@ -1,0 +1,2592 @@
+{
+ "annotation_state": "UNLABELED",
+ "census_strata": 15,
+ "corpora": [
+  {
+   "audit_digest": "sha256:5f7ffdf6c5dec2d952d4e6511e33355ec4f98fca1f166908ef289b147225390f",
+   "audit_version": "crucible-audit/v2",
+   "commit": "238b95e2aff214d992635975ece6ae9844f61dfd",
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "findings_total": 178,
+   "manifest_digest": "sha256:1580384c68df8f3cdd8fa1055d8b18b77530350414dbedb5f935f84c5fabd899",
+   "provenance_digest": "sha256:7a96604c3ce84098b1670ef3f598b37e12eee0edf05612d140dd9687fe79a459",
+   "skill_count": 138
+  },
+  {
+   "audit_digest": "sha256:a7091506e005e5ed7b3b5412cdcd77f158c254f45204a5face9759eb713abdbe",
+   "audit_version": "crucible-audit/v2",
+   "commit": "20719c32fa1cc0bf4598bd3d2c75c058f8c19ddd",
+   "corpus_id": "terminalskills-skills",
+   "findings_total": 837,
+   "manifest_digest": "sha256:730eeb07d92f8d2d14492a3698051a31c5ddc2c26909191bb09fee8b0d41421a",
+   "provenance_digest": "sha256:f4ea7c20785e03da86708201bb93418bea15e7dd402fd6265756d2e0bd006c58",
+   "skill_count": 1057
+  }
+ ],
+ "frame_digest": "sha256:ab41aaa0980aad01852fb7f59037cd7089fad979b8a62230efa03d4de9196154",
+ "limitation": "a frame is not evidence about precision; it records which findings a reviewer was asked to judge, chosen before any judging. Selection inside a stratum is deterministic pseudo-random, not a documented probability sample, so a sample stratum's adjudicated proportion is an estimate without an interval. Findings adjudicated through this frame may be used to report precision and must not be used to tune the detector.",
+ "population_total": 1015,
+ "sample_strata": 13,
+ "schema_version": "adjudication-frame/v1",
+ "selected_total": 192,
+ "strata": [
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "SAMPLE",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "population": 44,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0016",
+     "rule_id": "check-0001",
+     "selector": "05436b16733819a8",
+     "skill": "mcp-server",
+     "source_file_digest": "sha256:c3da3bd951b33774829e268018a5b416c15611d17639ebf1a7e471a72037dbe5",
+     "source_path": "skills/ai/mcp-server/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 58
+     }
+    },
+    {
+     "finding_id": "finding-0014",
+     "rule_id": "check-0002",
+     "selector": "070cda778eeb72c0",
+     "skill": "graphql",
+     "source_file_digest": "sha256:6d8534be7435ed36cc47ee065c5f0c2e87ac95de9a1a575047790b40d6d20d21",
+     "source_path": "skills/backend/graphql/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 98
+     }
+    },
+    {
+     "finding_id": "finding-0013",
+     "rule_id": "check-0001",
+     "selector": "0aecaf439abc8606",
+     "skill": "graphql",
+     "source_file_digest": "sha256:6d8534be7435ed36cc47ee065c5f0c2e87ac95de9a1a575047790b40d6d20d21",
+     "source_path": "skills/backend/graphql/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 27
+     }
+    },
+    {
+     "finding_id": "finding-0010",
+     "rule_id": "check-0001",
+     "selector": "1b8ae212bfafb403",
+     "skill": "fact-checking",
+     "source_file_digest": "sha256:88f53307c6fa024be877c8b22982a84c7679864e8a711cbdbe2234f3350d6630",
+     "source_path": "skills/productivity/fact-checking/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 14
+     }
+    },
+    {
+     "finding_id": "finding-0011",
+     "rule_id": "check-0002",
+     "selector": "1d82f6d9d462d47b",
+     "skill": "fact-checking",
+     "source_file_digest": "sha256:88f53307c6fa024be877c8b22982a84c7679864e8a711cbdbe2234f3350d6630",
+     "source_path": "skills/productivity/fact-checking/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 56
+     }
+    },
+    {
+     "finding_id": "finding-0006",
+     "rule_id": "check-0001",
+     "selector": "28ccf0800fd64670",
+     "skill": "database-performance",
+     "source_file_digest": "sha256:abbac56232b0945e46338628475675c5991b3a95137f49c45fcf9533e6d8d2aa",
+     "source_path": "skills/data/database-performance/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 25
+     }
+    },
+    {
+     "finding_id": "finding-0024",
+     "rule_id": "check-0001",
+     "selector": "2a5e1fc8b6576f1c",
+     "skill": "python",
+     "source_file_digest": "sha256:1f3f1f8585e329bb0f663c7f8c1a9ec28607041f511b73d90eff6f0b4695222d",
+     "source_path": "skills/languages/python/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 29
+     }
+    },
+    {
+     "finding_id": "finding-0021",
+     "rule_id": "check-0001",
+     "selector": "3108474782c1095e",
+     "skill": "performance-testing",
+     "source_file_digest": "sha256:469ea429d2666af03eb340e127a7454408cf64fa12fa49bdef16bab4f0a64bc6",
+     "source_path": "skills/testing/performance-testing/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 54
+     }
+    },
+    {
+     "finding_id": "finding-0022",
+     "rule_id": "check-0002",
+     "selector": "39d0702a5531999e",
+     "skill": "performance-testing",
+     "source_file_digest": "sha256:469ea429d2666af03eb340e127a7454408cf64fa12fa49bdef16bab4f0a64bc6",
+     "source_path": "skills/testing/performance-testing/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 56
+     }
+    },
+    {
+     "finding_id": "finding-0038",
+     "rule_id": "check-0002",
+     "selector": "4d21258267d32a67",
+     "skill": "theming",
+     "source_file_digest": "sha256:df0e513a2b3f75a954039c20a3710ed0403287c648a619383e5deb1d71d4e295",
+     "source_path": "skills/design/theming/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 129
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "SAMPLE",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "population": 25,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0056",
+     "rule_id": "rule-0003",
+     "selector": "04aa6a371456dd13",
+     "skill": "hooks",
+     "source_file_digest": "sha256:0abad40a5006fefc4dd0ae3b2311b148a8e4cb405e77031db924a55e31b70971",
+     "source_path": "skills/agent-tooling/hooks/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 58
+     }
+    },
+    {
+     "finding_id": "finding-0060",
+     "rule_id": "step-0006",
+     "selector": "0dc36ad920b13d3d",
+     "skill": "observability",
+     "source_file_digest": "sha256:e7f045e686c468c7fe20d9a8bb16d237c549e70edcc015ae1c9af0a9c775f220",
+     "source_path": "skills/devops/observability/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 50
+     }
+    },
+    {
+     "finding_id": "finding-0046",
+     "rule_id": "step-0002",
+     "selector": "0dd4981fc5f6fb8b",
+     "skill": "aws-cdk",
+     "source_file_digest": "sha256:b2237970028fd832a2b9b03697d5bb790eedc6d312572d56bfbefcf49a1ab1a8",
+     "source_path": "skills/devops/aws-cdk/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 46
+     }
+    },
+    {
+     "finding_id": "finding-0065",
+     "rule_id": "step-0007",
+     "selector": "3ff8e48b295c07ed",
+     "skill": "refactoring",
+     "source_file_digest": "sha256:56c0a4753b2b8fc282c009164899aa95c47e02d82c814d368a926446a14644d3",
+     "source_path": "skills/development/refactoring/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 56
+     }
+    },
+    {
+     "finding_id": "finding-0049",
+     "rule_id": "step-0004",
+     "selector": "4de96c8b06cef3ee",
+     "skill": "data-modeling",
+     "source_file_digest": "sha256:d3409b5b7937c0e344294ebb33c04e5516dc4b11f568da3f119f1d1e59272d3c",
+     "source_path": "skills/data/data-modeling/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 48
+     }
+    },
+    {
+     "finding_id": "finding-0055",
+     "rule_id": "step-0005",
+     "selector": "51c69968323423be",
+     "skill": "file-organization",
+     "source_file_digest": "sha256:2ead6ba98405e740139b4690aa5abcc09f1548458491ebd9564e0c68dd9f4247",
+     "source_path": "skills/productivity/file-organization/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 50
+     }
+    },
+    {
+     "finding_id": "finding-0061",
+     "rule_id": "step-0004",
+     "selector": "5b87a7f2f34cd621",
+     "skill": "product-analysis",
+     "source_file_digest": "sha256:a761eec7d5577a7202427f2d5a4099ce9d1e49d273e5774345c53b662fee1942",
+     "source_path": "skills/business/product-analysis/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 48
+     }
+    },
+    {
+     "finding_id": "finding-0052",
+     "rule_id": "step-0002",
+     "selector": "5bf28b11f3103f8f",
+     "skill": "editing",
+     "source_file_digest": "sha256:e8a00135233304e1db66cac38b024e962e0d727c0761816f40c37d5885f76c9d",
+     "source_path": "skills/writing/editing/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 45
+     }
+    },
+    {
+     "finding_id": "finding-0064",
+     "rule_id": "step-0006",
+     "selector": "6ba22c8c3604f364",
+     "skill": "realtime-websockets",
+     "source_file_digest": "sha256:6e824953d6ed886ac036a5b5a41d00a02dd39979202661406c0e0d544c49b6d3",
+     "source_path": "skills/backend/realtime-websockets/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 50
+     }
+    },
+    {
+     "finding_id": "finding-0066",
+     "rule_id": "step-0005",
+     "selector": "716fb95a14e95141",
+     "skill": "simple-design",
+     "source_file_digest": "sha256:54c705ade3d8425e9db727ca229e7060320ca67563e4a0af2e1f16e0dea94495",
+     "source_path": "skills/development/simple-design/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 48
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "CENSUS",
+   "finding_class": "LLM_IN_DECISION_PATH",
+   "population": 1,
+   "selected": 1,
+   "selection": [
+    {
+     "finding_id": "finding-0070",
+     "rule_id": "rule-0001",
+     "selector": "72a569fb5d36564e",
+     "skill": "hooks",
+     "source_file_digest": "sha256:0abad40a5006fefc4dd0ae3b2311b148a8e4cb405e77031db924a55e31b70971",
+     "source_path": "skills/agent-tooling/hooks/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 14
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "CENSUS",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "population": 8,
+   "selected": 8,
+   "selection": [
+    {
+     "finding_id": "finding-0072",
+     "rule_id": "rule-0001",
+     "selector": "66bdeaad26bda177",
+     "skill": "django",
+     "source_file_digest": "sha256:e020534581430304fbd7f5a5cc0c0f04624b782fc6d9ca02bc9953797e9a74a9",
+     "source_path": "skills/backend/django/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 56
+     }
+    },
+    {
+     "finding_id": "finding-0071",
+     "rule_id": "rule-0001",
+     "selector": "7bde0fc5fa6fa0bd",
+     "skill": "angular",
+     "source_file_digest": "sha256:d7673cae387aa7d0ff42ebea4ad28c618ba8405ed714b814fbc6c5bcd16321e8",
+     "source_path": "skills/frontend/angular/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 53
+     }
+    },
+    {
+     "finding_id": "finding-0073",
+     "rule_id": "rule-0001",
+     "selector": "88d56421a5b00fb6",
+     "skill": "document-conversion",
+     "source_file_digest": "sha256:7e7ad8504e9e5fc285b4297547926e7920ff712d6037be96f58071cb85434685",
+     "source_path": "skills/documents/document-conversion/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 57
+     }
+    },
+    {
+     "finding_id": "finding-0078",
+     "rule_id": "rule-0001",
+     "selector": "8b7dcd2d1fa1e8a7",
+     "skill": "sql",
+     "source_file_digest": "sha256:627a1fc7f82488280d13fd88d2b6b0b4eff9dfc901c0c6d0bd46f8c4da5833d0",
+     "source_path": "skills/languages/sql/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 56
+     }
+    },
+    {
+     "finding_id": "finding-0074",
+     "rule_id": "rule-0001",
+     "selector": "8e35bc13886195a0",
+     "skill": "generative-art",
+     "source_file_digest": "sha256:561b1c15aa1baf93f4f65b1b0ef5f13b85b409d1c660d31e3d37d25852ec3a63",
+     "source_path": "skills/design/generative-art/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 55
+     }
+    },
+    {
+     "finding_id": "finding-0075",
+     "rule_id": "rule-0001",
+     "selector": "a3036e4b985bd5b2",
+     "skill": "lead-research",
+     "source_file_digest": "sha256:5774b2d3be59d0d41031a52cccfec0b477e80766a231ce2ba74c2d51cc55385b",
+     "source_path": "skills/business/lead-research/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 56
+     }
+    },
+    {
+     "finding_id": "finding-0076",
+     "rule_id": "rule-0001",
+     "selector": "e83a9875911f72d2",
+     "skill": "options-strategy",
+     "source_file_digest": "sha256:5cdb24aa663a93930f6100e277d653c0a09ec284f336b4a2178b8b38279e6c8f",
+     "source_path": "skills/finance/options-strategy/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 57
+     }
+    },
+    {
+     "finding_id": "finding-0077",
+     "rule_id": "rule-0001",
+     "selector": "f5b0114a7e45d863",
+     "skill": "refactoring",
+     "source_file_digest": "sha256:56c0a4753b2b8fc282c009164899aa95c47e02d82c814d368a926446a14644d3",
+     "source_path": "skills/development/refactoring/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 53
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "CENSUS",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "population": 5,
+   "selected": 5,
+   "selection": [
+    {
+     "finding_id": "finding-0082",
+     "rule_id": "step-0007",
+     "selector": "23e8850a69d7eb1a",
+     "skill": "generative-art",
+     "source_file_digest": "sha256:561b1c15aa1baf93f4f65b1b0ef5f13b85b409d1c660d31e3d37d25852ec3a63",
+     "source_path": "skills/design/generative-art/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 55
+     }
+    },
+    {
+     "finding_id": "finding-0083",
+     "rule_id": "step-0007",
+     "selector": "3e726956168fd8d1",
+     "skill": "supply-chain",
+     "source_file_digest": "sha256:f6dbb9bfea7da1768eea434926419f187d4bd134cbe0caa927ee676eb5db8f8b",
+     "source_path": "skills/security/supply-chain/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 55
+     }
+    },
+    {
+     "finding_id": "finding-0079",
+     "rule_id": "step-0003",
+     "selector": "84263b55276556ad",
+     "skill": "generative-art",
+     "source_file_digest": "sha256:561b1c15aa1baf93f4f65b1b0ef5f13b85b409d1c660d31e3d37d25852ec3a63",
+     "source_path": "skills/design/generative-art/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 46
+     }
+    },
+    {
+     "finding_id": "finding-0081",
+     "rule_id": "rule-0001",
+     "selector": "df92fee9acb73ff0",
+     "skill": "generative-art",
+     "source_file_digest": "sha256:561b1c15aa1baf93f4f65b1b0ef5f13b85b409d1c660d31e3d37d25852ec3a63",
+     "source_path": "skills/design/generative-art/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 55
+     }
+    },
+    {
+     "finding_id": "finding-0080",
+     "rule_id": "step-0004",
+     "selector": "ff25e978c5418fe1",
+     "skill": "generative-art",
+     "source_file_digest": "sha256:561b1c15aa1baf93f4f65b1b0ef5f13b85b409d1c660d31e3d37d25852ec3a63",
+     "source_path": "skills/design/generative-art/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 47
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "SAMPLE",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "population": 62,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0115",
+     "rule_id": "rule-0001",
+     "selector": "012761d663d28f8e",
+     "skill": "llm-evaluation",
+     "source_file_digest": "sha256:bd4f48049f842853f8ad61caaf0ff96f514d1db2acac633d69d156fbec8ceaa1",
+     "source_path": "skills/ai/llm-evaluation/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 57
+     }
+    },
+    {
+     "finding_id": "finding-0099",
+     "rule_id": "rule-0001",
+     "selector": "02d88b0e9fca6baf",
+     "skill": "diagrams",
+     "source_file_digest": "sha256:dde857d23ba3a574ff6baa84cd347076cdcf01582d2ca71d758b2754f82e8509",
+     "source_path": "skills/documents/diagrams/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 54
+     }
+    },
+    {
+     "finding_id": "finding-0105",
+     "rule_id": "rule-0001",
+     "selector": "06240def918e9aaf",
+     "skill": "flutter",
+     "source_file_digest": "sha256:11454ac21377c1876b88860a1942f469915026750d2e1b3bfcc210a4e61ef5a8",
+     "source_path": "skills/mobile/flutter/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 54
+     }
+    },
+    {
+     "finding_id": "finding-0110",
+     "rule_id": "rule-0001",
+     "selector": "0964d3447356c026",
+     "skill": "hooks",
+     "source_file_digest": "sha256:0abad40a5006fefc4dd0ae3b2311b148a8e4cb405e77031db924a55e31b70971",
+     "source_path": "skills/agent-tooling/hooks/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 14
+     }
+    },
+    {
+     "finding_id": "finding-0104",
+     "rule_id": "rule-0001",
+     "selector": "0aa60a8fe16d94a4",
+     "skill": "file-organization",
+     "source_file_digest": "sha256:2ead6ba98405e740139b4690aa5abcc09f1548458491ebd9564e0c68dd9f4247",
+     "source_path": "skills/productivity/file-organization/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 55
+     }
+    },
+    {
+     "finding_id": "finding-0092",
+     "rule_id": "rule-0001",
+     "selector": "0ae5181338267fcb",
+     "skill": "background-jobs",
+     "source_file_digest": "sha256:d0130d8f44f29d5ceb5aad7f74122d46b5d42e6ea57ac6e7f10e437a16323eea",
+     "source_path": "skills/backend/background-jobs/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 54
+     }
+    },
+    {
+     "finding_id": "finding-0140",
+     "rule_id": "rule-0001",
+     "selector": "0af0ccc53ce9334d",
+     "skill": "typescript",
+     "source_file_digest": "sha256:4291308eea4c1b7c6531db82851c18bd3a2b63e259fb3710de7e51c14499f875",
+     "source_path": "skills/languages/typescript/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 54
+     }
+    },
+    {
+     "finding_id": "finding-0102",
+     "rule_id": "rule-0001",
+     "selector": "106439e1934bbf96",
+     "skill": "editing",
+     "source_file_digest": "sha256:e8a00135233304e1db66cac38b024e962e0d727c0761816f40c37d5885f76c9d",
+     "source_path": "skills/writing/editing/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 57
+     }
+    },
+    {
+     "finding_id": "finding-0137",
+     "rule_id": "rule-0001",
+     "selector": "2288c1a64c6a7c92",
+     "skill": "structured-output",
+     "source_file_digest": "sha256:0433ad1ba98b63cc2b023eed5397d751141ea74f2ea638d0c6f17480002f2855",
+     "source_path": "skills/ai/structured-output/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 56
+     }
+    },
+    {
+     "finding_id": "finding-0103",
+     "rule_id": "rule-0001",
+     "selector": "23723923ab80dc28",
+     "skill": "event-driven-architecture",
+     "source_file_digest": "sha256:52295eb88208740e0ce0b79cb7f442a121297655e1dab3ff583ddbaf67db740f",
+     "source_path": "skills/backend/event-driven-architecture/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 58
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "SAMPLE",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "population": 15,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0148",
+     "rule_id": "rule-0001",
+     "selector": "39a794d205b44d00",
+     "skill": "api-design",
+     "source_file_digest": "sha256:d4e278227b03fa0c39c112f41730efa774dd435fd3c4eb7bfbcdda2c757bb905",
+     "source_path": "skills/backend/api-design/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 55
+     }
+    },
+    {
+     "finding_id": "finding-0146",
+     "rule_id": "rule-0001",
+     "selector": "639fa925e38ad33d",
+     "skill": "accessibility",
+     "source_file_digest": "sha256:83b1b5b9978d23feaee752dd89050ca4c115d9e60174b4635f638889845e13ff",
+     "source_path": "skills/frontend/accessibility/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 55
+     }
+    },
+    {
+     "finding_id": "finding-0158",
+     "rule_id": "rule-0001",
+     "selector": "69cd113698a70b42",
+     "skill": "sql",
+     "source_file_digest": "sha256:627a1fc7f82488280d13fd88d2b6b0b4eff9dfc901c0c6d0bd46f8c4da5833d0",
+     "source_path": "skills/languages/sql/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 56
+     }
+    },
+    {
+     "finding_id": "finding-0154",
+     "rule_id": "rule-0001",
+     "selector": "76cca8750b6bbf02",
+     "skill": "ios",
+     "source_file_digest": "sha256:90eb73abcef75318ee5fc7cace3101fb509b33aae660e3ba9516770ccf90a09f",
+     "source_path": "skills/mobile/ios/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 54
+     }
+    },
+    {
+     "finding_id": "finding-0157",
+     "rule_id": "rule-0001",
+     "selector": "7f155834d147e617",
+     "skill": "repository-exploration",
+     "source_file_digest": "sha256:d05db884ed9d73ab0010f23851a5dd7d5c1c6e17c44a6c3c00718d0d14416602",
+     "source_path": "skills/development/repository-exploration/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 56
+     }
+    },
+    {
+     "finding_id": "finding-0155",
+     "rule_id": "rule-0001",
+     "selector": "7f514333cf684a6b",
+     "skill": "nextjs",
+     "source_file_digest": "sha256:13a1f3b8b0e42a6a77043821ab5315ad3cc0e91fc8fab6fff1617c8f9dd482e8",
+     "source_path": "skills/frontend/nextjs/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 57
+     }
+    },
+    {
+     "finding_id": "finding-0147",
+     "rule_id": "rule-0001",
+     "selector": "9302dfb85890d723",
+     "skill": "angular",
+     "source_file_digest": "sha256:d7673cae387aa7d0ff42ebea4ad28c618ba8405ed714b814fbc6c5bcd16321e8",
+     "source_path": "skills/frontend/angular/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 53
+     }
+    },
+    {
+     "finding_id": "finding-0156",
+     "rule_id": "rule-0001",
+     "selector": "9d2415a72110e387",
+     "skill": "php",
+     "source_file_digest": "sha256:3b91b562e3edb9168cc0b4fd2dea58210640dd73198b9e63aea0fe86a178bc8c",
+     "source_path": "skills/languages/php/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 53
+     }
+    },
+    {
+     "finding_id": "finding-0151",
+     "rule_id": "rule-0001",
+     "selector": "c991cea3e6a35018",
+     "skill": "django",
+     "source_file_digest": "sha256:e020534581430304fbd7f5a5cc0c0f04624b782fc6d9ca02bc9953797e9a74a9",
+     "source_path": "skills/backend/django/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 56
+     }
+    },
+    {
+     "finding_id": "finding-0159",
+     "rule_id": "rule-0001",
+     "selector": "cd9ff68830c68d81",
+     "skill": "vue",
+     "source_file_digest": "sha256:a09d5d53501b679e166ee99b99ef92f38504ac337ed871ecda38b6c66eb6ba8c",
+     "source_path": "skills/frontend/vue/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 57
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "CENSUS",
+   "finding_class": "SECRET_IN_OUTPUT",
+   "population": 3,
+   "selected": 3,
+   "selection": [
+    {
+     "finding_id": "finding-0163",
+     "rule_id": "step-0010",
+     "selector": "21a375a576b572fa",
+     "skill": "llm-integration",
+     "source_file_digest": "sha256:076ae28e16c5cdd78d1b1a77cd7291056dca8cc041d836eb1c273c95cd122986",
+     "source_path": "skills/ai/llm-integration/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 60
+     }
+    },
+    {
+     "finding_id": "finding-0162",
+     "rule_id": "step-0007",
+     "selector": "bcb5e7e95d481d7a",
+     "skill": "design-systems",
+     "source_file_digest": "sha256:48a3572ac62088c57c9ddb95d0be4247bb774c035f03119de9e246df14bfad85",
+     "source_path": "skills/frontend/design-systems/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 107
+     }
+    },
+    {
+     "finding_id": "finding-0161",
+     "rule_id": "rule-0001",
+     "selector": "d4b1ad17f2561360",
+     "skill": "design-systems",
+     "source_file_digest": "sha256:48a3572ac62088c57c9ddb95d0be4247bb774c035f03119de9e246df14bfad85",
+     "source_path": "skills/frontend/design-systems/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 107
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "CENSUS",
+   "finding_class": "UNBOUNDED_RESOURCE",
+   "population": 1,
+   "selected": 1,
+   "selection": [
+    {
+     "finding_id": "finding-0164",
+     "rule_id": "step-0002",
+     "selector": "936dd21f000b482e",
+     "skill": "debugging",
+     "source_file_digest": "sha256:c575ae333e330cf218ac08feee15515eb6383dfda29401f5d04ab2884c36f475",
+     "source_path": "skills/development/debugging/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 47
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "CENSUS",
+   "finding_class": "UNBOUNDED_RETRY",
+   "population": 10,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0166",
+     "rule_id": "step-0009",
+     "selector": "05b86a2639828b3d",
+     "skill": "background-jobs",
+     "source_file_digest": "sha256:d0130d8f44f29d5ceb5aad7f74122d46b5d42e6ea57ac6e7f10e437a16323eea",
+     "source_path": "skills/backend/background-jobs/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 56
+     }
+    },
+    {
+     "finding_id": "finding-0165",
+     "rule_id": "step-0002",
+     "selector": "55e0749a101fe9ef",
+     "skill": "api-design",
+     "source_file_digest": "sha256:d4e278227b03fa0c39c112f41730efa774dd435fd3c4eb7bfbcdda2c757bb905",
+     "source_path": "skills/backend/api-design/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 47
+     }
+    },
+    {
+     "finding_id": "finding-0174",
+     "rule_id": "step-0005",
+     "selector": "6ed4402f6fb890db",
+     "skill": "test-driven-development",
+     "source_file_digest": "sha256:902136e9dde492af1b73d9e7a15c71720cb3b53e2a047cfbc132ac0c53e076f7",
+     "source_path": "skills/testing/test-driven-development/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 47
+     }
+    },
+    {
+     "finding_id": "finding-0167",
+     "rule_id": "step-0001",
+     "selector": "b0e32f5583bdcbac",
+     "skill": "debugging",
+     "source_file_digest": "sha256:c575ae333e330cf218ac08feee15515eb6383dfda29401f5d04ab2884c36f475",
+     "source_path": "skills/development/debugging/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 46
+     }
+    },
+    {
+     "finding_id": "finding-0172",
+     "rule_id": "step-0009",
+     "selector": "c3f4528f4a46a7c2",
+     "skill": "llm-integration",
+     "source_file_digest": "sha256:076ae28e16c5cdd78d1b1a77cd7291056dca8cc041d836eb1c273c95cd122986",
+     "source_path": "skills/ai/llm-integration/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 58
+     }
+    },
+    {
+     "finding_id": "finding-0168",
+     "rule_id": "step-0003",
+     "selector": "c6c1441ee6645159",
+     "skill": "e2e-playwright",
+     "source_file_digest": "sha256:dd20ef85457377ce8a675632b409b6b49d50a52e097da7c601ab56f332faddf6",
+     "source_path": "skills/testing/e2e-playwright/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 47
+     }
+    },
+    {
+     "finding_id": "finding-0173",
+     "rule_id": "step-0005",
+     "selector": "dc5764e14c841cb0",
+     "skill": "performance-testing",
+     "source_file_digest": "sha256:469ea429d2666af03eb340e127a7454408cf64fa12fa49bdef16bab4f0a64bc6",
+     "source_path": "skills/testing/performance-testing/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 49
+     }
+    },
+    {
+     "finding_id": "finding-0169",
+     "rule_id": "step-0007",
+     "selector": "f207aad7b099fdd9",
+     "skill": "event-driven-architecture",
+     "source_file_digest": "sha256:52295eb88208740e0ce0b79cb7f442a121297655e1dab3ff583ddbaf67db740f",
+     "source_path": "skills/backend/event-driven-architecture/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 42
+     }
+    },
+    {
+     "finding_id": "finding-0170",
+     "rule_id": "step-0005",
+     "selector": "f578b5cfd9607b1e",
+     "skill": "event-driven-architecture",
+     "source_file_digest": "sha256:52295eb88208740e0ce0b79cb7f442a121297655e1dab3ff583ddbaf67db740f",
+     "source_path": "skills/backend/event-driven-architecture/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 50
+     }
+    },
+    {
+     "finding_id": "finding-0171",
+     "rule_id": "step-0007",
+     "selector": "f5968019790f3803",
+     "skill": "legacy-modernization",
+     "source_file_digest": "sha256:d537372d273e0e95d2f1e753312d3202d5f39afefec6ed1ba47c6ab9398de16b",
+     "source_path": "skills/development/legacy-modernization/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 52
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "CENSUS",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "population": 1,
+   "selected": 1,
+   "selection": [
+    {
+     "finding_id": "finding-0175",
+     "rule_id": "step-0002",
+     "selector": "db3d710d0af0e083",
+     "skill": "supply-chain",
+     "source_file_digest": "sha256:f6dbb9bfea7da1768eea434926419f187d4bd134cbe0caa927ee676eb5db8f8b",
+     "source_path": "skills/security/supply-chain/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 46
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "coverage": "CENSUS",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "population": 3,
+   "selected": 3,
+   "selection": [
+    {
+     "finding_id": "finding-0176",
+     "rule_id": "step-0007",
+     "selector": "8460574aa78e6dbd",
+     "skill": "cli-development",
+     "source_file_digest": "sha256:526f95322c5aefb1eb7b1551252b28602efc11f15af8952ed1b696abbba301df",
+     "source_path": "skills/development/cli-development/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 58
+     }
+    },
+    {
+     "finding_id": "finding-0177",
+     "rule_id": "step-0004",
+     "selector": "d0ac8a4d4e249f49",
+     "skill": "flutter",
+     "source_file_digest": "sha256:11454ac21377c1876b88860a1942f469915026750d2e1b3bfcc210a4e61ef5a8",
+     "source_path": "skills/mobile/flutter/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 48
+     }
+    },
+    {
+     "finding_id": "finding-0178",
+     "rule_id": "step-0005",
+     "selector": "d6a610a9436643a0",
+     "skill": "slash-commands",
+     "source_file_digest": "sha256:b3f7b233f637eee1354fedda0473b456c24f0634706fd67cb21b6a928ca69e63",
+     "source_path": "skills/agent-tooling/slash-commands/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 46
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "SAMPLE",
+   "finding_class": "CHECK_WITHOUT_ORACLE",
+   "population": 71,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0037",
+     "rule_id": "check-0007",
+     "selector": "000a30a15d9eb8fc",
+     "skill": "data-validator",
+     "source_file_digest": "sha256:8544eba4c0ac60560026e353a70e5209a731e5451485311ba41b22835217f0b9",
+     "source_path": "skills/data-validator/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 67
+     }
+    },
+    {
+     "finding_id": "finding-0054",
+     "rule_id": "check-0006",
+     "selector": "11686d464de2a50d",
+     "skill": "email-deliverability-debugger",
+     "source_file_digest": "sha256:6ea0bad8d9c848652cff4c4388393a37182771d04c4a57d0ef2f1c6e03c7a6d6",
+     "source_path": "skills/email-deliverability-debugger/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 94
+     }
+    },
+    {
+     "finding_id": "finding-0049",
+     "rule_id": "check-0002",
+     "selector": "1248fb409a8344c9",
+     "skill": "dns-record-analyzer",
+     "source_file_digest": "sha256:f6016036a7ce4a76f268b1b21330dd2c6bda4d8f3e968cb12029d1dab24d144c",
+     "source_path": "skills/dns-record-analyzer/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 98
+     }
+    },
+    {
+     "finding_id": "finding-0060",
+     "rule_id": "check-0003",
+     "selector": "1f7fce73d2b331d7",
+     "skill": "programmatic-seo",
+     "source_file_digest": "sha256:1f7c2ac82f196e66ed4b2d3fa094aa51090aea09df2af3361026bdf8ccb4e2a5",
+     "source_path": "skills/programmatic-seo/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 78
+     }
+    },
+    {
+     "finding_id": "finding-0009",
+     "rule_id": "check-0002",
+     "selector": "2294109aa3098c5b",
+     "skill": "code-reviewer",
+     "source_file_digest": "sha256:7edbe9e8668e7cd346d4019a1e73f63e549e7cb95df53575d4bb9537f57968b8",
+     "source_path": "skills/code-reviewer/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 44
+     }
+    },
+    {
+     "finding_id": "finding-0030",
+     "rule_id": "check-0002",
+     "selector": "23db9d085f777a44",
+     "skill": "competitor-alternatives",
+     "source_file_digest": "sha256:40020bacccecf02760d86399fc12c32fb8fc447a3cb0a7e9e8a95f0836ae196f",
+     "source_path": "skills/competitor-alternatives/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 122
+     }
+    },
+    {
+     "finding_id": "finding-0012",
+     "rule_id": "check-0005",
+     "selector": "2b053a33613a516b",
+     "skill": "code-reviewer",
+     "source_file_digest": "sha256:7edbe9e8668e7cd346d4019a1e73f63e549e7cb95df53575d4bb9537f57968b8",
+     "source_path": "skills/code-reviewer/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 47
+     }
+    },
+    {
+     "finding_id": "finding-0066",
+     "rule_id": "check-0006",
+     "selector": "2b7299037376f514",
+     "skill": "regression-tester",
+     "source_file_digest": "sha256:9b37fa427eac6645e40f45cc3a36f008b806d9bea949c244ec8a500c72a18ab9",
+     "source_path": "skills/regression-tester/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 54
+     }
+    },
+    {
+     "finding_id": "finding-0065",
+     "rule_id": "check-0005",
+     "selector": "3508059284062317",
+     "skill": "regression-tester",
+     "source_file_digest": "sha256:9b37fa427eac6645e40f45cc3a36f008b806d9bea949c244ec8a500c72a18ab9",
+     "source_path": "skills/regression-tester/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 53
+     }
+    },
+    {
+     "finding_id": "finding-0022",
+     "rule_id": "check-0018",
+     "selector": "3961cf32576805de",
+     "skill": "code-reviewer",
+     "source_file_digest": "sha256:7edbe9e8668e7cd346d4019a1e73f63e549e7cb95df53575d4bb9537f57968b8",
+     "source_path": "skills/code-reviewer/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 66
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "SAMPLE",
+   "finding_class": "CLAIM_WITHOUT_PROVENANCE",
+   "population": 22,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0080",
+     "rule_id": "rule-0001",
+     "selector": "085e263771a003bf",
+     "skill": "expense-report",
+     "source_file_digest": "sha256:674320a88414f5a36bffdb1857c6b24148e7be899edf9499e731a2589e3f9b0c",
+     "source_path": "skills/expense-report/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 264
+     }
+    },
+    {
+     "finding_id": "finding-0076",
+     "rule_id": "rule-0001",
+     "selector": "15f6dc8d6328f87f",
+     "skill": "competitor-alternatives",
+     "source_file_digest": "sha256:40020bacccecf02760d86399fc12c32fb8fc447a3cb0a7e9e8a95f0836ae196f",
+     "source_path": "skills/competitor-alternatives/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 211
+     }
+    },
+    {
+     "finding_id": "finding-0092",
+     "rule_id": "rule-0001",
+     "selector": "1bde49493af74559",
+     "skill": "web-scraper",
+     "source_file_digest": "sha256:249de8632552741bfecbd9e162187ca4f047c726597ebc8af048aa201b0e9b76",
+     "source_path": "skills/web-scraper/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 290
+     }
+    },
+    {
+     "finding_id": "finding-0078",
+     "rule_id": "rule-0001",
+     "selector": "3aee7eabe10220c4",
+     "skill": "dokploy",
+     "source_file_digest": "sha256:dd7f3379a29d8dbebe92fa36e0448ecd13f901add294126843ab78fda695dc88",
+     "source_path": "skills/dokploy/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 123
+     }
+    },
+    {
+     "finding_id": "finding-0075",
+     "rule_id": "rule-0001",
+     "selector": "3d91cb63f1b6637b",
+     "skill": "business-finance-fundamentals",
+     "source_file_digest": "sha256:39e428cd83d742009ff76af41e21b29b608cab1c3b288759b915b6dd653f1aea",
+     "source_path": "skills/business-finance-fundamentals/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 144
+     }
+    },
+    {
+     "finding_id": "finding-0086",
+     "rule_id": "rule-0001",
+     "selector": "4c5e604f86816c00",
+     "skill": "lm-studio-subagents",
+     "source_file_digest": "sha256:829003dc74177ff0fee461dafbf093df6914babd4c8fbd79a1e0a294a84df62c",
+     "source_path": "skills/lm-studio-subagents/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 287
+     }
+    },
+    {
+     "finding_id": "finding-0077",
+     "rule_id": "rule-0002",
+     "selector": "4f3b95c6f008f6ee",
+     "skill": "content-writer",
+     "source_file_digest": "sha256:e2a41da6245b939fd3eea798ad48590c06fdb58a7a3347b38666ddab33f9a06a",
+     "source_path": "skills/content-writer/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 91
+     }
+    },
+    {
+     "finding_id": "finding-0072",
+     "rule_id": "rule-0001",
+     "selector": "5f5000ea6d9aa3b7",
+     "skill": "algo-trading",
+     "source_file_digest": "sha256:88a18be3eee475294a9558de92be4eac03de69b2f021a14f117bf029d4eda2a2",
+     "source_path": "skills/algo-trading/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 158
+     }
+    },
+    {
+     "finding_id": "finding-0082",
+     "rule_id": "rule-0001",
+     "selector": "67a02b10394bde37",
+     "skill": "gdpr-compliance",
+     "source_file_digest": "sha256:b0330b2830d4a785accc456826eddeeb78c1741565bc3b0a19d78af6b76f1591",
+     "source_path": "skills/gdpr-compliance/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 67
+     }
+    },
+    {
+     "finding_id": "finding-0081",
+     "rule_id": "rule-0001",
+     "selector": "70f49db27ed6d8f8",
+     "skill": "gcp-cloud-run",
+     "source_file_digest": "sha256:f0695b68f9f9ec9c51fa38b4a9931caad4e6e2d246a52ea3220dd348c1c078a5",
+     "source_path": "skills/gcp-cloud-run/SKILL.md",
+     "source_span": {
+      "column": 22,
+      "line": 39
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "SAMPLE",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "population": 229,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0170",
+     "rule_id": "check-0001",
+     "selector": "026225873111308e",
+     "skill": "detox",
+     "source_file_digest": "sha256:e9bbc9029e07136d6d1b78e1903149fc3384dafdec0d5924de8356632ae0ca40",
+     "source_path": "skills/detox/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 227
+     }
+    },
+    {
+     "finding_id": "finding-0145",
+     "rule_id": "check-0005",
+     "selector": "0293ca66372fd560",
+     "skill": "coding-agent",
+     "source_file_digest": "sha256:fc663e6edd274fa1c9169c1b79476fde26f6b29bc7c93c8ab3a734d2276bd580",
+     "source_path": "skills/coding-agent/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 138
+     }
+    },
+    {
+     "finding_id": "finding-0281",
+     "rule_id": "check-0003",
+     "selector": "03a59f17f6d462ba",
+     "skill": "sequenzy-email-marketing",
+     "source_file_digest": "sha256:3d6179512e5789cace18666e3b5ed49fb20edfa07cf59fc106784534b40ff797",
+     "source_path": "skills/sequenzy-email-marketing/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 98
+     }
+    },
+    {
+     "finding_id": "finding-0219",
+     "rule_id": "check-0007",
+     "selector": "0477eafd968f2601",
+     "skill": "monorepo-manager",
+     "source_file_digest": "sha256:4325607696b12b035675c3654b8ef04ef6013a9ad909ff2382c6339043280738",
+     "source_path": "skills/monorepo-manager/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 73
+     }
+    },
+    {
+     "finding_id": "finding-0144",
+     "rule_id": "check-0004",
+     "selector": "07462486b288dffd",
+     "skill": "coding-agent",
+     "source_file_digest": "sha256:fc663e6edd274fa1c9169c1b79476fde26f6b29bc7c93c8ab3a734d2276bd580",
+     "source_path": "skills/coding-agent/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 137
+     }
+    },
+    {
+     "finding_id": "finding-0275",
+     "rule_id": "check-0001",
+     "selector": "07d18571c917f5a9",
+     "skill": "s3-storage",
+     "source_file_digest": "sha256:029d1e32b55ea3a8e43c85f9e19319addc51450c9e5cf656fa0bfc1089d8198f",
+     "source_path": "skills/s3-storage/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 217
+     }
+    },
+    {
+     "finding_id": "finding-0134",
+     "rule_id": "check-0008",
+     "selector": "090482a8862370cf",
+     "skill": "code-reviewer",
+     "source_file_digest": "sha256:7edbe9e8668e7cd346d4019a1e73f63e549e7cb95df53575d4bb9537f57968b8",
+     "source_path": "skills/code-reviewer/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 52
+     }
+    },
+    {
+     "finding_id": "finding-0272",
+     "rule_id": "check-0001",
+     "selector": "0a60d3a57e6b2af9",
+     "skill": "resend",
+     "source_file_digest": "sha256:b8de66a59568179bbe94978a47bd630658e4201045259ef21a77bf1be0e37398",
+     "source_path": "skills/resend/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 186
+     }
+    },
+    {
+     "finding_id": "finding-0181",
+     "rule_id": "check-0001",
+     "selector": "0c55a64dbf2edc92",
+     "skill": "gallery-dl",
+     "source_file_digest": "sha256:c4322c547527716fb28a74cbd6122d202da9c45c8e438bc4271e67f9813e914f",
+     "source_path": "skills/gallery-dl/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 288
+     }
+    },
+    {
+     "finding_id": "finding-0124",
+     "rule_id": "check-0001",
+     "selector": "0f7e1dc9246413ef",
+     "skill": "building-spec",
+     "source_file_digest": "sha256:fa72196194f6edb464442e2b0caf51120d075f811c14db92ba97e118177a210d",
+     "source_path": "skills/building-spec/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 135
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "SAMPLE",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "population": 97,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0414",
+     "rule_id": "step-0001",
+     "selector": "008ee503b2ee2a39",
+     "skill": "unity",
+     "source_file_digest": "sha256:becf63f6cba66708636f0c2a7392e2f647d88eb6d6b2971b98bfe8cb76bdcb70",
+     "source_path": "skills/unity/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 232
+     }
+    },
+    {
+     "finding_id": "finding-0402",
+     "rule_id": "step-0003",
+     "selector": "02dcea6e30fb7c08",
+     "skill": "table-extractor",
+     "source_file_digest": "sha256:e1cc507c6807765a373c204b8d467e007e2736546b5bcb97408de4b5c5583648",
+     "source_path": "skills/table-extractor/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 192
+     }
+    },
+    {
+     "finding_id": "finding-0363",
+     "rule_id": "step-0001",
+     "selector": "0337fb0478fb822f",
+     "skill": "langgraph",
+     "source_file_digest": "sha256:e64d2a2928a07e4fd69db0ae6f9b68ba5ff79c640c94a48cf8486d56acae486a",
+     "source_path": "skills/langgraph/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 285
+     }
+    },
+    {
+     "finding_id": "finding-0365",
+     "rule_id": "step-0007",
+     "selector": "0699c3876f5b33b6",
+     "skill": "meeting-notes",
+     "source_file_digest": "sha256:0abcf792c4759ffdbb9990853ed6734b5914f77163057f5584cf0caff9348abf",
+     "source_path": "skills/meeting-notes/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 108
+     }
+    },
+    {
+     "finding_id": "finding-0396",
+     "rule_id": "step-0015",
+     "selector": "0bd24ffc1bfd9157",
+     "skill": "sst",
+     "source_file_digest": "sha256:e1636d56a4b70327feaa63dfa0a461c9a1a5a0666bc66320b5c72c2d07a90b85",
+     "source_path": "skills/sst/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 55
+     }
+    },
+    {
+     "finding_id": "finding-0330",
+     "rule_id": "step-0012",
+     "selector": "0ed9d4f229dbdfac",
+     "skill": "applicant-screening",
+     "source_file_digest": "sha256:74de47a5278c88c42a09e602dac40464ae7c536f030708d0e10dd87b3b0db3bf",
+     "source_path": "skills/applicant-screening/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 232
+     }
+    },
+    {
+     "finding_id": "finding-0409",
+     "rule_id": "step-0009",
+     "selector": "0fd5d5a3d23c6366",
+     "skill": "twilio",
+     "source_file_digest": "sha256:b82512c34cb2aa27eabca6b0c1751a25a82e8ef6f058c0ff1e0558d11570f580",
+     "source_path": "skills/twilio/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 231
+     }
+    },
+    {
+     "finding_id": "finding-0362",
+     "rule_id": "step-0003",
+     "selector": "170602c5d720fc77",
+     "skill": "kyverno",
+     "source_file_digest": "sha256:35581e5ff6b87a096e5a9a7abc6258a28f843c1b74329342769d312c26b14098",
+     "source_path": "skills/kyverno/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 294
+     }
+    },
+    {
+     "finding_id": "finding-0327",
+     "rule_id": "step-0006",
+     "selector": "18ae7771439fd9a4",
+     "skill": "analytics-tracking",
+     "source_file_digest": "sha256:1ee9d452e4d2f69e944ba3d46466f8a9b2f43153b2fed33f041fee93c40421dd",
+     "source_path": "skills/analytics-tracking/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 147
+     }
+    },
+    {
+     "finding_id": "finding-0355",
+     "rule_id": "step-0014",
+     "selector": "1b2c58d902d6ed38",
+     "skill": "gitnexus",
+     "source_file_digest": "sha256:5b6f4d004e0efccd7f28614af951ff2075346c4ea5e7016fc35598f806b51d5f",
+     "source_path": "skills/gitnexus/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 127
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "SAMPLE",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "population": 97,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0462",
+     "rule_id": "rule-0001",
+     "selector": "032e0e7d52af1297",
+     "skill": "launchdarkly",
+     "source_file_digest": "sha256:303ce06d3bff5277f4f4855df292fa8ee5ab4f69ab4dbc688cd23f3905eb7e95",
+     "source_path": "skills/launchdarkly/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 95
+     }
+    },
+    {
+     "finding_id": "finding-0472",
+     "rule_id": "rule-0001",
+     "selector": "064163afe6695d55",
+     "skill": "nagios",
+     "source_file_digest": "sha256:c07aa3c7d6dfb31bbe2349885dac2d9a4294c313f3d8778a71879f53d1508390",
+     "source_path": "skills/nagios/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 251
+     }
+    },
+    {
+     "finding_id": "finding-0507",
+     "rule_id": "rule-0001",
+     "selector": "091762afaf37ca51",
+     "skill": "understand-onboard",
+     "source_file_digest": "sha256:6cfd13abcb7472270467a6336bd34c17a8196e08883b5304a021dd3d9a60edaa",
+     "source_path": "skills/understand-onboard/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 234
+     }
+    },
+    {
+     "finding_id": "finding-0493",
+     "rule_id": "rule-0001",
+     "selector": "095e370e1a925d80",
+     "skill": "pulumi",
+     "source_file_digest": "sha256:f4fea9b670b98017c3f83821dcd00947953600a120c68a25c2cab3c7ebc5370f",
+     "source_path": "skills/pulumi/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 62
+     }
+    },
+    {
+     "finding_id": "finding-0427",
+     "rule_id": "rule-0001",
+     "selector": "0db1b35af31c446f",
+     "skill": "azure-openai",
+     "source_file_digest": "sha256:e548d48bcf9193796321f16c94a7325c663ebc48a4f90dcef99b8112b0b22294",
+     "source_path": "skills/azure-openai/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 122
+     }
+    },
+    {
+     "finding_id": "finding-0454",
+     "rule_id": "rule-0001",
+     "selector": "0ed46df32469037e",
+     "skill": "growth-hacking",
+     "source_file_digest": "sha256:983565492f46cc87dc9173bf07360bc4188d34d963237588876eef8c08a062fa",
+     "source_path": "skills/growth-hacking/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 126
+     }
+    },
+    {
+     "finding_id": "finding-0482",
+     "rule_id": "rule-0001",
+     "selector": "11d77e2238f3871d",
+     "skill": "pascal-editor",
+     "source_file_digest": "sha256:6709d1f523e61ccd00e52188846e0b56d2932e8cf421749f37b8a8aa149a3d13",
+     "source_path": "skills/pascal-editor/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 123
+     }
+    },
+    {
+     "finding_id": "finding-0433",
+     "rule_id": "rule-0001",
+     "selector": "18c8d2eb82651f6c",
+     "skill": "cheerio",
+     "source_file_digest": "sha256:8583f9371f74e335658c6b2e182305cf913f50ca0a2d6ed22ce9cba1b1176b02",
+     "source_path": "skills/cheerio/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 225
+     }
+    },
+    {
+     "finding_id": "finding-0487",
+     "rule_id": "rule-0001",
+     "selector": "1a8ad3ac5f51bb45",
+     "skill": "poetry",
+     "source_file_digest": "sha256:936bc91323a1192aa2ccf004c50b3ac4413624a26c0c04ee22375dc74020ab0a",
+     "source_path": "skills/poetry/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 163
+     }
+    },
+    {
+     "finding_id": "finding-0506",
+     "rule_id": "rule-0001",
+     "selector": "1b8474f5e45898aa",
+     "skill": "turborepo",
+     "source_file_digest": "sha256:afb504c01976c507b7ca503a4c7eba0dc8813dd98eb5da7f8ddb80679e73c47b",
+     "source_path": "skills/turborepo/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 60
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "CENSUS",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "population": 9,
+   "selected": 9,
+   "selection": [
+    {
+     "finding_id": "finding-0522",
+     "rule_id": "step-0008",
+     "selector": "0e3fef142668426f",
+     "skill": "pytorch",
+     "source_file_digest": "sha256:e0bf5d5cf5e6e19ea1f89e135834c312de5897f36ce3b98f6405c9118bc8044e",
+     "source_path": "skills/pytorch/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 33
+     }
+    },
+    {
+     "finding_id": "finding-0525",
+     "rule_id": "step-0001",
+     "selector": "1d592173557daab7",
+     "skill": "trieve",
+     "source_file_digest": "sha256:03314dcb83aae70442423d386a0da931f55e65debb8fd4370165a92879d49f83",
+     "source_path": "skills/trieve/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 359
+     }
+    },
+    {
+     "finding_id": "finding-0517",
+     "rule_id": "step-0009",
+     "selector": "2351e1d8038a0f91",
+     "skill": "drizzle-studio",
+     "source_file_digest": "sha256:2a7142e081c76fba6ef74a91ab2d964cb8c6a72b0158642f6d3d4c4879291084",
+     "source_path": "skills/drizzle-studio/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 80
+     }
+    },
+    {
+     "finding_id": "finding-0521",
+     "rule_id": "step-0009",
+     "selector": "236ac486b3b0916d",
+     "skill": "mkdocs",
+     "source_file_digest": "sha256:83680a52d66df63675007e1140dd8c4b0e1500be3fbf3771ff5b8caa4d259026",
+     "source_path": "skills/mkdocs/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 247
+     }
+    },
+    {
+     "finding_id": "finding-0520",
+     "rule_id": "rule-0002",
+     "selector": "777ff7d538cdd4d2",
+     "skill": "lucia-auth",
+     "source_file_digest": "sha256:3038f06c1aea53d796526e31282e1fd97c6229ede58adc5c7eee582bdbf812bc",
+     "source_path": "skills/lucia-auth/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 261
+     }
+    },
+    {
+     "finding_id": "finding-0519",
+     "rule_id": "step-0005",
+     "selector": "9dbe4a426f7c1ba0",
+     "skill": "leptos",
+     "source_file_digest": "sha256:8746d007bfa137e623a5db6e11ffd8e93503f6ba71ad4cb6c3a057f3ea4ac3f2",
+     "source_path": "skills/leptos/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 295
+     }
+    },
+    {
+     "finding_id": "finding-0518",
+     "rule_id": "step-0001",
+     "selector": "a3c45eaf0d1e2b0a",
+     "skill": "e2b",
+     "source_file_digest": "sha256:957984fa06bcd4865d7f411397f6aa93a173a8612e704956e1dfc4b935816e59",
+     "source_path": "skills/e2b/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 157
+     }
+    },
+    {
+     "finding_id": "finding-0524",
+     "rule_id": "step-0005",
+     "selector": "a846397406b08bcb",
+     "skill": "tailwindcss",
+     "source_file_digest": "sha256:df8cc2222255af69856b49c8779eb346f347659017fad64ccf491d6f72e579e1",
+     "source_path": "skills/tailwindcss/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 193
+     }
+    },
+    {
+     "finding_id": "finding-0523",
+     "rule_id": "step-0003",
+     "selector": "fa16921941c11a98",
+     "skill": "schemathesis",
+     "source_file_digest": "sha256:441a00dc091584fef9af7976a4054f20bf44c4271deb869ece0fb3102de40d26",
+     "source_path": "skills/schemathesis/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 61
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "CENSUS",
+   "finding_class": "OVERCLAIM",
+   "population": 4,
+   "selected": 4,
+   "selection": [
+    {
+     "finding_id": "finding-0526",
+     "rule_id": "rule-0002",
+     "selector": "5d78570f09a9c8d7",
+     "skill": "helicone",
+     "source_file_digest": "sha256:f6a590bf3fc9edb76a8bfd80b536384d05c9a1bce52a29ee157f8176fec21205",
+     "source_path": "skills/helicone/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 147
+     }
+    },
+    {
+     "finding_id": "finding-0527",
+     "rule_id": "rule-0002",
+     "selector": "9cbe9fe7dd057c49",
+     "skill": "launch-strategy",
+     "source_file_digest": "sha256:7dbb6771c4a7409d07a633551f6708aa774ed062914e839074e369acd1ac9ea0",
+     "source_path": "skills/launch-strategy/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 198
+     }
+    },
+    {
+     "finding_id": "finding-0529",
+     "rule_id": "rule-0002",
+     "selector": "b762458f6a7d1f1f",
+     "skill": "openvpn",
+     "source_file_digest": "sha256:ab89ce142bc37f93566b5cff31eaa0d45c38d041344a5d76512512620c0c1904",
+     "source_path": "skills/openvpn/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 274
+     }
+    },
+    {
+     "finding_id": "finding-0528",
+     "rule_id": "rule-0001",
+     "selector": "c5aced0547d843aa",
+     "skill": "lovable",
+     "source_file_digest": "sha256:116b6e05792c0eff406460cf97801f2a94fe198c7a2aedbdbac5f05efd3c0539",
+     "source_path": "skills/lovable/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 101
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "CENSUS",
+   "finding_class": "OVERGENERALIZATION",
+   "population": 1,
+   "selected": 1,
+   "selection": [
+    {
+     "finding_id": "finding-0530",
+     "rule_id": "rule-0001",
+     "selector": "155f8e6f7276a903",
+     "skill": "rabbitmq",
+     "source_file_digest": "sha256:d748d77c5d952d0103a41c45a683857f45e8aa762ca2f1dfa9847950a97069ce",
+     "source_path": "skills/rabbitmq/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 139
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "SAMPLE",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "population": 239,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0677",
+     "rule_id": "rule-0001",
+     "selector": "02d736bc0a1093f3",
+     "skill": "outlook-email",
+     "source_file_digest": "sha256:19b3e2610b530b741c54f8249e088a5f9034216e082e8389e24dd2008521fb60",
+     "source_path": "skills/outlook-email/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 284
+     }
+    },
+    {
+     "finding_id": "finding-0653",
+     "rule_id": "rule-0001",
+     "selector": "0456eb2c6a64a8b0",
+     "skill": "mem0",
+     "source_file_digest": "sha256:cfff7e5526cc8b4dbd24f809bc973f8f739819eebc3f9d3d840dd614d0c090e4",
+     "source_path": "skills/mem0/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 141
+     }
+    },
+    {
+     "finding_id": "finding-0731",
+     "rule_id": "rule-0001",
+     "selector": "04756d76da91de8c",
+     "skill": "team-leadership",
+     "source_file_digest": "sha256:801de12727aaa3c589373f54a80c00282ad2c735cdba05c0e96dabfc1e6ea610",
+     "source_path": "skills/team-leadership/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 128
+     }
+    },
+    {
+     "finding_id": "finding-0542",
+     "rule_id": "rule-0001",
+     "selector": "0545ef2e7b4039ae",
+     "skill": "aws-rds",
+     "source_file_digest": "sha256:82a9a220ef17778bb2081af7ac19e12a22d366a3be8f20c7d2214a358346ef8c",
+     "source_path": "skills/aws-rds/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 199
+     }
+    },
+    {
+     "finding_id": "finding-0739",
+     "rule_id": "rule-0001",
+     "selector": "063d9ed8208d87dd",
+     "skill": "triton",
+     "source_file_digest": "sha256:e51ec2ede43a841c746349d146cad6487e8091a90b99b32671032296e92e6620",
+     "source_path": "skills/triton/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 211
+     }
+    },
+    {
+     "finding_id": "finding-0556",
+     "rule_id": "rule-0001",
+     "selector": "06aaaaafa96b1d67",
+     "skill": "capacity-planner",
+     "source_file_digest": "sha256:1646b5c29822b5a626ae54fa1678c7b0ae403133bb1e1745ac17accfae69fb63",
+     "source_path": "skills/capacity-planner/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 65
+     }
+    },
+    {
+     "finding_id": "finding-0751",
+     "rule_id": "rule-0001",
+     "selector": "06aac55512bd1c4a",
+     "skill": "vertex-ai-gemini",
+     "source_file_digest": "sha256:c3fee6d9ac7560ce2dee1d3691dca2528b6ff678da8dc69f40deab7c9fd7d716",
+     "source_path": "skills/vertex-ai-gemini/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 317
+     }
+    },
+    {
+     "finding_id": "finding-0591",
+     "rule_id": "rule-0001",
+     "selector": "06ddf6fa7439ea84",
+     "skill": "evidence",
+     "source_file_digest": "sha256:35132a3812dfe8c5ba924b27927adbdd14bcbd0ccb9c8418fdf04f38e74ea560",
+     "source_path": "skills/evidence/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 90
+     }
+    },
+    {
+     "finding_id": "finding-0760",
+     "rule_id": "rule-0001",
+     "selector": "093623fee514d854",
+     "skill": "web-scraper",
+     "source_file_digest": "sha256:249de8632552741bfecbd9e162187ca4f047c726597ebc8af048aa201b0e9b76",
+     "source_path": "skills/web-scraper/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 290
+     }
+    },
+    {
+     "finding_id": "finding-0568",
+     "rule_id": "rule-0001",
+     "selector": "0ae686a4e0af194c",
+     "skill": "confluence",
+     "source_file_digest": "sha256:cac1077e29f9d72e7f09eca24f609886fbfeb6dcb4f62274386984b924491c74",
+     "source_path": "skills/confluence/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 282
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "SAMPLE",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "population": 12,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0770",
+     "rule_id": "rule-0001",
+     "selector": "09a3996863508c01",
+     "skill": "architectural-dimensions",
+     "source_file_digest": "sha256:9990d703b475090078e5dfe0a98e81778e760b97bde9abae5add179d80613d89",
+     "source_path": "skills/architectural-dimensions/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 36
+     }
+    },
+    {
+     "finding_id": "finding-0775",
+     "rule_id": "rule-0001",
+     "selector": "1932da664578195e",
+     "skill": "improve-codebase-architecture",
+     "source_file_digest": "sha256:cadb445fd847bc01228e5e5e4b48bd8b1d95639fa019e157312a7fd708034aa8",
+     "source_path": "skills/improve-codebase-architecture/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 256
+     }
+    },
+    {
+     "finding_id": "finding-0776",
+     "rule_id": "rule-0001",
+     "selector": "3444d4489fa4d819",
+     "skill": "lucia-auth",
+     "source_file_digest": "sha256:3038f06c1aea53d796526e31282e1fd97c6229ede58adc5c7eee582bdbf812bc",
+     "source_path": "skills/lucia-auth/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 140
+     }
+    },
+    {
+     "finding_id": "finding-0777",
+     "rule_id": "rule-0001",
+     "selector": "5bb21625dfcc2105",
+     "skill": "marketing-psychology",
+     "source_file_digest": "sha256:adfc99945a8015d5d9affb593df87f6241e826aa878cc1d9fcadca75f54311c2",
+     "source_path": "skills/marketing-psychology/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 89
+     }
+    },
+    {
+     "finding_id": "finding-0780",
+     "rule_id": "rule-0001",
+     "selector": "610bf3ee50686176",
+     "skill": "rsync",
+     "source_file_digest": "sha256:d6e6f51abf86d98eae01dc8f17e168728f318905d8fd69c749232e76402dd2d9",
+     "source_path": "skills/rsync/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 93
+     }
+    },
+    {
+     "finding_id": "finding-0779",
+     "rule_id": "rule-0001",
+     "selector": "7e08d5a8aab0ceeb",
+     "skill": "perplexity-api",
+     "source_file_digest": "sha256:d85b8974596c4cfa92bc16636e12c7afc2e1cabdecfd13ab42ef3346207ea606",
+     "source_path": "skills/perplexity-api/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 163
+     }
+    },
+    {
+     "finding_id": "finding-0771",
+     "rule_id": "rule-0001",
+     "selector": "85aeec992f1f5578",
+     "skill": "cc-connect",
+     "source_file_digest": "sha256:b072cfe189d8b07efdea578549cc0129b8bab5787020546b0dab4de938f48aa7",
+     "source_path": "skills/cc-connect/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 153
+     }
+    },
+    {
+     "finding_id": "finding-0772",
+     "rule_id": "rule-0001",
+     "selector": "9a4ea4d8dbe19b2d",
+     "skill": "centrifugo",
+     "source_file_digest": "sha256:ad3feff4693d4adc69e346da84f772495ef69e57c63d4d9f37e7708daa2c3108",
+     "source_path": "skills/centrifugo/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 139
+     }
+    },
+    {
+     "finding_id": "finding-0774",
+     "rule_id": "rule-0001",
+     "selector": "d2dceac9cac9ab58",
+     "skill": "gcp-cloud-sql",
+     "source_file_digest": "sha256:3445bc87bd5ea04b173ab113dfc54eab615ea3174ccbd2c99b679f907825a119",
+     "source_path": "skills/gcp-cloud-sql/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 243
+     }
+    },
+    {
+     "finding_id": "finding-0781",
+     "rule_id": "rule-0001",
+     "selector": "ea865198ee6a2dd5",
+     "skill": "sherlock",
+     "source_file_digest": "sha256:e115a7ed79e168bd9344c33b730fd2e6f36c0861f5d7a80941e101c5fb0b9c50",
+     "source_path": "skills/sherlock/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 105
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "CENSUS",
+   "finding_class": "SECRET_IN_OUTPUT",
+   "population": 3,
+   "selected": 3,
+   "selection": [
+    {
+     "finding_id": "finding-0783",
+     "rule_id": "step-0002",
+     "selector": "3c9d20f801d65323",
+     "skill": "keycloak",
+     "source_file_digest": "sha256:1a11069204ef2fdb379d25afb20c45603d9f97465b90fa6a3566ee9acc5e50af",
+     "source_path": "skills/keycloak/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 289
+     }
+    },
+    {
+     "finding_id": "finding-0782",
+     "rule_id": "step-0008",
+     "selector": "6c586f6c1ad20029",
+     "skill": "comet-ml",
+     "source_file_digest": "sha256:d62f8506f329882e2f563911246fa264a958f789db7317389885af532a40692b",
+     "source_path": "skills/comet-ml/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 253
+     }
+    },
+    {
+     "finding_id": "finding-0784",
+     "rule_id": "step-0002",
+     "selector": "d6d4c9d595954ab9",
+     "skill": "northflank",
+     "source_file_digest": "sha256:b748e82aa0b012d46340ffbbb26b6db549fd2b771f8d1abc5e55bcf67b24acc2",
+     "source_path": "skills/northflank/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 48
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "CENSUS",
+   "finding_class": "SEMANTIC_REDUNDANCY",
+   "population": 1,
+   "selected": 1,
+   "selection": [
+    {
+     "finding_id": "finding-0785",
+     "rule_id": null,
+     "selector": "a0a88cef6c2d3305",
+     "skill": "opsgenie",
+     "source_file_digest": "sha256:d7412476dea650e7f7f616bc38abf38fdd5ccf7c7789d8500c90ab04987f4aac",
+     "source_path": "skills/opsgenie/SKILL.md",
+     "source_span": null
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "CENSUS",
+   "finding_class": "UNBOUNDED_RESOURCE",
+   "population": 2,
+   "selected": 2,
+   "selection": [
+    {
+     "finding_id": "finding-0786",
+     "rule_id": "step-0006",
+     "selector": "89ebe7778016fdf4",
+     "skill": "appwrite",
+     "source_file_digest": "sha256:f49267c20c83f36c44acad1953a16aae9827a81abe6fe440b4ed0928f746afe9",
+     "source_path": "skills/appwrite/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 256
+     }
+    },
+    {
+     "finding_id": "finding-0787",
+     "rule_id": "step-0001",
+     "selector": "f54065649e21fc94",
+     "skill": "markdown-writer",
+     "source_file_digest": "sha256:5029e53656d8d73c654441c5c00b7aef7b62838c95a86522e074b6323b231aae",
+     "source_path": "skills/markdown-writer/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 225
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "SAMPLE",
+   "finding_class": "UNBOUNDED_RETRY",
+   "population": 22,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0800",
+     "rule_id": "step-0009",
+     "selector": "041c045a365b42b9",
+     "skill": "playwright-testing",
+     "source_file_digest": "sha256:c249a69ad1e648e0eb5a00aa86844c65d7b1e25a65d4936d1e8ae6b1400596ce",
+     "source_path": "skills/playwright-testing/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 264
+     }
+    },
+    {
+     "finding_id": "finding-0801",
+     "rule_id": "step-0014",
+     "selector": "075cc83ef7818199",
+     "skill": "search-engine-setup",
+     "source_file_digest": "sha256:bce83c08c2c3ef16e0045de8e2503beb1b5b9599e59b7d13e5dbc507abf80be4",
+     "source_path": "skills/search-engine-setup/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 71
+     }
+    },
+    {
+     "finding_id": "finding-0797",
+     "rule_id": "step-0001",
+     "selector": "09923f2ae2124eda",
+     "skill": "pdf-analyzer",
+     "source_file_digest": "sha256:5a37b8ed30d5cbb5b29a2bb52a287b2febe7bbf0b7fdeaeb8391106c7867983f",
+     "source_path": "skills/pdf-analyzer/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 110
+     }
+    },
+    {
+     "finding_id": "finding-0798",
+     "rule_id": "step-0003",
+     "selector": "2d25d820f34a2e33",
+     "skill": "pdf-analyzer",
+     "source_file_digest": "sha256:5a37b8ed30d5cbb5b29a2bb52a287b2febe7bbf0b7fdeaeb8391106c7867983f",
+     "source_path": "skills/pdf-analyzer/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 119
+     }
+    },
+    {
+     "finding_id": "finding-0791",
+     "rule_id": "step-0013",
+     "selector": "5665dddd761b9665",
+     "skill": "clone-website",
+     "source_file_digest": "sha256:ede857ecd9d464adfff02df12bd31590a2487c51cb0c27b531c76b74b4bfe444",
+     "source_path": "skills/clone-website/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 175
+     }
+    },
+    {
+     "finding_id": "finding-0793",
+     "rule_id": "step-0007",
+     "selector": "61b5e48e8456cbc8",
+     "skill": "function-calling",
+     "source_file_digest": "sha256:1a64888b74b77f7b0fa6823c5573019c547b5e81d3088180571ad8aba125b8eb",
+     "source_path": "skills/function-calling/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 37
+     }
+    },
+    {
+     "finding_id": "finding-0803",
+     "rule_id": "step-0002",
+     "selector": "6e90db9b6ec64e9c",
+     "skill": "step-functions",
+     "source_file_digest": "sha256:7a7cca8f9c59658e67fb23739335a6de81b847d4d5b4e249e039f6fcf26276fd",
+     "source_path": "skills/step-functions/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 198
+     }
+    },
+    {
+     "finding_id": "finding-0807",
+     "rule_id": "step-0016",
+     "selector": "a4b57a671d0a3309",
+     "skill": "urql",
+     "source_file_digest": "sha256:918b83931dafedc9c57d3cb0aef4bb5839b979ba723e3611f8b2f37974b94ed9",
+     "source_path": "skills/urql/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 142
+     }
+    },
+    {
+     "finding_id": "finding-0805",
+     "rule_id": "step-0003",
+     "selector": "a7fc60763724eeef",
+     "skill": "trigger-dev",
+     "source_file_digest": "sha256:3e373b2c6a301b1ff75536885fb6e91e95a6bcc5f36dc9506ece47e89d6f0d81",
+     "source_path": "skills/trigger-dev/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 158
+     }
+    },
+    {
+     "finding_id": "finding-0794",
+     "rule_id": "step-0003",
+     "selector": "b13e3a91eed6a047",
+     "skill": "grow-sustainably",
+     "source_file_digest": "sha256:24a6a011a2cd1a68f355e537d8070e53d3015729d957464b97f06ab0ea0e9dcd",
+     "source_path": "skills/grow-sustainably/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 121
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "SAMPLE",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "population": 18,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0813",
+     "rule_id": "step-0001",
+     "selector": "0cd320ac52a86c92",
+     "skill": "graphql-yoga",
+     "source_file_digest": "sha256:b4695bbc5f95f0befab849bfa037dcd0f75cfb07c7239f397acb216e6832807f",
+     "source_path": "skills/graphql-yoga/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 27
+     }
+    },
+    {
+     "finding_id": "finding-0826",
+     "rule_id": "step-0001",
+     "selector": "0fad5c1bc6d04113",
+     "skill": "whisper",
+     "source_file_digest": "sha256:7a3e76afa2a893dd0232c22a02de84be219c4a18654cc6f1c3a33f1e54917dd0",
+     "source_path": "skills/whisper/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 276
+     }
+    },
+    {
+     "finding_id": "finding-0824",
+     "rule_id": "step-0001",
+     "selector": "136ae44a4a705600",
+     "skill": "sentry",
+     "source_file_digest": "sha256:941cce303c8687ad0e14397033bac1166d7c50ec5ebdfefe3958eccdf6c081f3",
+     "source_path": "skills/sentry/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 26
+     }
+    },
+    {
+     "finding_id": "finding-0820",
+     "rule_id": "step-0002",
+     "selector": "15cb37ca4a0f3254",
+     "skill": "pdf-analyzer",
+     "source_file_digest": "sha256:5a37b8ed30d5cbb5b29a2bb52a287b2febe7bbf0b7fdeaeb8391106c7867983f",
+     "source_path": "skills/pdf-analyzer/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 111
+     }
+    },
+    {
+     "finding_id": "finding-0816",
+     "rule_id": "step-0001",
+     "selector": "3fe0f91f1ed60834",
+     "skill": "msw",
+     "source_file_digest": "sha256:6d48ea48bd2b0bfeed8949c8a2f31b4a3e9b65cca42c0024e2024014e7116f9e",
+     "source_path": "skills/msw/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 23
+     }
+    },
+    {
+     "finding_id": "finding-0827",
+     "rule_id": "step-0007",
+     "selector": "40344fc7af057ad5",
+     "skill": "whisper",
+     "source_file_digest": "sha256:7a3e76afa2a893dd0232c22a02de84be219c4a18654cc6f1c3a33f1e54917dd0",
+     "source_path": "skills/whisper/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 287
+     }
+    },
+    {
+     "finding_id": "finding-0818",
+     "rule_id": "step-0024",
+     "selector": "50d80cc1f5f0cd3d",
+     "skill": "nda-generator",
+     "source_file_digest": "sha256:d27b70709300be0b527765d287fc504d45c35a1ce86f3ebd3b884593f8f9e2f3",
+     "source_path": "skills/nda-generator/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 226
+     }
+    },
+    {
+     "finding_id": "finding-0819",
+     "rule_id": "step-0005",
+     "selector": "512af30fb0483225",
+     "skill": "observability-setup",
+     "source_file_digest": "sha256:5c5574c5b456c12e10eb4993eeeb7b231be6d7a83004a40a6f26136d510fa581",
+     "source_path": "skills/observability-setup/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 88
+     }
+    },
+    {
+     "finding_id": "finding-0815",
+     "rule_id": "step-0002",
+     "selector": "51c5186456715610",
+     "skill": "llamaindex",
+     "source_file_digest": "sha256:eee25ecad47bc7c8e4c57d58facf7f1e2f7adea4410b15eb843891dd7c50b23b",
+     "source_path": "skills/llamaindex/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 249
+     }
+    },
+    {
+     "finding_id": "finding-0825",
+     "rule_id": "step-0004",
+     "selector": "6373a1bfa4870c04",
+     "skill": "sequelize",
+     "source_file_digest": "sha256:1ba2a69e923d9acffef7e195997bc643d7e413574fb214d7843f8f273b0cfc7f",
+     "source_path": "skills/sequelize/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 153
+     }
+    }
+   ]
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "coverage": "CENSUS",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "population": 10,
+   "selected": 10,
+   "selection": [
+    {
+     "finding_id": "finding-0835",
+     "rule_id": "step-0011",
+     "selector": "1f0d992c24b1c619",
+     "skill": "tinybase",
+     "source_file_digest": "sha256:1887fac379756fafc77df25370765b832d03af32aeaa6fd53e6a37e07b5140da",
+     "source_path": "skills/tinybase/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 269
+     }
+    },
+    {
+     "finding_id": "finding-0831",
+     "rule_id": "step-0006",
+     "selector": "2861a9d31ddb7d4a",
+     "skill": "grpc",
+     "source_file_digest": "sha256:2f3b1ed53e76aad80c8f66aa11988afd2e26cb7f2a5a6327e2763247a9b1a59b",
+     "source_path": "skills/grpc/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 227
+     }
+    },
+    {
+     "finding_id": "finding-0836",
+     "rule_id": "step-0008",
+     "selector": "43de6e8c42a55d86",
+     "skill": "urql",
+     "source_file_digest": "sha256:918b83931dafedc9c57d3cb0aef4bb5839b979ba723e3611f8b2f37974b94ed9",
+     "source_path": "skills/urql/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 218
+     }
+    },
+    {
+     "finding_id": "finding-0832",
+     "rule_id": "step-0003",
+     "selector": "65559179673964d3",
+     "skill": "observability-setup",
+     "source_file_digest": "sha256:5c5574c5b456c12e10eb4993eeeb7b231be6d7a83004a40a6f26136d510fa581",
+     "source_path": "skills/observability-setup/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 59
+     }
+    },
+    {
+     "finding_id": "finding-0833",
+     "rule_id": "step-0002",
+     "selector": "73c2f23cd93a66cb",
+     "skill": "sentry",
+     "source_file_digest": "sha256:941cce303c8687ad0e14397033bac1166d7c50ec5ebdfefe3958eccdf6c081f3",
+     "source_path": "skills/sentry/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 27
+     }
+    },
+    {
+     "finding_id": "finding-0828",
+     "rule_id": "step-0009",
+     "selector": "a6b53d7eddc6b5b3",
+     "skill": "bun",
+     "source_file_digest": "sha256:307d8de608a44a0da19a8e78b6a76b5a6998120825c32d565eaaa7b4219cf68c",
+     "source_path": "skills/bun/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 41
+     }
+    },
+    {
+     "finding_id": "finding-0830",
+     "rule_id": "step-0003",
+     "selector": "d422a1fdfab6b403",
+     "skill": "graphql-yoga",
+     "source_file_digest": "sha256:b4695bbc5f95f0befab849bfa037dcd0f75cfb07c7239f397acb216e6832807f",
+     "source_path": "skills/graphql-yoga/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 29
+     }
+    },
+    {
+     "finding_id": "finding-0837",
+     "rule_id": "step-0001",
+     "selector": "d4aaba7b973e32e5",
+     "skill": "val-town",
+     "source_file_digest": "sha256:ca36bdc8ec7e46ca3239913184121fe3c8b84ac6aa77b0e69909679c3f2933f3",
+     "source_path": "skills/val-town/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 184
+     }
+    },
+    {
+     "finding_id": "finding-0829",
+     "rule_id": "step-0004",
+     "selector": "e6ea3bbe596e3ce5",
+     "skill": "fig",
+     "source_file_digest": "sha256:e760d64c5a9d68690235b940ca18749d8899c79eacfc9ad54b4afc273938d270",
+     "source_path": "skills/fig/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 293
+     }
+    },
+    {
+     "finding_id": "finding-0834",
+     "rule_id": "step-0018",
+     "selector": "fd3a19e9aec3147b",
+     "skill": "serverless-debugger",
+     "source_file_digest": "sha256:f48c53c4b96ec4bedcd4a242ab7cbafb310f2e4bc59db12eaac08e29f29b798f",
+     "source_path": "skills/serverless-debugger/SKILL.md",
+     "source_span": {
+      "column": 1,
+      "line": 164
+     }
+    }
+   ]
+  }
+ ],
+ "stratification": {
+  "key": "corpus_id and finding class",
+  "per_stratum_target": 10,
+  "selector": "sha256 of corpus_id|class|skill|source_path|rule_id|line|column"
+ }
+}

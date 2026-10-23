@@ -33,3 +33,6 @@ NO PUSH/
 .idea/
 .vscode/
 *.swp
+
+# Reviewer material can echo source-derived tokens; never commit it.
+*.PRIVATE.json

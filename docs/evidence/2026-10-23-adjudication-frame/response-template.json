@@ -1,0 +1,1742 @@
+{
+ "allowed_outcomes": [
+  "CONFIRMED",
+  "REJECTED",
+  "UNRESOLVED"
+ ],
+ "assessments": [
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0016",
+   "outcome": null,
+   "rationale": null,
+   "selector": "05436b16733819a8",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0014",
+   "outcome": null,
+   "rationale": null,
+   "selector": "070cda778eeb72c0",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0013",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0aecaf439abc8606",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0010",
+   "outcome": null,
+   "rationale": null,
+   "selector": "1b8ae212bfafb403",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0011",
+   "outcome": null,
+   "rationale": null,
+   "selector": "1d82f6d9d462d47b",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0006",
+   "outcome": null,
+   "rationale": null,
+   "selector": "28ccf0800fd64670",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0024",
+   "outcome": null,
+   "rationale": null,
+   "selector": "2a5e1fc8b6576f1c",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0021",
+   "outcome": null,
+   "rationale": null,
+   "selector": "3108474782c1095e",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0022",
+   "outcome": null,
+   "rationale": null,
+   "selector": "39d0702a5531999e",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0038",
+   "outcome": null,
+   "rationale": null,
+   "selector": "4d21258267d32a67",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0056",
+   "outcome": null,
+   "rationale": null,
+   "selector": "04aa6a371456dd13",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0060",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0dc36ad920b13d3d",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0046",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0dd4981fc5f6fb8b",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0065",
+   "outcome": null,
+   "rationale": null,
+   "selector": "3ff8e48b295c07ed",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0049",
+   "outcome": null,
+   "rationale": null,
+   "selector": "4de96c8b06cef3ee",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0055",
+   "outcome": null,
+   "rationale": null,
+   "selector": "51c69968323423be",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0061",
+   "outcome": null,
+   "rationale": null,
+   "selector": "5b87a7f2f34cd621",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0052",
+   "outcome": null,
+   "rationale": null,
+   "selector": "5bf28b11f3103f8f",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0064",
+   "outcome": null,
+   "rationale": null,
+   "selector": "6ba22c8c3604f364",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0066",
+   "outcome": null,
+   "rationale": null,
+   "selector": "716fb95a14e95141",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "LLM_IN_DECISION_PATH",
+   "finding_id": "finding-0070",
+   "outcome": null,
+   "rationale": null,
+   "selector": "72a569fb5d36564e",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0072",
+   "outcome": null,
+   "rationale": null,
+   "selector": "66bdeaad26bda177",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0071",
+   "outcome": null,
+   "rationale": null,
+   "selector": "7bde0fc5fa6fa0bd",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0073",
+   "outcome": null,
+   "rationale": null,
+   "selector": "88d56421a5b00fb6",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0078",
+   "outcome": null,
+   "rationale": null,
+   "selector": "8b7dcd2d1fa1e8a7",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0074",
+   "outcome": null,
+   "rationale": null,
+   "selector": "8e35bc13886195a0",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0075",
+   "outcome": null,
+   "rationale": null,
+   "selector": "a3036e4b985bd5b2",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0076",
+   "outcome": null,
+   "rationale": null,
+   "selector": "e83a9875911f72d2",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0077",
+   "outcome": null,
+   "rationale": null,
+   "selector": "f5b0114a7e45d863",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0082",
+   "outcome": null,
+   "rationale": null,
+   "selector": "23e8850a69d7eb1a",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0083",
+   "outcome": null,
+   "rationale": null,
+   "selector": "3e726956168fd8d1",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0079",
+   "outcome": null,
+   "rationale": null,
+   "selector": "84263b55276556ad",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0081",
+   "outcome": null,
+   "rationale": null,
+   "selector": "df92fee9acb73ff0",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0080",
+   "outcome": null,
+   "rationale": null,
+   "selector": "ff25e978c5418fe1",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0115",
+   "outcome": null,
+   "rationale": null,
+   "selector": "012761d663d28f8e",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0099",
+   "outcome": null,
+   "rationale": null,
+   "selector": "02d88b0e9fca6baf",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0105",
+   "outcome": null,
+   "rationale": null,
+   "selector": "06240def918e9aaf",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0110",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0964d3447356c026",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0104",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0aa60a8fe16d94a4",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0092",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0ae5181338267fcb",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0140",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0af0ccc53ce9334d",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0102",
+   "outcome": null,
+   "rationale": null,
+   "selector": "106439e1934bbf96",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0137",
+   "outcome": null,
+   "rationale": null,
+   "selector": "2288c1a64c6a7c92",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0103",
+   "outcome": null,
+   "rationale": null,
+   "selector": "23723923ab80dc28",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0148",
+   "outcome": null,
+   "rationale": null,
+   "selector": "39a794d205b44d00",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0146",
+   "outcome": null,
+   "rationale": null,
+   "selector": "639fa925e38ad33d",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0158",
+   "outcome": null,
+   "rationale": null,
+   "selector": "69cd113698a70b42",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0154",
+   "outcome": null,
+   "rationale": null,
+   "selector": "76cca8750b6bbf02",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0157",
+   "outcome": null,
+   "rationale": null,
+   "selector": "7f155834d147e617",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0155",
+   "outcome": null,
+   "rationale": null,
+   "selector": "7f514333cf684a6b",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0147",
+   "outcome": null,
+   "rationale": null,
+   "selector": "9302dfb85890d723",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0156",
+   "outcome": null,
+   "rationale": null,
+   "selector": "9d2415a72110e387",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0151",
+   "outcome": null,
+   "rationale": null,
+   "selector": "c991cea3e6a35018",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0159",
+   "outcome": null,
+   "rationale": null,
+   "selector": "cd9ff68830c68d81",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SECRET_IN_OUTPUT",
+   "finding_id": "finding-0163",
+   "outcome": null,
+   "rationale": null,
+   "selector": "21a375a576b572fa",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SECRET_IN_OUTPUT",
+   "finding_id": "finding-0162",
+   "outcome": null,
+   "rationale": null,
+   "selector": "bcb5e7e95d481d7a",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "SECRET_IN_OUTPUT",
+   "finding_id": "finding-0161",
+   "outcome": null,
+   "rationale": null,
+   "selector": "d4b1ad17f2561360",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNBOUNDED_RESOURCE",
+   "finding_id": "finding-0164",
+   "outcome": null,
+   "rationale": null,
+   "selector": "936dd21f000b482e",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0166",
+   "outcome": null,
+   "rationale": null,
+   "selector": "05b86a2639828b3d",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0165",
+   "outcome": null,
+   "rationale": null,
+   "selector": "55e0749a101fe9ef",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0174",
+   "outcome": null,
+   "rationale": null,
+   "selector": "6ed4402f6fb890db",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0167",
+   "outcome": null,
+   "rationale": null,
+   "selector": "b0e32f5583bdcbac",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0172",
+   "outcome": null,
+   "rationale": null,
+   "selector": "c3f4528f4a46a7c2",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0168",
+   "outcome": null,
+   "rationale": null,
+   "selector": "c6c1441ee6645159",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0173",
+   "outcome": null,
+   "rationale": null,
+   "selector": "dc5764e14c841cb0",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0169",
+   "outcome": null,
+   "rationale": null,
+   "selector": "f207aad7b099fdd9",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0170",
+   "outcome": null,
+   "rationale": null,
+   "selector": "f578b5cfd9607b1e",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0171",
+   "outcome": null,
+   "rationale": null,
+   "selector": "f5968019790f3803",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "finding_id": "finding-0175",
+   "outcome": null,
+   "rationale": null,
+   "selector": "db3d710d0af0e083",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0176",
+   "outcome": null,
+   "rationale": null,
+   "selector": "8460574aa78e6dbd",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0177",
+   "outcome": null,
+   "rationale": null,
+   "selector": "d0ac8a4d4e249f49",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "nimadorostkar-claude-skills-collection",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0178",
+   "outcome": null,
+   "rationale": null,
+   "selector": "d6a610a9436643a0",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CHECK_WITHOUT_ORACLE",
+   "finding_id": "finding-0037",
+   "outcome": null,
+   "rationale": null,
+   "selector": "000a30a15d9eb8fc",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CHECK_WITHOUT_ORACLE",
+   "finding_id": "finding-0054",
+   "outcome": null,
+   "rationale": null,
+   "selector": "11686d464de2a50d",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CHECK_WITHOUT_ORACLE",
+   "finding_id": "finding-0049",
+   "outcome": null,
+   "rationale": null,
+   "selector": "1248fb409a8344c9",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CHECK_WITHOUT_ORACLE",
+   "finding_id": "finding-0060",
+   "outcome": null,
+   "rationale": null,
+   "selector": "1f7fce73d2b331d7",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CHECK_WITHOUT_ORACLE",
+   "finding_id": "finding-0009",
+   "outcome": null,
+   "rationale": null,
+   "selector": "2294109aa3098c5b",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CHECK_WITHOUT_ORACLE",
+   "finding_id": "finding-0030",
+   "outcome": null,
+   "rationale": null,
+   "selector": "23db9d085f777a44",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CHECK_WITHOUT_ORACLE",
+   "finding_id": "finding-0012",
+   "outcome": null,
+   "rationale": null,
+   "selector": "2b053a33613a516b",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CHECK_WITHOUT_ORACLE",
+   "finding_id": "finding-0066",
+   "outcome": null,
+   "rationale": null,
+   "selector": "2b7299037376f514",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CHECK_WITHOUT_ORACLE",
+   "finding_id": "finding-0065",
+   "outcome": null,
+   "rationale": null,
+   "selector": "3508059284062317",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CHECK_WITHOUT_ORACLE",
+   "finding_id": "finding-0022",
+   "outcome": null,
+   "rationale": null,
+   "selector": "3961cf32576805de",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CLAIM_WITHOUT_PROVENANCE",
+   "finding_id": "finding-0080",
+   "outcome": null,
+   "rationale": null,
+   "selector": "085e263771a003bf",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CLAIM_WITHOUT_PROVENANCE",
+   "finding_id": "finding-0076",
+   "outcome": null,
+   "rationale": null,
+   "selector": "15f6dc8d6328f87f",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CLAIM_WITHOUT_PROVENANCE",
+   "finding_id": "finding-0092",
+   "outcome": null,
+   "rationale": null,
+   "selector": "1bde49493af74559",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CLAIM_WITHOUT_PROVENANCE",
+   "finding_id": "finding-0078",
+   "outcome": null,
+   "rationale": null,
+   "selector": "3aee7eabe10220c4",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CLAIM_WITHOUT_PROVENANCE",
+   "finding_id": "finding-0075",
+   "outcome": null,
+   "rationale": null,
+   "selector": "3d91cb63f1b6637b",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CLAIM_WITHOUT_PROVENANCE",
+   "finding_id": "finding-0086",
+   "outcome": null,
+   "rationale": null,
+   "selector": "4c5e604f86816c00",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CLAIM_WITHOUT_PROVENANCE",
+   "finding_id": "finding-0077",
+   "outcome": null,
+   "rationale": null,
+   "selector": "4f3b95c6f008f6ee",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CLAIM_WITHOUT_PROVENANCE",
+   "finding_id": "finding-0072",
+   "outcome": null,
+   "rationale": null,
+   "selector": "5f5000ea6d9aa3b7",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CLAIM_WITHOUT_PROVENANCE",
+   "finding_id": "finding-0082",
+   "outcome": null,
+   "rationale": null,
+   "selector": "67a02b10394bde37",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "CLAIM_WITHOUT_PROVENANCE",
+   "finding_id": "finding-0081",
+   "outcome": null,
+   "rationale": null,
+   "selector": "70f49db27ed6d8f8",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0170",
+   "outcome": null,
+   "rationale": null,
+   "selector": "026225873111308e",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0145",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0293ca66372fd560",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0281",
+   "outcome": null,
+   "rationale": null,
+   "selector": "03a59f17f6d462ba",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0219",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0477eafd968f2601",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0144",
+   "outcome": null,
+   "rationale": null,
+   "selector": "07462486b288dffd",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0275",
+   "outcome": null,
+   "rationale": null,
+   "selector": "07d18571c917f5a9",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0134",
+   "outcome": null,
+   "rationale": null,
+   "selector": "090482a8862370cf",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0272",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0a60d3a57e6b2af9",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0181",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0c55a64dbf2edc92",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "COMMAND_ORACLE_WITHOUT_ARTIFACT",
+   "finding_id": "finding-0124",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0f7e1dc9246413ef",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0414",
+   "outcome": null,
+   "rationale": null,
+   "selector": "008ee503b2ee2a39",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0402",
+   "outcome": null,
+   "rationale": null,
+   "selector": "02dcea6e30fb7c08",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0363",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0337fb0478fb822f",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0365",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0699c3876f5b33b6",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0396",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0bd24ffc1bfd9157",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0330",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0ed9d4f229dbdfac",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0409",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0fd5d5a3d23c6366",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0362",
+   "outcome": null,
+   "rationale": null,
+   "selector": "170602c5d720fc77",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0327",
+   "outcome": null,
+   "rationale": null,
+   "selector": "18ae7771439fd9a4",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "IRREVERSIBLE_WITHOUT_REVIEW",
+   "finding_id": "finding-0355",
+   "outcome": null,
+   "rationale": null,
+   "selector": "1b2c58d902d6ed38",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0462",
+   "outcome": null,
+   "rationale": null,
+   "selector": "032e0e7d52af1297",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0472",
+   "outcome": null,
+   "rationale": null,
+   "selector": "064163afe6695d55",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0507",
+   "outcome": null,
+   "rationale": null,
+   "selector": "091762afaf37ca51",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0493",
+   "outcome": null,
+   "rationale": null,
+   "selector": "095e370e1a925d80",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0427",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0db1b35af31c446f",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0454",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0ed46df32469037e",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0482",
+   "outcome": null,
+   "rationale": null,
+   "selector": "11d77e2238f3871d",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0433",
+   "outcome": null,
+   "rationale": null,
+   "selector": "18c8d2eb82651f6c",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0487",
+   "outcome": null,
+   "rationale": null,
+   "selector": "1a8ad3ac5f51bb45",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "MISSING_FAILURE_MODE",
+   "finding_id": "finding-0506",
+   "outcome": null,
+   "rationale": null,
+   "selector": "1b8474f5e45898aa",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0522",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0e3fef142668426f",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0525",
+   "outcome": null,
+   "rationale": null,
+   "selector": "1d592173557daab7",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0517",
+   "outcome": null,
+   "rationale": null,
+   "selector": "2351e1d8038a0f91",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0521",
+   "outcome": null,
+   "rationale": null,
+   "selector": "236ac486b3b0916d",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0520",
+   "outcome": null,
+   "rationale": null,
+   "selector": "777ff7d538cdd4d2",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0519",
+   "outcome": null,
+   "rationale": null,
+   "selector": "9dbe4a426f7c1ba0",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0518",
+   "outcome": null,
+   "rationale": null,
+   "selector": "a3c45eaf0d1e2b0a",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0524",
+   "outcome": null,
+   "rationale": null,
+   "selector": "a846397406b08bcb",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "NON_DETERMINISTIC_INSTRUCTION",
+   "finding_id": "finding-0523",
+   "outcome": null,
+   "rationale": null,
+   "selector": "fa16921941c11a98",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "OVERCLAIM",
+   "finding_id": "finding-0526",
+   "outcome": null,
+   "rationale": null,
+   "selector": "5d78570f09a9c8d7",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "OVERCLAIM",
+   "finding_id": "finding-0527",
+   "outcome": null,
+   "rationale": null,
+   "selector": "9cbe9fe7dd057c49",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "OVERCLAIM",
+   "finding_id": "finding-0529",
+   "outcome": null,
+   "rationale": null,
+   "selector": "b762458f6a7d1f1f",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "OVERCLAIM",
+   "finding_id": "finding-0528",
+   "outcome": null,
+   "rationale": null,
+   "selector": "c5aced0547d843aa",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "OVERGENERALIZATION",
+   "finding_id": "finding-0530",
+   "outcome": null,
+   "rationale": null,
+   "selector": "155f8e6f7276a903",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0677",
+   "outcome": null,
+   "rationale": null,
+   "selector": "02d736bc0a1093f3",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0653",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0456eb2c6a64a8b0",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0731",
+   "outcome": null,
+   "rationale": null,
+   "selector": "04756d76da91de8c",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0542",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0545ef2e7b4039ae",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0739",
+   "outcome": null,
+   "rationale": null,
+   "selector": "063d9ed8208d87dd",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0556",
+   "outcome": null,
+   "rationale": null,
+   "selector": "06aaaaafa96b1d67",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0751",
+   "outcome": null,
+   "rationale": null,
+   "selector": "06aac55512bd1c4a",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0591",
+   "outcome": null,
+   "rationale": null,
+   "selector": "06ddf6fa7439ea84",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0760",
+   "outcome": null,
+   "rationale": null,
+   "selector": "093623fee514d854",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "REQUIREMENT_WITHOUT_CHECK",
+   "finding_id": "finding-0568",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0ae686a4e0af194c",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0770",
+   "outcome": null,
+   "rationale": null,
+   "selector": "09a3996863508c01",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0775",
+   "outcome": null,
+   "rationale": null,
+   "selector": "1932da664578195e",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0776",
+   "outcome": null,
+   "rationale": null,
+   "selector": "3444d4489fa4d819",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0777",
+   "outcome": null,
+   "rationale": null,
+   "selector": "5bb21625dfcc2105",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0780",
+   "outcome": null,
+   "rationale": null,
+   "selector": "610bf3ee50686176",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0779",
+   "outcome": null,
+   "rationale": null,
+   "selector": "7e08d5a8aab0ceeb",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0771",
+   "outcome": null,
+   "rationale": null,
+   "selector": "85aeec992f1f5578",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0772",
+   "outcome": null,
+   "rationale": null,
+   "selector": "9a4ea4d8dbe19b2d",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0774",
+   "outcome": null,
+   "rationale": null,
+   "selector": "d2dceac9cac9ab58",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SCOPE_TRIGGER_MISMATCH",
+   "finding_id": "finding-0781",
+   "outcome": null,
+   "rationale": null,
+   "selector": "ea865198ee6a2dd5",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SECRET_IN_OUTPUT",
+   "finding_id": "finding-0783",
+   "outcome": null,
+   "rationale": null,
+   "selector": "3c9d20f801d65323",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SECRET_IN_OUTPUT",
+   "finding_id": "finding-0782",
+   "outcome": null,
+   "rationale": null,
+   "selector": "6c586f6c1ad20029",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SECRET_IN_OUTPUT",
+   "finding_id": "finding-0784",
+   "outcome": null,
+   "rationale": null,
+   "selector": "d6d4c9d595954ab9",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "SEMANTIC_REDUNDANCY",
+   "finding_id": "finding-0785",
+   "outcome": null,
+   "rationale": null,
+   "selector": "a0a88cef6c2d3305",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RESOURCE",
+   "finding_id": "finding-0786",
+   "outcome": null,
+   "rationale": null,
+   "selector": "89ebe7778016fdf4",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RESOURCE",
+   "finding_id": "finding-0787",
+   "outcome": null,
+   "rationale": null,
+   "selector": "f54065649e21fc94",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0800",
+   "outcome": null,
+   "rationale": null,
+   "selector": "041c045a365b42b9",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0801",
+   "outcome": null,
+   "rationale": null,
+   "selector": "075cc83ef7818199",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0797",
+   "outcome": null,
+   "rationale": null,
+   "selector": "09923f2ae2124eda",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0798",
+   "outcome": null,
+   "rationale": null,
+   "selector": "2d25d820f34a2e33",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0791",
+   "outcome": null,
+   "rationale": null,
+   "selector": "5665dddd761b9665",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0793",
+   "outcome": null,
+   "rationale": null,
+   "selector": "61b5e48e8456cbc8",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0803",
+   "outcome": null,
+   "rationale": null,
+   "selector": "6e90db9b6ec64e9c",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0807",
+   "outcome": null,
+   "rationale": null,
+   "selector": "a4b57a671d0a3309",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0805",
+   "outcome": null,
+   "rationale": null,
+   "selector": "a7fc60763724eeef",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNBOUNDED_RETRY",
+   "finding_id": "finding-0794",
+   "outcome": null,
+   "rationale": null,
+   "selector": "b13e3a91eed6a047",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "finding_id": "finding-0813",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0cd320ac52a86c92",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "finding_id": "finding-0826",
+   "outcome": null,
+   "rationale": null,
+   "selector": "0fad5c1bc6d04113",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "finding_id": "finding-0824",
+   "outcome": null,
+   "rationale": null,
+   "selector": "136ae44a4a705600",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "finding_id": "finding-0820",
+   "outcome": null,
+   "rationale": null,
+   "selector": "15cb37ca4a0f3254",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "finding_id": "finding-0816",
+   "outcome": null,
+   "rationale": null,
+   "selector": "3fe0f91f1ed60834",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "finding_id": "finding-0827",
+   "outcome": null,
+   "rationale": null,
+   "selector": "40344fc7af057ad5",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "finding_id": "finding-0818",
+   "outcome": null,
+   "rationale": null,
+   "selector": "50d80cc1f5f0cd3d",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "finding_id": "finding-0819",
+   "outcome": null,
+   "rationale": null,
+   "selector": "512af30fb0483225",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "finding_id": "finding-0815",
+   "outcome": null,
+   "rationale": null,
+   "selector": "51c5186456715610",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNPINNED_DEPENDENCY",
+   "finding_id": "finding-0825",
+   "outcome": null,
+   "rationale": null,
+   "selector": "6373a1bfa4870c04",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0835",
+   "outcome": null,
+   "rationale": null,
+   "selector": "1f0d992c24b1c619",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0831",
+   "outcome": null,
+   "rationale": null,
+   "selector": "2861a9d31ddb7d4a",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0836",
+   "outcome": null,
+   "rationale": null,
+   "selector": "43de6e8c42a55d86",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0832",
+   "outcome": null,
+   "rationale": null,
+   "selector": "65559179673964d3",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0833",
+   "outcome": null,
+   "rationale": null,
+   "selector": "73c2f23cd93a66cb",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0828",
+   "outcome": null,
+   "rationale": null,
+   "selector": "a6b53d7eddc6b5b3",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0830",
+   "outcome": null,
+   "rationale": null,
+   "selector": "d422a1fdfab6b403",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0837",
+   "outcome": null,
+   "rationale": null,
+   "selector": "d4aaba7b973e32e5",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0829",
+   "outcome": null,
+   "rationale": null,
+   "selector": "e6ea3bbe596e3ce5",
+   "source_quote": null
+  },
+  {
+   "corpus_id": "terminalskills-skills",
+   "finding_class": "UNVALIDATED_EXTERNAL_INPUT",
+   "finding_id": "finding-0834",
+   "outcome": null,
+   "rationale": null,
+   "selector": "fd3a19e9aec3147b",
+   "source_quote": null
+  }
+ ],
+ "authenticity_status": "UNVERIFIED",
+ "frame_digest": "sha256:ab41aaa0980aad01852fb7f59037cd7089fad979b8a62230efa03d4de9196154",
+ "frame_schema_version": "adjudication-frame/v1",
+ "reviewer_label": null,
+ "schema_version": "adjudication-response/v1"
+}
