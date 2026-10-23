@@ -55,7 +55,7 @@ There is no `ABSTAIN` or `NOT_APPLICABLE` outcome on this path.
 
 ## Thirdness — the general rule, grounded in the code
 
-`graph.py:_build_edges` has exactly two edge sources:
+`graph.py:_extract_edges` has exactly two edge sources:
 
 1. bullets under a section heading containing `composes with` or
    `delegates to` (`compiler.py:486-487`, via `_extract_relations`);
@@ -96,7 +96,7 @@ carries no evidence either way.
 |---|---|---|---|
 | C-01 | Zero resolvable relations is reported as `total_edges: 0` with no abstention; silence is indistinguishable from a clean composition result | identical `limitations` across the 86-edge and 0-edge runs | Honest-degradation violation; reader can overread a clean result |
 | C-02 | The `composes_with`/`delegates_to` section path has 0 hits across 919 real skills; the only live path is description-text mention | per-corpus counts above | Unexercised path, including L16's rewrite gate |
-| C-03 | Typed composition measures declared cross-reference, so the `COMPETITIVE_BOUNDARY` claim does not hold on independently authored corpora | `graph.py:_build_edges` has no methodology-derived edge source | Scope of a published differentiator claim |
+| C-03 | Typed composition measures declared cross-reference, so the `COMPETITIVE_BOUNDARY` claim does not hold on independently authored corpora | `graph.py:_extract_edges` has no methodology-derived edge source | Scope of a published differentiator claim |
 
 ## Limits of this record
 
@@ -116,9 +116,22 @@ carries no evidence either way.
 
 ## Consequence for the external review's framing
 
-The pair-space argument does not describe this system's cost: Crucible never
-traverses the pair space, and the 818-skill run cost 3.96 s because edge
-construction is proportional to declared references, of which there were
-none. The defensible version of the same concern is C-03: undeclared
-methodological interaction is outside the current extractor, and the
-artifact does not say so.
+The pair-space argument is correct about where it lands, and this record's
+first draft was wrong to deny it. The composition *graph* never traverses the
+pair space -- edge construction is proportional to declared references, of
+which there were none. But `auditor.py:_check_semantic_redundancy` does
+traverse all 334,153 skill pairs on this corpus, which is exactly the review's
+figure. It is affordable here only because each comparison is one Jaccard
+overlap over precomputed token sets; see
+[the cost measurement](../2026-10-23-cost-scaling/FINDINGS.md) for the
+resulting superlinear scaling.
+
+Two further pairwise checks, `NORMATIVE_CONFLICT` and
+`CONDITIONAL_CONTRADICTION`, traverse **zero** pairs on this corpus, because
+both require a rule `subject` and only 1 of 818 skills yields one. That is a
+separate and larger defect recorded in
+[the rule-extraction yield measurement](../2026-10-23-rule-extraction-yield/FINDINGS.md).
+
+The defensible version of the review's concern remains C-03: undeclared
+methodological interaction is outside the current extractor, and the artifact
+does not say so.

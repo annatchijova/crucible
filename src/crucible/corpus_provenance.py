@@ -19,6 +19,7 @@ documented. A corpus used to fix the analyzer cannot support a generalization
 claim, so ``HELDOUT_SEALED`` rejects any recorded consumption.
 """
 
+from collections import Counter
 from copy import deepcopy
 
 from .ir import SCHEMA_VERSION, digest_payload
@@ -165,8 +166,8 @@ def _manifest(skills):
         _text(identity['source_path'], 'corpus IR source_path')
         _digest(identity['content_digest'], 'corpus IR content_digest')
         entries.append(dict(identity))
-    paths = [entry['source_path'] for entry in entries]
-    duplicates = sorted({path for path in paths if paths.count(path) > 1})
+    counts = Counter(entry['source_path'] for entry in entries)
+    duplicates = sorted(path for path, total in counts.items() if total > 1)
     if duplicates:
         raise ValueError(f"duplicate corpus source path(s): {', '.join(duplicates)}")
     return _sorted_manifest(entries)

@@ -185,3 +185,37 @@ def test_mismatched_ir_schema_is_refused(record, ir):
     stale['schema_version'] = 'skill-ir/v0'
     with pytest.raises(ValueError, match='unsupported corpus IR schema version'):
         verify_against_ir(record, stale)
+
+
+def test_duplicate_source_paths_are_rejected(ir):
+    from copy import deepcopy as _copy
+    clashing = _copy(ir)
+    clone = _copy(clashing['skills'][0])
+    clone['identity']['name'] = 'renamed-clone'
+    clashing['skills'].append(clone)
+    with pytest.raises(ValueError, match='duplicate corpus source path'):
+        build_provenance(
+            clashing, corpus_id='clashing', role=ROLE_REGRESSION,
+            repository='https://example.invalid/corpus.git', commit='0' * 40,
+        )
+
+
+def test_duplicate_detection_does_not_rescan_the_manifest_per_entry():
+    """A quadratic duplicate scan would hang long before this returns.
+
+    The manifest bound is 100k skills, where names.count(name)-style detection
+    costs ~5e9 comparisons. Counting once keeps it linear, so this stays fast.
+    """
+    from crucible.ir import SCHEMA_VERSION as _SV
+    skills = [
+        {'identity': {'name': f'skill-{index:06d}',
+                      'source_path': f'skill-{index:06d}/SKILL.md',
+                      'content_digest': f"sha256:{index:064x}"}}
+        for index in range(20_000)
+    ]
+    artifact = {'schema_version': _SV, 'skills': skills, 'artifact_digest': f"sha256:{'c' * 64}"}
+    record = build_provenance(
+        artifact, corpus_id='large', role=ROLE_REGRESSION,
+        repository='https://example.invalid/corpus.git', commit='0' * 40,
+    )
+    assert record['skill_count'] == 20_000
