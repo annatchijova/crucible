@@ -104,6 +104,35 @@ PYTHONPATH=src python3 -m pytest -q
 940 tests. A green suite means the contracts hold; it is not evidence about
 methodological accuracy on any corpus.
 
+## CLI modes and flags
+
+Detail routed here from the README so the quick path stays short.
+
+| Mode | What it does |
+|---|---|
+| `<corpus-path>` | compile, audit and build the composition graph |
+| `--no-graph` | compile and audit only |
+| `--compile-only` | emit the L1 Skill IR, no audit |
+| `--human` | render any report as scannable terminal text; an unrecognized shape falls back to JSON unchanged |
+| `--scan-skill` | audit one skill read from stdin |
+| `--report` | without a corpus path, run the local L4-L7 fixtures; add a corpus path to include L1-L3 |
+| `--view <artifact.json>` | render a sealed artifact as self-contained HTML |
+| `--local-executor` | keep confirmation local even when a provider API key exists |
+| `--skip-duplicate-names` | analyze a corpus that declares a name twice, recording each exclusion |
+
+Installed-skill scanning has two modes and they are mutually exclusive:
+
+- `--scan-installed` audits the installed skills as one corpus. Add
+  `--include-coverage` for the `discovered` / `analyzed` / `skipped` counts.
+- `--scan-installed-collection` audits packages independently and retains
+  homonymous skills. It does **not** evaluate cross-package composition, and
+  partial or empty coverage exits with code 1.
+
+Repeat `--scan-root DIR` with either mode to select explicit roots instead of
+the standard ones. The HTTP API always uses the standard roots. Reader limits
+and legacy name precedence are in the
+[technical reader contract](../TECHNICAL.md#15-collection-reader-and-known-limitations).
+
 ## Path B — container, for a demo URL
 
 ```bash

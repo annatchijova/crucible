@@ -28,6 +28,10 @@ The audit emits three `CANDIDATE` findings: `UNBOUNDED_RETRY`,
 The declared obligation has no retry bound or verification check.
 The [example contract test](tests/test_readme_contract.py) checks those outputs.
 
+Run that in about a minute, or see every command's verified output first:
+**[docs/DEMO.md](docs/DEMO.md)** has a local path needing no credentials and a
+container path for a test build.
+
 ## From a finding to evidence
 
 Crucible compiles skill text into source-addressable records, audits them and
@@ -70,25 +74,22 @@ item can suppress a missing-check candidate. See the
 - A real confirmation run completed 14 responses (2 confirmations, 12 rejections),
   but its full artifact was not retained. Model opinions are not ground truth.
   See the [runtime review](docs/red-team/2026-09-30-nebius-runtime-red-team.md).
-- The [offline replay storage contract](docs/REPLAY_BUNDLE.md) is implemented.
-  The v2 bundle binds captured request/response bytes to the task, skill variants
-  and recorded oracle identity under [local tests](tests/test_capture_bundle.py),
-  while preserving v1 support. An optional private journal retains committed
-  captures across tested process interruptions. The CLI can acquire, inspect and
-  export these journals under [local contract tests](tests/test_replay_cli.py).
-  Offline oracle replay is implemented and locally verified. One private,
-  captured L7 run completed repair, re-audit and behavioral replay on the
-  built-in fixture; the [execution checkpoint](docs/NEXT_LEVELS.md) distinguishes
-  this demonstration from held-out evaluation and release readiness.
-- Four independent external corpora are frozen by commit and manifest digest
-  (2705 skills), two reserved as held-out. Running the auditor across all five
-  corpora (2806 skills) produced a negative result worth stating plainly: the
-  composition graph yields 86 edges on the author's own corpus and **zero** on
-  every independently authored one, because an edge requires an author to name
-  another skill. Rule extraction yields 1.89 rules per skill for the author
-  against 0.27 to 0.82 elsewhere, and six of eight precondition-dependent
-  checks abstain on all five corpora. The audit artifact now reports those
-  abstentions instead of returning an empty result that reads as clean. See the
+- A bounded model experiment can be replayed offline without recontacting the
+  provider. The [replay bundle contract](docs/REPLAY_BUNDLE.md) binds captured
+  request and response bytes to the task, the skill variants and the recorded
+  oracle identity, under [bundle tests](tests/test_capture_bundle.py) and
+  [CLI contract tests](tests/test_replay_cli.py). One private captured L7 run
+  completed repair, re-audit and behavioral replay on the built-in fixture. The
+  [execution checkpoint](docs/NEXT_LEVELS.md) separates that demonstration from
+  held-out evaluation and release readiness.
+- Four independent external corpora are frozen by commit and manifest digest,
+  two of them reserved as held-out. Auditing all five (2806 skills) produced a
+  negative result worth stating plainly: the composition graph yields 86 edges
+  on the author's own corpus and **zero** on every independently authored one,
+  because an edge requires an author to name another skill. Six of eight
+  precondition-dependent checks abstain on all five corpora, and the audit
+  artifact now reports those abstentions rather than returning an empty result
+  that reads as clean. Full measurements in the
   [five-corpus replication](docs/evidence/2026-10-23-heldout-replication/FINDINGS.md).
 
 The behavioral experiment uses NVIDIA Nemotron through Nebius Token Factory.
@@ -102,33 +103,21 @@ Python 3.11 or newer is required.
 
 ```bash
 pip install -e ".[test]"
-PYTHONPATH=src python3 -m crucible.cli tests/fixtures/readme-demo --no-graph
+
+# the example above, as scannable text
 PYTHONPATH=src python3 -m crucible.cli tests/fixtures/readme-demo --no-graph --human
-PYTHONPATH=src python3 -m crucible.cli --scan-skill < tests/fixtures/readme-demo/SKILL.md
-PYTHONPATH=src python3 -m crucible.cli --report --local-executor > crucible-report.json
-PYTHONPATH=src python3 -m crucible.cli --view crucible-report.json > crucible-report.html
+
+# the detector tested against eight seeded defects
+PYTHONPATH=src python3 -m crucible.cli --mutate
+
+# your own installed skills, with explicit coverage
 PYTHONPATH=src python3 -m crucible.cli --scan-installed --include-coverage
-PYTHONPATH=src python3 -m crucible.cli --scan-installed-collection
+
 PYTHONPATH=src python3 -m pytest -q
 ```
 
-A step-by-step reproducible demo, with every command's verified output and
-both a local and a container path, is in [docs/DEMO.md](docs/DEMO.md).
-
-The first command after installation audits the example corpus; adding `--human`
-renders the same audit as scannable terminal text instead of JSON (any command
-accepts it; an unrecognized report shape falls back to JSON unchanged). The next
-command scans the same skill through stdin. Without a corpus path, `--report` runs
-local L4–L7 fixtures; add a corpus path to include L1–L3. Explicit `--local-executor`
-keeps confirmation local even if a provider API key exists.
-
-Installed collection scanning audits packages independently, retaining homonymous
-skills; it does not evaluate cross-package composition. Partial or empty coverage
-exits with code 1. Reader limits and legacy name precedence are documented in the
-[technical reader contract](TECHNICAL.md#15-collection-reader-and-known-limitations).
-For local installed scans, repeat `--scan-root DIR` to select explicit roots
-with either `--scan-installed` or `--scan-installed-collection`. These modes are
-mutually exclusive; the HTTP API continues to use standard roots.
+Drop `--human` for the sealed JSON artifact. Every other mode and flag, with
+its verified output, is in [docs/DEMO.md](docs/DEMO.md#cli-modes-and-flags).
 
 For the local HTTP interface, install its optional dependencies:
 

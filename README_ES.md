@@ -29,6 +29,10 @@ La auditoría devuelve tres hallazgos `CANDIDATE`: `UNBOUNDED_RETRY`,
 La obligación declarada no tiene un límite de reintentos ni una verificación.
 El [test del ejemplo](tests/test_readme_contract.py) comprueba esas salidas.
 
+Lo corrés en un minuto, o mirás primero la salida verificada de cada comando:
+**[docs/DEMO.md](docs/DEMO.md)** tiene un camino local que no necesita
+credenciales y otro en contenedor para un test build.
+
 ## Del hallazgo a la evidencia
 
 Crucible compila el texto de las skills en registros con referencias al origen,
@@ -71,24 +75,23 @@ la [frontera comparativa](docs/COMPETITIVE_BOUNDARY.md) y la
 - Una ejecución real de confirmación completó 14 respuestas (2 confirmaciones y
   12 rechazos), pero no se conservó el artefacto completo. Las opiniones del modelo
   no son verdad de referencia. Ver la [revisión del runtime](docs/red-team/2026-09-30-nebius-runtime-red-team.md).
-- Está implementado el [contrato de almacenamiento para replay offline](docs/REPLAY_BUNDLE.md).
-  El bundle v2 vincula los bytes de solicitud/respuesta con la tarea, las variantes
-  y la identidad registrada del oráculo bajo [pruebas locales](tests/test_capture_bundle.py),
-  conservando el soporte de v1. Un journal privado opcional conserva las capturas
-  confirmadas en disco ante las interrupciones de proceso probadas. La CLI permite
-  adquirir, inspeccionar y exportar estos journals bajo [pruebas locales](tests/test_replay_cli.py).
-  Faltan ejecución offline de oráculos y evidencia real de reparación.
-  El [checkpoint activo](docs/NEXT_LEVELS.md) organiza ese trabajo.
+- Un experimento acotado con el modelo se puede reproducir offline sin volver a
+  contactar al proveedor. El [contrato de bundle de replay](docs/REPLAY_BUNDLE.md)
+  vincula los bytes de solicitud y respuesta con la tarea, las variantes de skill
+  y la identidad registrada del oráculo, bajo [pruebas del bundle](tests/test_capture_bundle.py)
+  y [pruebas de contrato de la CLI](tests/test_replay_cli.py). Una corrida L7
+  privada capturada completó reparación, reauditoría y replay conductual sobre el
+  fixture integrado. El [checkpoint activo](docs/NEXT_LEVELS.md) separa esa
+  demostración de la evaluación held-out y de estar listo para release.
 - Cuatro corpus externos independientes están congelados por commit y digest de
-  manifiesto (2705 skills), dos reservados como held-out. Auditar los cinco
-  corpus (2806 skills) produjo un resultado negativo que conviene decir sin
-  rodeos: el grafo de composición da 86 aristas en el corpus del autor y **cero**
-  en cada corpus escrito por terceros, porque una arista exige que un autor
-  nombre otra skill. La extracción de reglas rinde 1,89 reglas por skill para el
-  autor contra 0,27 a 0,82 en el resto, y seis de ocho chequeos con precondición
-  se abstienen en los cinco corpus. El artefacto de auditoría ahora reporta esas
-  abstenciones en vez de devolver un resultado vacío que se lee como limpio. Ver
-  la [replicación en cinco corpus](docs/evidence/2026-10-23-heldout-replication/FINDINGS.md).
+  manifiesto, dos reservados como held-out. Auditar los cinco (2806 skills) dio
+  un resultado negativo que conviene decir sin rodeos: el grafo de composición da
+  86 aristas en el corpus del autor y **cero** en cada corpus escrito por
+  terceros, porque una arista exige que un autor nombre otra skill. Seis de ocho
+  chequeos con precondición se abstienen en los cinco corpus, y el artefacto de
+  auditoría ahora reporta esas abstenciones en vez de devolver un resultado vacío
+  que se lee como limpio. Las mediciones completas están en la
+  [replicación en cinco corpus](docs/evidence/2026-10-23-heldout-replication/FINDINGS.md).
 
 El experimento conductual usa NVIDIA Nemotron mediante Nebius Token Factory.
 Las observaciones del modelo están separadas de la autoridad del auditor
@@ -97,35 +100,26 @@ papel. El [cuadro técnico de niveles](TECHNICAL.md#3-construction-levels) detal
 
 ## Probalo
 
-Una demo reproducible paso a paso, con la salida verificada de cada comando y
-un camino local y otro en contenedor, está en [docs/DEMO.md](docs/DEMO.md).
-
 Necesitás Python 3.11 o posterior.
 
 ```bash
 pip install -e ".[test]"
-PYTHONPATH=src python3 -m crucible.cli tests/fixtures/readme-demo --no-graph
+
+# el ejemplo de arriba, como texto legible
 PYTHONPATH=src python3 -m crucible.cli tests/fixtures/readme-demo --no-graph --human
-PYTHONPATH=src python3 -m crucible.cli --scan-skill < tests/fixtures/readme-demo/SKILL.md
-PYTHONPATH=src python3 -m crucible.cli --report --local-executor > crucible-report.json
-PYTHONPATH=src python3 -m crucible.cli --view crucible-report.json > crucible-report.html
+
+# el detector puesto a prueba contra ocho defectos sembrados
+PYTHONPATH=src python3 -m crucible.cli --mutate
+
+# tus propias skills instaladas, con cobertura explícita
 PYTHONPATH=src python3 -m crucible.cli --scan-installed --include-coverage
-PYTHONPATH=src python3 -m crucible.cli --scan-installed-collection
+
 PYTHONPATH=src python3 -m pytest -q
 ```
 
-El primer comando después de instalar audita el corpus de ejemplo; agregando
-`--human` la misma auditoría se renderiza como texto legible en vez de JSON
-(cualquier comando lo acepta; un reporte sin formato reconocido cae de vuelta
-a JSON sin cambios). El siguiente comando lee la misma skill por stdin. Sin
-ruta de corpus, `--report` ejecuta fixtures locales L4–L7; agregá una ruta
-para incluir L1–L3. `--local-executor` mantiene local también la confirmación
-aunque exista una API key del proveedor.
-
-El escaneo de colecciones instaladas audita cada paquete por separado y conserva
-skills homónimas; no evalúa composición entre paquetes. La cobertura parcial o
-vacía devuelve código 1. Los límites de lectura y la precedencia histórica por
-nombre están en el [contrato técnico](TECHNICAL.md#15-collection-reader-and-known-limitations).
+Sacá `--human` para el artefacto JSON sellado. Todos los demás modos y flags,
+con su salida verificada, están en
+[docs/DEMO.md](docs/DEMO.md#cli-modes-and-flags).
 
 Para la interfaz HTTP local, instalá las dependencias opcionales:
 
