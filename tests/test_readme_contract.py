@@ -49,11 +49,27 @@ def test_navigation_and_local_links(name):
             assert anchor in slugs, (name, link)
 
 
+def commands_in(text):
+    """Executable lines per bash block, ignoring comments and blank lines.
+
+    The invariant is that both READMEs ship the same commands, not the same
+    prose: README_ES.md is a real adaptation, so a comment inside a block is
+    expected to be in Spanish. Comparing whole blocks byte-for-byte only held
+    while no block carried a comment.
+    """
+    return [
+        [line for line in block.splitlines()
+         if line.strip() and not line.lstrip().startswith("#")]
+        for block in re.findall(r"```bash\n(.*?)```", text, re.DOTALL)
+    ]
+
+
 def test_readme_commands_and_fixture_stay_synchronized():
     english, spanish = [(ROOT / name).read_text() for name in DOCS[:2]]
-    assert re.findall(r"```bash\n(.*?)```", english, re.DOTALL) == re.findall(
-        r"```bash\n(.*?)```", spanish, re.DOTALL
-    )
+    english_blocks, spanish_blocks = commands_in(english), commands_in(spanish)
+    assert len(english_blocks) == len(spanish_blocks), "block count diverged"
+    assert english_blocks == spanish_blocks, "the two READMEs ship different commands"
+    assert all(block for block in english_blocks), "a bash block has no command in it"
     fixture = (ROOT / "tests/fixtures/readme-demo/SKILL.md").read_text().strip()
     for text in (english, spanish):
         assert re.findall(r"```markdown\n(.*?)```", text, re.DOTALL)[0].strip() == fixture
