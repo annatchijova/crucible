@@ -11,7 +11,13 @@ input. It compiles, audits, and returns the sealed artifact.
 
 The API is stateless: no input is retained after the response is sent.
 """
-from __future__ import annotations
+# Deliberately no `from __future__ import annotations`. The request models are
+# defined inside create_app() so that pydantic stays an optional dependency,
+# and postponed annotations would turn `req: ScanSkillRequest` into the string
+# "ScanSkillRequest", which FastAPI cannot resolve against this module's
+# globals -- it then treats the body model as a query parameter and every POST
+# fails with 422. Every annotation here is a builtin generic or a name already
+# in scope, so eager evaluation is safe on the supported Python floor (3.11+).
 
 import os
 import stat
