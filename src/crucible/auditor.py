@@ -57,7 +57,11 @@ _PRECONDITION_REASONS: dict[str, str] = {
     ),
     "comparable_rule_pairs_by_subject": (
         "no two extracted rules share a normalized subject, so this check "
-        "compared no rule pair"
+        "compared no rule pair. Read this with rules_with_subject: only the "
+        "RFC-2119 modal extraction route assigns a subject at all, while the "
+        "negative-starter and imperative routes record an empty one by "
+        "construction (no object extraction), so a low count usually means a "
+        "subject was never attempted rather than attempted and unmatched"
     ),
     "comparable_skill_pairs": (
         "fewer than two skills yielded a lexical fingerprint, so this check "
