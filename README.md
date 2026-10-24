@@ -112,6 +112,9 @@ PYTHONPATH=src python3 -m crucible.cli --scan-installed-collection
 PYTHONPATH=src python3 -m pytest -q
 ```
 
+A step-by-step reproducible demo, with every command's verified output and
+both a local and a container path, is in [docs/DEMO.md](docs/DEMO.md).
+
 The first command after installation audits the example corpus; adding `--human`
 renders the same audit as scannable terminal text instead of JSON (any command
 accepts it; an unrecognized report shape falls back to JSON unchanged). The next

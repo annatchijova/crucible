@@ -327,14 +327,28 @@ generalización ni estabilidad. Los tres comandos de arriba y la afirmación
 
 **2. Video de demo (≤3 minutos)**
 
-Requisito del hackathon. No existe. Debe mostrar el flujo end-to-end:
-audit → mutation → behavioral differential → repair → replay.
+Requisito del hackathon. El video no está grabado. El guión sí:
+`docs/DEMO_VIDEO_SCRIPT.md` tiene siete tomas con timings que suman 2:55,
+cada comando corrido y verificado al commit `2da823c`, notas de grabación
+(la línea `PARTIAL` va a stderr; no redirigir), y una sección explícita de
+afirmaciones que el guión no hace, contrastada contra la reconciliación del
+2026-10-23. Falta sólo grabar.
 
-**3. Demo URL o test build**
+**3. Demo URL o test build — test build RESUELTO 2026-10-23**
 
-Requisito del hackathon. Opciones:
-- Deployar la API (Dockerfile existe, expone `0.0.0.0:8000`)
-- O proveer instrucciones deterministas para correr el demo localmente
+`docs/DEMO.md` documenta dos caminos verificados, con la salida real de cada
+comando. El build de contenedor se corrió de punta a punta: `docker build`
+en ~50 s, y los endpoints ejercitados por HTTP real con `curl`, no sólo
+in-process. Eso destapó un defecto P0 que ningún test cubría: los dos POST
+devolvían 422 para toda request porque `from __future__ import annotations`
+volvía string la anotación del modelo de body y FastAPI la trataba como
+query param. Arreglado y cubierto por `tests/test_api_http_contract.py`
+(ver commit `2da823c`). El volumen montado es necesario: la imagen copia
+sólo `src/`, así que sin `-v` no hay corpus adentro para escanear por ruta.
+
+Pendiente si se quiere URL pública: la interfaz no tuvo revisión propia de
+despliegue, datos ni privacidad (`TECHNICAL.md` §17). Un test build local
+documentado cumple el requisito sin exponer un servicio sin endurecer.
 
 ### P1 — Calidad de submission
 
@@ -519,7 +533,10 @@ El diverse corpus (L13) es un sustituto parcial del corpus OSS.
 ## Resumen ejecutivo
 
 ```
-P0 (bloquea submission):  video, demo URL (NEBIUS_API_KEY RESUELTO 2026-10-01)
+P0 (bloquea submission):  grabar el video (guión verificado 2026-10-23);
+                           test build RESUELTO 2026-10-23 (docs/DEMO.md, HTTP
+                           verificado en contenedor, bug P0 de API arreglado);
+                           NEBIUS_API_KEY RESUELTO 2026-10-01
 P1 (calidad):              corpus externo RESUELTO 2026-10-23 (4 corpus sellados,
                            2 held-out); CI gate verificado 2026-10-03 salvo branch
                            protection; disclosure/feedback RESUELTO 2026-10-03

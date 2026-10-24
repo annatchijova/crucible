@@ -97,6 +97,9 @@ papel. El [cuadro técnico de niveles](TECHNICAL.md#3-construction-levels) detal
 
 ## Probalo
 
+Una demo reproducible paso a paso, con la salida verificada de cada comando y
+un camino local y otro en contenedor, está en [docs/DEMO.md](docs/DEMO.md).
+
 Necesitás Python 3.11 o posterior.
 
 ```bash
