@@ -80,6 +80,16 @@ item can suppress a missing-check candidate. See the
   captured L7 run completed repair, re-audit and behavioral replay on the
   built-in fixture; the [execution checkpoint](docs/NEXT_LEVELS.md) distinguishes
   this demonstration from held-out evaluation and release readiness.
+- Four independent external corpora are frozen by commit and manifest digest
+  (2705 skills), two reserved as held-out. Running the auditor across all five
+  corpora (2806 skills) produced a negative result worth stating plainly: the
+  composition graph yields 86 edges on the author's own corpus and **zero** on
+  every independently authored one, because an edge requires an author to name
+  another skill. Rule extraction yields 1.89 rules per skill for the author
+  against 0.27 to 0.82 elsewhere, and six of eight precondition-dependent
+  checks abstain on all five corpora. The audit artifact now reports those
+  abstentions instead of returning an empty result that reads as clean. See the
+  [five-corpus replication](docs/evidence/2026-10-23-heldout-replication/FINDINGS.md).
 
 The behavioral experiment uses NVIDIA Nemotron through Nebius Token Factory.
 Model observations remain separate from deterministic audit authority; the

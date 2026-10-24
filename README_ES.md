@@ -79,6 +79,16 @@ la [frontera comparativa](docs/COMPETITIVE_BOUNDARY.md) y la
   adquirir, inspeccionar y exportar estos journals bajo [pruebas locales](tests/test_replay_cli.py).
   Faltan ejecución offline de oráculos y evidencia real de reparación.
   El [checkpoint activo](docs/NEXT_LEVELS.md) organiza ese trabajo.
+- Cuatro corpus externos independientes están congelados por commit y digest de
+  manifiesto (2705 skills), dos reservados como held-out. Auditar los cinco
+  corpus (2806 skills) produjo un resultado negativo que conviene decir sin
+  rodeos: el grafo de composición da 86 aristas en el corpus del autor y **cero**
+  en cada corpus escrito por terceros, porque una arista exige que un autor
+  nombre otra skill. La extracción de reglas rinde 1,89 reglas por skill para el
+  autor contra 0,27 a 0,82 en el resto, y seis de ocho chequeos con precondición
+  se abstienen en los cinco corpus. El artefacto de auditoría ahora reporta esas
+  abstenciones en vez de devolver un resultado vacío que se lee como limpio. Ver
+  la [replicación en cinco corpus](docs/evidence/2026-10-23-heldout-replication/FINDINGS.md).
 
 El experimento conductual usa NVIDIA Nemotron mediante Nebius Token Factory.
 Las observaciones del modelo están separadas de la autoridad del auditor

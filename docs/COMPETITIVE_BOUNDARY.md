@@ -18,6 +18,19 @@ The surviving CRUCIBLE boundary is narrower:
 
 This is a proposed boundary, not yet a demonstrated product result.
 
+**Measured constraint on the middle clause, 2026-10-23.** Typed conditional
+composition is implemented and, on third-party corpora, silent. Edge
+extraction requires an author to name another skill, so four independently
+authored corpora of 818, 692, 1057 and 138 skills produce zero edges against
+86 on the author's own. Conditional contradiction requires a rule `subject`,
+and subject extraction yielded 27 occurrences across 2806 real skills, 22 of
+them in the author's corpus. The clause describes a specification the current
+implementation does not exercise outside the author's writing conventions, and
+nothing below should be read as claiming otherwise. Evidence:
+[composition silence](evidence/2026-10-23-composition-silent-on-external-corpus/FINDINGS.md),
+[rule-extraction yield](evidence/2026-10-23-rule-extraction-yield/FINDINGS.md),
+[five-corpus replication](evidence/2026-10-23-heldout-replication/FINDINGS.md).
+
 ## Capability matrix
 
 | CRUCIBLE capability | SkillSpector | SkillEvaluator | NVIDIA catalog / Verified Skills | Current classification | Consequence |
@@ -121,11 +134,27 @@ The matrix distinguishes what the source documents establish from what CRUCIBLE 
 
 ## Corpus plan
 
-| Corpus | Ground truth | Purpose | Current status |
+| Corpus | Ground truth | Purpose | Current status (2026-10-23) |
 |---|---:|---|---|
-| Author's real skills | Partial | Real composition pressure and regression/reference | PLANNED |
-| CRUCIBLE seeded mutants | Yes | Precision, recall, mutation kill rate | PLANNED |
-| Independent OSS skills | Unknown | External validity and false-positive pressure | PLANNED |
+| Author's real skills | Partial | Real composition pressure and regression/reference | **IMPLEMENTED**, 101 skills, regression role |
+| CRUCIBLE seeded mutants | Yes | Precision, recall, mutation kill rate | **IMPLEMENTED**, eight fixture cases, six killed in scope |
+| Independent OSS skills | Unknown | External validity and false-positive pressure | **SEALED**, four corpora, 2705 skills: two `TUNING_CONSUMED`, two `HELDOUT_SEALED` |
 | NVIDIA verified skills | No universal truth | First-party interoperability and false-positive pressure | PLANNED |
+
+The four external corpora are frozen by commit and manifest digest under
+`corpus-provenance/v1`, with roles enforced in code rather than by discipline:
+a `HELDOUT_SEALED` record may name no consumption, and a `TUNING_CONSUMED`
+record must name what consumed it. Selection used metadata only -- authorship,
+licence, size, structural validity -- never rule yield or finding counts, since
+selecting on the measured variable invalidates the held-out set. See the
+[corpus seal record](evidence/2026-10-23-heldout-corpus-seal/FINDINGS.md).
+
+Measurement instruments exist for three of the four questions an external
+review asked: real corpus coverage is now reported honestly through `excluded`
+and `preconditions`; [execution cost at scale](evidence/2026-10-23-cost-scaling/FINDINGS.md)
+is measured; and frames are built but unlabelled for
+[finding precision](evidence/2026-10-23-adjudication-frame/FINDINGS.md) and
+[false negatives](evidence/2026-10-23-false-negative-frame/FINDINGS.md). None
+of the last two has a result yet, because each needs human review.
 
 The NVIDIA corpus must not be framed as “clean ground truth.” A signature proves the signed directory identity; a benchmark records an evaluation; neither proves universal methodological correctness.

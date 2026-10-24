@@ -352,10 +352,22 @@ están implementados. Falta:
   `docs/evidence/2026-10-02-mukul975-corpus-audit/FINDINGS.md`:
   SEMANTIC_REDUNDANCY bien calibrado (confirmado por inducción, no
   subdetecta), DESCRIPTION_BODY_GAP con un patrón real de falso positivo en
-  skills estilo workflow/procedural sin vocabulario RFC-2119. Todavía sin
-  licenciar explícitamente para uso como demo pública.
-- Corpus NVIDIA verified skills (interoperabilidad)
-- Documentar licencias de cada corpus
+  skills estilo workflow/procedural sin vocabulario RFC-2119.
+- **Actualización 2026-10-23 — resuelto en lo esencial.** Cuatro corpus
+  externos quedaron congelados por commit y digest de manifiesto bajo
+  `corpus-provenance/v1`, con rol forzado en código (un registro
+  `HELDOUT_SEALED` no puede nombrar consumo; un `TUNING_CONSUMED` tiene que
+  nombrar qué lo consumió): `mukul975` (818, consumido), `vantaflow` (692 de
+  696, consumido), `nimadorostkar` (138, held-out) y `TerminalSkills` (1057,
+  held-out). Licencias verificadas leyendo el archivo, no confiando en la API:
+  `gh search repos` reportaba MIT y `gh repo view --json licenseInfo` reportaba
+  NONE para los mismos cinco candidatos. La selección usó sólo metadatos —
+  autoría, licencia, tamaño, validez estructural — nunca rendimiento de reglas
+  ni conteo de hallazgos, porque seleccionar sobre la variable medida invalida
+  el held-out. Ver `docs/evidence/2026-10-23-heldout-corpus-seal/FINDINGS.md`.
+- Pendiente real: corpus NVIDIA verified skills (interoperabilidad), y
+  despeje de licencia por skill antes de publicar material derivado del fuente
+  (hoy sólo se publican agregados, rutas y digests, nunca texto de skill).
 
 **4b. Multi-line bullet/rule wrapping — RESUELTO 2026-10-03 (mismo día, a pedido del usuario)**
 
@@ -507,8 +519,10 @@ El diverse corpus (L13) es un sustituto parcial del corpus OSS.
 ## Resumen ejecutivo
 
 ```
-P0 (bloquea submission):  NEBIUS_API_KEY, video, demo URL
-P1 (calidad):              corpus externo, CI gate, disclosure (feedback RESUELTO 2026-10-03)
+P0 (bloquea submission):  video, demo URL (NEBIUS_API_KEY RESUELTO 2026-10-01)
+P1 (calidad):              corpus externo RESUELTO 2026-10-23 (4 corpus sellados,
+                           2 held-out); CI gate verificado 2026-10-03 salvo branch
+                           protection; disclosure/feedback RESUELTO 2026-10-03
 P2 (mejoras técnicas):     TODOS RESUELTOS O NO VERIFICABLES — mutation survivors RESUELTO 2026-09-25, TUI/traces RESUELTOS 2026-10-03 (alcance acotado), cross-version NO VERIFICABLE con el acceso actual
 P3 (deferido):             firmas, viewer pulido, corpus completo
 ```
