@@ -139,7 +139,8 @@ crucible/
 ├── docs/           # execution plan, evaluation, decisions and adversarial reviews
 ├── README.md       # English introduction and runnable example
 ├── README_ES.md    # Spanish adaptation with the same scope and commands
-└── TECHNICAL.md    # schemas, algorithms, authority boundaries and operations
+├── TECHNICAL.md    # schemas, algorithms, authority boundaries and operations
+└── INVESTIGAR-CRUCIBLE.md  # open research questions, with RU/ZH search terms
 ```
 
 For extending or auditing the system, start with the **[Technical README](TECHNICAL.md)**
