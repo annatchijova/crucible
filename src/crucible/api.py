@@ -592,6 +592,20 @@ th { background: #f8f8f8; font-weight: 600; }
 .summary-card { padding: 16px; background: #f8f8f8; border-radius: 6px; flex: 1; }
 .summary-number { font-size: 28px; font-weight: bold; color: #1a1a2e; }
 .summary-label { font-size: 13px; color: #666; }
+.note { color: #555; font-size: 13px; margin: 4px 0 12px; }
+.outcome-abstained { color: #856404; font-weight: bold; }
+.outcome-exercised { color: #155724; }
+.cov-complete { color: #155724; }
+.cov-partial { color: #856404; }
+/* The abstention reasons are full sentences; without fixed proportions the
+   reason column collapses to a sliver while short columns keep the width. */
+table.preconditions { table-layout: fixed; }
+table.preconditions th:nth-child(1), table.preconditions td:nth-child(1) { width: 20%; overflow-wrap: anywhere; }
+table.preconditions th:nth-child(2), table.preconditions td:nth-child(2) { width: 9%; }
+table.preconditions th:nth-child(3), table.preconditions td:nth-child(3) { width: 17%; }
+table.preconditions th:nth-child(4), table.preconditions td:nth-child(4) { width: 7%; text-align: right; }
+table.preconditions th:nth-child(5), table.preconditions td:nth-child(5) { width: 47%; }
+table.preconditions code { font-size: 11px; word-break: break-word; }
 .error { color: #721c24; background: #f8d7da; padding: 12px; border-radius: 4px; }
 .loading { color: #666; font-style: italic; }
 </style>
@@ -702,9 +716,18 @@ function renderResult(data) {
   html += '<div class="summary-card"><div class="summary-number">' + Object.keys(byClass).length + '</div><div class="summary-label">Defect Classes</div></div>';
   html += '</div>';
   html += '<div class="digest">Audit digest: ' + escapeHtml(audit.audit_digest || '') + '</div>';
+  html += renderCoverage(data.coverage);
+  html += renderExcluded(data.ir ? data.ir.excluded : null);
   html += '<h2>Findings</h2>';
   if (findings.length === 0) {
-    html += '<p>No findings. The skill(s) passed all 28 checks.</p>';
+    // "passed every check" was the claim here, and it was false: a check that
+    // abstained because this corpus gave it no input did not pass anything.
+    const abstained = abstainedChecks(audit);
+    html += '<p>No findings were emitted.';
+    if (abstained.length) {
+      html += ' ' + abstained.length + ' check(s) abstained on this input, so this is not evidence that the skill is clean.';
+    }
+    html += '</p>';
   } else {
     findings.forEach(f => {
       const cls = (f.epistemic_status || '').toLowerCase();
@@ -716,7 +739,63 @@ function renderResult(data) {
       html += '</div>';
     });
   }
+  html += renderPreconditions(audit);
   document.getElementById('result').innerHTML = html;
+}
+
+function abstainedChecks(audit) {
+  const pre = audit.preconditions || {};
+  return (pre.checks || []).filter(c => c.outcome === 'ABSTAINED');
+}
+
+function renderPreconditions(audit) {
+  const pre = audit.preconditions || {};
+  const checks = pre.checks || [];
+  if (!checks.length) { return ''; }
+  const abstained = checks.filter(c => c.outcome === 'ABSTAINED');
+  let html = '<h2>Check preconditions &mdash; ' + abstained.length + ' abstained</h2>';
+  if (pre.limitation) { html += '<p class="note">' + escapeHtml(pre.limitation) + '</p>'; }
+  html += '<table class="preconditions"><tr><th>Check</th><th>Outcome</th><th>Requires</th><th>Observed</th><th>Why it abstained</th></tr>';
+  checks.slice().sort((a, b) => (a.outcome === 'ABSTAINED' ? 0 : 1) - (b.outcome === 'ABSTAINED' ? 0 : 1)
+      || String(a.check_class).localeCompare(String(b.check_class))).forEach(c => {
+    const css = c.outcome === 'ABSTAINED' ? 'outcome-abstained' : 'outcome-exercised';
+    html += '<tr><td>' + escapeHtml(c.check_class || '') + '</td>';
+    html += '<td class="' + css + '">' + escapeHtml(c.outcome || '') + '</td>';
+    html += '<td><code>' + escapeHtml(c.requires || '') + '</code></td>';
+    html += '<td>' + escapeHtml(String(c.observed)) + '</td>';
+    html += '<td>' + escapeHtml(c.reason || '') + '</td></tr>';
+  });
+  html += '</table>';
+  return html;
+}
+
+function renderCoverage(coverage) {
+  if (!coverage || !coverage.status) { return ''; }
+  const complete = coverage.status === 'COMPLETE';
+  let html = '<h2>Scan coverage &mdash; <span class="' + (complete ? 'cov-complete' : 'cov-partial') + '">' + escapeHtml(coverage.status) + '</span></h2>';
+  html += '<table><tr><th>discovered</th><th>analyzed</th><th>skipped</th><th>errors</th></tr><tr>';
+  ['discovered', 'analyzed', 'skipped', 'errors'].forEach(k => {
+    html += '<td>' + escapeHtml(String(coverage[k] === undefined ? '-' : coverage[k])) + '</td>';
+  });
+  html += '</tr></table>';
+  if (!complete) { html += '<p class="note">Partial coverage. Findings describe the analyzed subset only.</p>'; }
+  return html;
+}
+
+function renderExcluded(excluded) {
+  if (!Array.isArray(excluded) || !excluded.length) { return ''; }
+  const lost = excluded.filter(e => e.reason === 'DUPLICATE_NAME_DISTINCT_CONTENT').length;
+  let html = '<h2>Excluded skills &mdash; ' + excluded.length + '</h2>';
+  html += '<p class="note">' + lost + ' of ' + excluded.length + ' dropped a distinct methodology sharing a name with one that was kept; the rest were byte-identical republications.</p>';
+  html += '<table><tr><th>Name</th><th>Dropped</th><th>Kept</th><th>Reason</th></tr>';
+  excluded.forEach(e => {
+    html += '<tr><td>' + escapeHtml(e.name || '') + '</td>';
+    html += '<td><code>' + escapeHtml(e.source_path || '') + '</code></td>';
+    html += '<td><code>' + escapeHtml(e.kept_source_path || '') + '</code></td>';
+    html += '<td>' + escapeHtml(e.reason || '') + '</td></tr>';
+  });
+  html += '</table>';
+  return html;
 }
 
 function escapeHtml(s) {

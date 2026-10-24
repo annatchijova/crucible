@@ -117,6 +117,17 @@ def render_artifact_html(artifact: dict[str, Any]) -> str:
     if "summary" in artifact:
         parts.extend(_render_summary(artifact["summary"]))
 
+    # Scan coverage, duplicate-name exclusions, and per-check preconditions all
+    # answer "what was NOT looked at", so they precede the static design limits.
+    if isinstance(artifact.get("coverage"), dict):
+        parts.extend(_render_coverage(artifact["coverage"]))
+
+    if isinstance(artifact.get("excluded"), list):
+        parts.extend(_render_excluded(artifact["excluded"]))
+
+    if isinstance(artifact.get("preconditions"), dict):
+        parts.extend(_render_preconditions(artifact["preconditions"]))
+
     # Render limitations if present.
     if "limitations" in artifact and isinstance(artifact["limitations"], list):
         parts.extend(_render_limitations(artifact["limitations"]))
@@ -240,7 +251,17 @@ def _render_summary(summary: dict[str, Any]) -> list[str]:
 
 
 def _render_limitations(limitations: list[dict[str, Any]]) -> list[str]:
-    parts = ['<h2>Limitations (Honest Abstentions)</h2>']
+    """Permanent design scope, identical for every corpus.
+
+    These are NOT abstentions. An abstention is corpus-dependent and is
+    reported by _render_preconditions; labelling a static list "abstentions"
+    told every reader of every corpus that checks had abstained.
+    """
+    if not limitations:
+        return []
+    parts = ['<h2>Documented design limitations</h2>',
+             '<p class="note">Permanent scope of the analyzer, the same for '
+             'every corpus. Not a statement about this run.</p>']
     parts.append('<ul class="limitations">')
     for lim in limitations:
         parts.append(
@@ -248,6 +269,106 @@ def _render_limitations(limitations: list[dict[str, Any]]) -> list[str]:
             f'{html.escape(str(lim.get("reason", "")))}</li>'
         )
     parts.append('</ul>')
+    return parts
+
+
+def _render_preconditions(preconditions: dict[str, Any]) -> list[str]:
+    """Per-check: did this corpus supply the input the check consumes?
+
+    A check that found nothing because its input was absent is not evidence
+    that the corpus is clean, which is the distinction this block exists to
+    make visible (ADR-0025).
+    """
+    checks = preconditions.get("checks")
+    if not isinstance(checks, list) or not checks:
+        return []
+    abstained = [c for c in checks if c.get("outcome") == "ABSTAINED"]
+    parts = [f'<h2>Check preconditions &mdash; {len(abstained)} abstained on this corpus</h2>']
+    if preconditions.get("limitation"):
+        parts.append(
+            f'<p class="note">{html.escape(str(preconditions["limitation"]))}</p>'
+        )
+    parts.append('<table class="preconditions">')
+    parts.append('<tr><th>Check</th><th>Outcome</th><th>Requires</th>'
+                 '<th>Observed</th><th>Why it abstained</th></tr>')
+    for check in sorted(checks, key=lambda c: (c.get("outcome") != "ABSTAINED",
+                                               str(c.get("check_class", "")))):
+        outcome = str(check.get("outcome", ""))
+        css = "outcome-abstained" if outcome == "ABSTAINED" else "outcome-exercised"
+        parts.append(
+            f'<tr><td>{html.escape(str(check.get("check_class", "")))}</td>'
+            f'<td class="{css}">{html.escape(outcome)}</td>'
+            f'<td><code>{html.escape(str(check.get("requires", "")))}</code></td>'
+            f'<td class="int">{html.escape(str(check.get("observed", "")))}</td>'
+            f'<td>{html.escape(str(check.get("reason") or ""))}</td></tr>'
+        )
+    parts.append('</table>')
+    inputs = preconditions.get("corpus_inputs")
+    if isinstance(inputs, dict) and inputs:
+        parts.append('<h3>Corpus inputs these outcomes were computed from</h3>')
+        parts.append('<table class="corpus-inputs">')
+        for key in sorted(inputs):
+            parts.append(
+                f'<tr><td class="key">{html.escape(key)}</td>'
+                f'<td class="int">{html.escape(str(inputs[key]))}</td></tr>'
+            )
+        parts.append('</table>')
+    return parts
+
+
+def _render_excluded(excluded: list[dict[str, Any]]) -> list[str]:
+    """Skills the compiler dropped, and whether dropping them lost content.
+
+    Always rendered, including when empty: an artifact that silently omits
+    this cannot be told apart from one that excluded something (ADR-0026).
+    """
+    parts = [f'<h2>Excluded skills &mdash; {len(excluded)}</h2>']
+    if not excluded:
+        parts.append('<p class="empty">None. Every discovered skill was analyzed.</p>')
+        return parts
+    lost = sum(1 for e in excluded
+               if e.get("reason") == "DUPLICATE_NAME_DISTINCT_CONTENT")
+    parts.append(
+        f'<p class="note">{lost} of {len(excluded)} dropped a distinct '
+        f'methodology that shares a name with one that was kept; the rest were '
+        f'byte-identical republications, where nothing analysable was lost.</p>'
+    )
+    parts.append('<table class="excluded">')
+    parts.append('<tr><th>Name</th><th>Dropped path</th><th>Kept path</th>'
+                 '<th>Reason</th></tr>')
+    for entry in excluded:
+        reason = str(entry.get("reason", ""))
+        css = ("regression-yes" if reason == "DUPLICATE_NAME_DISTINCT_CONTENT"
+               else "status-abstained")
+        parts.append(
+            f'<tr><td>{html.escape(str(entry.get("name", "")))}</td>'
+            f'<td><code>{html.escape(str(entry.get("source_path", "")))}</code></td>'
+            f'<td><code>{html.escape(str(entry.get("kept_source_path", "")))}</code></td>'
+            f'<td class="{css}">{html.escape(reason)}</td></tr>'
+        )
+    parts.append('</table>')
+    return parts
+
+
+def _render_coverage(coverage: dict[str, Any]) -> list[str]:
+    """What the scan found versus what it analyzed."""
+    status = str(coverage.get("status", ""))
+    css = "regression-no" if status == "COMPLETE" else "status-survived"
+    parts = [f'<h2>Scan coverage &mdash; <span class="{css}">{html.escape(status)}</span></h2>']
+    if coverage.get("scope"):
+        parts.append(f'<p class="note">Scope: <code>'
+                     f'{html.escape(str(coverage["scope"]))}</code></p>')
+    parts.append('<table class="coverage">')
+    for key in ("discovered", "analyzed", "skipped", "errors"):
+        if key in coverage:
+            parts.append(
+                f'<tr><td class="key">{html.escape(key)}</td>'
+                f'<td class="int">{html.escape(str(coverage[key]))}</td></tr>'
+            )
+    parts.append('</table>')
+    if status and status != "COMPLETE":
+        parts.append('<p class="note">Partial coverage. Findings describe the '
+                     'analyzed subset only.</p>')
     return parts
 
 
@@ -303,6 +424,17 @@ td.key { font-weight: 600; color: #555; width: 200px; }
 .regression-no { color: #155724; }
 .limitations { color: #555; }
 .limitations li { margin-bottom: 8px; }
+.note { color: #555; font-size: 13px; margin: 4px 0 12px; }
+.outcome-abstained { color: #856404; font-weight: bold; }
+.outcome-exercised { color: #155724; }
+.preconditions th, .excluded th, .coverage th, .corpus-inputs th { font-size: 13px; }
+table.preconditions { table-layout: fixed; }
+table.preconditions td:nth-child(1) { width: 20%; overflow-wrap: anywhere; }
+table.preconditions td:nth-child(2) { width: 9%; }
+table.preconditions td:nth-child(3) { width: 17%; }
+table.preconditions td:nth-child(4) { width: 7%; text-align: right; }
+table.preconditions td:nth-child(5) { width: 47%; }
+table.preconditions code { font-size: 11px; word-break: break-word; }
 .empty { color: #999; font-style: italic; }
 pre { background: #f8f8f8; padding: 8px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
 .bool { color: #007bff; }
