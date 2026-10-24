@@ -99,12 +99,29 @@ yield none. Distinct rule texts by corpus:
 | `nimadorostkar` | 113 | 113 | 0% | 1 |
 | `TerminalSkills` | 793 | 793 | 0% | 1 |
 
+Reproduce the whole table, and the rest of the shape columns, with:
+
+```text
+python docs/evidence/2026-10-23-heldout-replication/measure_corpus_shape.py \
+  <corpus-root>=<label> ...
+```
+
 Two consequences:
 
-- **V-01.** The rule count overstates distinct normative content by 302 to 1
-  on this corpus, and no artifact field says so. A reader comparing 302 rules
-  against `nimadorostkar`'s 113 would conclude `vantaflow` is three times as
+- **V-01 — addressed in the evaluation tooling, deliberately not in the
+  sealed artifact.** The rule count overstates distinct normative content by
+  302 to 1 on this corpus. A reader comparing 302 rules against
+  `nimadorostkar`'s 113 would conclude `vantaflow` is nearly three times as
   normative; it declares one obligation.
+
+  On review the audit artifact is not the right place to fix this.
+  `preconditions.corpus_inputs.rules` counts rule *records*, which is exactly
+  what a precondition question needs; duplication matters when comparing
+  corpora, which is an evaluation activity. So the figure lives in
+  [`measure_corpus_shape.py`](measure_corpus_shape.py), which reports
+  `distinct_rule_texts` and the largest duplicate group beside every count and
+  prints an explicit warning when they diverge, rather than in a third audit
+  schema bump in one day.
 - **V-02 — stated here, then refuted the same day. See
   [the follow-up](../2026-10-23-redundancy-evidence-denominator/FINDINGS.md).**
   The original claim was that `SEMANTIC_REDUNDANCY`'s 337 findings on
