@@ -105,14 +105,19 @@ Two consequences:
   on this corpus, and no artifact field says so. A reader comparing 302 rules
   against `nimadorostkar`'s 113 would conclude `vantaflow` is three times as
   normative; it declares one obligation.
-- **V-02.** `SEMANTIC_REDUNDANCY` is `vantaflow`'s top finding class with 337
-  of 935 findings. 302 skills sharing an identical boilerplate block inflates
-  the lexical fingerprint that the Jaccard check compares. These are candidate
-  findings driven by shared template text rather than by two skills covering
-  the same methodology, which is the failure mode `COMPETITIVE_BOUNDARY.md`
-  anticipated when it required redundancy to be defined by decision, scope or
-  check rather than by lexical similarity. This is an explanation consistent
-  with the evidence, not an adjudication: none of the 337 was reviewed.
+- **V-02 — stated here, then refuted the same day. See
+  [the follow-up](../2026-10-23-redundancy-evidence-denominator/FINDINGS.md).**
+  The original claim was that `SEMANTIC_REDUNDANCY`'s 337 findings on
+  `vantaflow` were candidates driven by shared template text rather than by
+  two skills covering the same ground. Measuring the pairs instead of
+  reasoning about them reversed it: all 337 follow the name pattern `X` /
+  `<prefix>-X`, 43 have byte-identical fingerprints, raw token unions run from
+  30 to 116 with a median of 43, and none is trivially small. The corpus
+  publishes each skill twice, once bare and once category-prefixed, and the
+  check found every instance. This is the check's best demonstrated
+  performance on a real corpus, not a false-positive cluster. The original
+  claim was an inference from the boilerplate observation; it should have been
+  measured before being written down.
 
 ## New finding — extraction is keyed to English
 

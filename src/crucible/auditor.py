@@ -668,8 +668,17 @@ def _check_semantic_redundancy(
                 report_name, report_path = name_i, path_i
             else:
                 report_name, report_path = name_j, path_j
-            # Format the fraction as "numerator/denominator" (no float).
-            overlap_str = f"{overlap.numerator}/{overlap.denominator}"
+            # Fraction reduces, and the reduced ratio alone hides how much
+            # text was compared: two identical 58-token fingerprints print as
+            # "1/1", and a pair sitting exactly on the 2/3 threshold could be
+            # 2 shared tokens of 3 or 400 of 600. Those are a coincidence and
+            # a substantive overlap, and the evidence has to tell them apart,
+            # so report the raw counts beside the exact ratio (still no float).
+            # COUPLING: confirm.py:_OTHER_SKILL_RE parses this exact wording to
+            # recover the pair. Changing it there and here must happen together.
+            shared, compared = len(tokens_i & tokens_j), len(tokens_i | tokens_j)
+            overlap_str = (f"{shared}/{compared} tokens "
+                           f"(ratio {overlap.numerator}/{overlap.denominator})")
             findings.append(_finding(
                 cls="SEMANTIC_REDUNDANCY",
                 epistemic_status="CANDIDATE",

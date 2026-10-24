@@ -329,10 +329,17 @@ class MockConfirmExecutor:
 # Finding parsing
 # ---------------------------------------------------------------------------
 
-# The evidence string format is:
-# "lexical Jaccard overlap X/Y with <skill-name> (threshold 2/3); ..."
+# COUPLING: the auditor's human-readable evidence prose is a parsed interface
+# here, so rewording it in auditor.py:_check_semantic_redundancy silently
+# breaks pair extraction and the confirmation layer stops finding clusters.
+# Keep this regex and that f-string in sync, or move the pair into a structured
+# finding field (see docs/evidence/2026-10-23-redundancy-evidence-denominator).
+# The format is:
+# "lexical Jaccard overlap S/C tokens (ratio N/D) with <skill-name>
+#  (threshold 2/3); ..."
+# S/C are the raw shared/compared token counts; N/D is the reduced exact ratio.
 _OTHER_SKILL_RE = re.compile(
-    r"lexical Jaccard overlap (\d+/\d+) with (\S+) "
+    r"lexical Jaccard overlap \d+/\d+ tokens \(ratio (\d+/\d+)\) with (\S+) "
 )
 
 
