@@ -73,3 +73,56 @@ def test_api_module_does_not_postpone_annotations():
     # Match the import statement, not a comment that explains why it is absent.
     assert not [line for line in lines
                 if line.strip() == "from __future__ import annotations"]
+
+
+def test_a_scan_route_refuses_an_unreadable_corpus_with_400(monkeypatch):
+    """Invariant: an OSError from the reader is a refusal, not a crash.
+
+    /tmp holds systemd-private-* directories the server cannot enter, so an
+    ordinary path produced PermissionError, which escaped as an unhandled 500
+    with no message. The CLI already caught (ValueError, OSError) for the same
+    calls; the API caught only ValueError, and /scan/installed caught nothing.
+    """
+    import crucible.api as api_module
+    from fastapi import HTTPException
+
+    app = create_app()
+
+    def boom(*args, **kwargs):
+        raise PermissionError(13, "Permission denied", "/tmp/systemd-private-x")
+
+    for path, attr in (("/scan/skill", "scan_skill_text"),
+                       ("/scan/directory", "scan_directory"),
+                       ("/scan/installed", "scan_installed_skills")):
+        monkeypatch.setattr(api_module, attr, boom)
+        route = next(r for r in app.routes if getattr(r, "path", None) == path)
+        with pytest.raises(HTTPException) as caught:
+            if path == "/scan/installed":
+                route.endpoint()
+            else:
+                route.endpoint(_DummyRequest())
+        assert caught.value.status_code == 400, path
+        detail = str(caught.value.detail)
+        assert "could not read the corpus" in detail, path
+        assert "/tmp/systemd-private-x" in detail, path
+        assert "Permission denied" in detail, path
+
+
+class _DummyRequest:
+    skill_text = "---\nname: x\ndescription: y\n---\nz\n"
+    skill_name = "x"
+    directory = "/tmp"
+
+
+def test_a_value_error_still_refuses_with_its_own_message(monkeypatch):
+    import crucible.api as api_module
+    from fastapi import HTTPException
+
+    app = create_app()
+    monkeypatch.setattr(api_module, "scan_directory", lambda d: (_ for _ in ()).throw(
+        ValueError("corpus contains no SKILL.md files: /tmp")))
+    route = next(r for r in app.routes if getattr(r, "path", None) == "/scan/directory")
+    with pytest.raises(HTTPException) as caught:
+        route.endpoint(_DummyRequest())
+    assert caught.value.status_code == 400
+    assert caught.value.detail == "corpus contains no SKILL.md files: /tmp"

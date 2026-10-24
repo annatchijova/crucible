@@ -522,25 +522,46 @@ def create_app() -> Any:
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
+    def _refused(exc: Exception) -> HTTPException:
+        """Turn a refusal into a 400 the caller can act on.
+
+        The reader walks a real filesystem, so an unreadable entry anywhere
+        under the given root raises OSError, not ValueError. Catching only
+        ValueError turned an ordinary unreadable subdirectory -- /tmp holds
+        systemd-private-* dirs the server cannot enter -- into an unhandled
+        500 with no message. The CLI already caught both for the same calls.
+        """
+        if isinstance(exc, OSError):
+            target = getattr(exc, "filename", None)
+            where = f" at {target}" if target else ""
+            return HTTPException(
+                status_code=400,
+                detail=f"could not read the corpus{where}: {exc.strerror or exc}",
+            )
+        return HTTPException(status_code=400, detail=str(exc))
+
     @app.post("/scan/skill")
     def scan_skill(req: ScanSkillRequest) -> JSONResponse:
         try:
             result = scan_skill_text(req.skill_text, req.skill_name)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
+        except (ValueError, OSError) as exc:
+            raise _refused(exc)
         return JSONResponse(content=result)
 
     @app.post("/scan/directory")
     def scan_dir(req: ScanDirectoryRequest) -> JSONResponse:
         try:
             result = scan_directory(req.directory)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
+        except (ValueError, OSError) as exc:
+            raise _refused(exc)
         return JSONResponse(content=result)
 
     @app.get("/scan/installed")
     def scan_installed() -> JSONResponse:
-        result = scan_installed_skills()
+        try:
+            result = scan_installed_skills()
+        except (ValueError, OSError) as exc:
+            raise _refused(exc)
         return JSONResponse(content=result)
 
     @app.get("/", response_class=HTMLResponse)
@@ -563,40 +584,55 @@ def _demo_html() -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Crucible Skill Scanner</title>
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #f5f5f5; color: #222; }
-.container { max-width: 960px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-h1 { margin-top: 0; color: #1a1a2e; }
-h2 { margin-top: 32px; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; color: #1a1a2e; }
+/* Shared palette with remember-the-seasons (same hackathon). Every text role
+   here clears WCAG AA against --bg: text 16.5:1, --dim 7.1:1, --g 8.0:1,
+   --warn 10.1:1, --bad 5.5:1. */
+:root {
+  --g:#76b900; --g-dim:#5a9100;
+  --bg:#0b0f0a; --p:#121810; --p2:#0d130b;
+  --line:#22301c; --line2:#1a2414;
+  --dim:#8fa383; --tx:#e7f0e3; --warn:#e8b33d; --bad:#d16a6a;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+body { font-family: var(--sans); margin: 0; padding: 20px; background: var(--bg); color: var(--tx); }
+.container { max-width: 960px; margin: 0 auto; background: var(--p); padding: 40px; border: 1px solid var(--line); border-radius: 8px; }
+h1 { margin-top: 0; color: var(--tx); }
+h2 { margin-top: 32px; border-bottom: 1px solid var(--line); padding-bottom: 8px; color: var(--tx); font-size: 20px; }
 .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-.tab { padding: 8px 16px; background: #e0e0e0; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
-.tab.active { background: #1a1a2e; color: #fff; }
+.tab { padding: 8px 16px; background: var(--p2); color: var(--dim); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; font-size: 14px; }
+.tab:hover { color: var(--tx); border-color: var(--g-dim); }
+.tab.active { background: var(--g); color: var(--bg); border-color: var(--g); font-weight: 600; }
 .panel { display: none; }
 .panel.active { display: block; }
-textarea { width: 100%; min-height: 200px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 13px; }
-input[type="text"] { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-button { padding: 10px 20px; background: #1a1a2e; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-top: 8px; }
-button:hover { background: #2a2a4e; }
-button:disabled { background: #999; cursor: not-allowed; }
+textarea, input[type="text"] { width: 100%; box-sizing: border-box; padding: 12px; background: var(--p2); color: var(--tx); border: 1px solid var(--line); border-radius: 4px; font-family: var(--mono); font-size: 13px; }
+textarea { min-height: 200px; }
+textarea:focus, input[type="text"]:focus { outline: 2px solid var(--g); outline-offset: 1px; border-color: var(--g); }
+button { padding: 10px 20px; background: var(--g); color: var(--bg); border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; margin-top: 8px; }
+button:hover { background: var(--g-dim); }
+button:focus-visible { outline: 2px solid var(--tx); outline-offset: 2px; }
+button:disabled { background: var(--line); color: var(--dim); cursor: not-allowed; }
 .result { margin-top: 24px; }
-.digest { font-size: 12px; color: #555; word-break: break-all; background: #f0f0f0; padding: 8px; border-radius: 4px; }
+.digest { font-family: var(--mono); font-size: 12px; color: var(--dim); word-break: break-all; background: var(--p2); border: 1px solid var(--line2); padding: 8px; border-radius: 4px; }
 table { border-collapse: collapse; width: 100%; margin: 12px 0; }
-th, td { text-align: left; padding: 8px 12px; border: 1px solid #ddd; vertical-align: top; }
-th { background: #f8f8f8; font-weight: 600; }
-.finding { margin: 8px 0; padding: 12px; border-left: 4px solid #dc3545; background: #f8f8f8; border-radius: 4px; }
-.finding.candidate { border-left-color: #ffc107; }
-.finding.observation { border-left-color: #17a2b8; }
-.finding-class { font-weight: bold; color: #1a1a2e; }
-.finding-evidence { color: #555; margin-top: 4px; }
-.finding-skill { color: #777; font-size: 13px; }
+th, td { text-align: left; padding: 8px 12px; border: 1px solid var(--line); vertical-align: top; }
+th { background: var(--p2); font-weight: 600; color: var(--dim); }
+code { font-family: var(--mono); color: var(--dim); }
+.finding { margin: 8px 0; padding: 12px; border-left: 4px solid var(--bad); background: var(--p2); border-radius: 4px; }
+.finding.candidate { border-left-color: var(--warn); }
+.finding.observation { border-left-color: var(--dim); }
+.finding-class { font-weight: bold; color: var(--tx); }
+.finding-evidence { color: var(--dim); margin-top: 4px; }
+.finding-skill { color: var(--dim); font-size: 13px; }
 .summary { display: flex; gap: 16px; margin: 16px 0; }
-.summary-card { padding: 16px; background: #f8f8f8; border-radius: 6px; flex: 1; }
-.summary-number { font-size: 28px; font-weight: bold; color: #1a1a2e; }
-.summary-label { font-size: 13px; color: #666; }
-.note { color: #555; font-size: 13px; margin: 4px 0 12px; }
-.outcome-abstained { color: #856404; font-weight: bold; }
-.outcome-exercised { color: #155724; }
-.cov-complete { color: #155724; }
-.cov-partial { color: #856404; }
+.summary-card { padding: 16px; background: var(--p2); border: 1px solid var(--line2); border-radius: 6px; flex: 1; }
+.summary-number { font-size: 28px; font-weight: bold; color: var(--g); }
+.summary-label { font-size: 13px; color: var(--dim); }
+.note { color: var(--dim); font-size: 13px; margin: 4px 0 12px; }
+.outcome-abstained { color: var(--warn); font-weight: bold; }
+.outcome-exercised { color: var(--g); }
+.cov-complete { color: var(--g); }
+.cov-partial { color: var(--warn); }
 /* The abstention reasons are full sentences; without fixed proportions the
    reason column collapses to a sliver while short columns keep the width. */
 table.preconditions { table-layout: fixed; }
@@ -606,8 +642,12 @@ table.preconditions th:nth-child(3), table.preconditions td:nth-child(3) { width
 table.preconditions th:nth-child(4), table.preconditions td:nth-child(4) { width: 7%; text-align: right; }
 table.preconditions th:nth-child(5), table.preconditions td:nth-child(5) { width: 47%; }
 table.preconditions code { font-size: 11px; word-break: break-word; }
-.error { color: #721c24; background: #f8d7da; padding: 12px; border-radius: 4px; }
-.loading { color: #666; font-style: italic; }
+.error { color: var(--bad); background: var(--p2); border: 1px solid var(--bad); padding: 12px; border-radius: 4px; }
+.loading { color: var(--dim); font-style: italic; }
+.error-hint { color: var(--dim); font-size: 13px; margin-top: 6px; }
+.field-error { color: var(--bad); font-size: 13px; margin: 6px 0 0; min-height: 1em; }
+[aria-invalid="true"] { border-color: var(--bad); }
+.empty-state { color: var(--dim); background: var(--p2); border: 1px solid var(--line2); padding: 16px; border-radius: 6px; }
 </style>
 </head>
 <body>
@@ -616,9 +656,9 @@ table.preconditions code { font-size: 11px; word-break: break-word; }
 <p>Scan third-party SKILL.md files for engineering defects. Deterministic, evidence-backed, sealed.</p>
 
 <div class="tabs">
-<button class="tab active" onclick="showTab('skill')">Single Skill</button>
-<button class="tab" onclick="showTab('directory')">Directory</button>
-<button class="tab" onclick="showTab('installed')">Installed Skills</button>
+<button class="tab active" role="tab" data-tab="skill" aria-selected="true" onclick="showTab('skill')">Single Skill</button>
+<button class="tab" role="tab" data-tab="directory" aria-selected="false" onclick="showTab('directory')">Directory</button>
+<button class="tab" role="tab" data-tab="installed" aria-selected="false" onclick="showTab('installed')">Installed Skills</button>
 </div>
 
 <div id="skill" class="panel active">
@@ -626,80 +666,151 @@ table.preconditions code { font-size: 11px; word-break: break-word; }
 <textarea id="skill-text" placeholder="---&#10;name: my-skill&#10;description: ...&#10;---&#10;&#10;# Instructions&#10;..."></textarea>
 <br>
 <input type="text" id="skill-name" placeholder="skill name (optional)" value="uploaded">
+<p class="field-error" id="skill-text-error" role="alert"></p>
 <br>
-<button onclick="scanSkill()">Scan</button>
+<button data-scan onclick="scanSkill()">Scan</button>
 </div>
 
 <div id="directory" class="panel">
 <h2>Scan a Directory</h2>
 <input type="text" id="directory-path" placeholder="/path/to/skills/directory">
+<p class="field-error" id="directory-path-error" role="alert"></p>
 <br>
-<button onclick="scanDirectory()">Scan</button>
+<button data-scan onclick="scanDirectory()">Scan</button>
 </div>
 
 <div id="installed" class="panel">
 <h2>Scan Installed Skills</h2>
 <p>Scans ~/.config/devin/skills/, ~/.claude/skills/, and ~/.local/share/devin/skills/.</p>
-<button onclick="scanInstalled()">Scan</button>
+<button data-scan onclick="scanInstalled()">Scan</button>
 </div>
 
-<div id="result" class="result"></div>
+<div id="result" class="result" aria-live="polite" aria-busy="false"></div>
 </div>
 
 <script>
+// Derives the tab from its id rather than the implicit global `event`, which
+// is deprecated and left showTab unusable from anything but a click handler.
 function showTab(tabId) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => {
+    const on = t.getAttribute('data-tab') === tabId;
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
   document.getElementById(tabId).classList.add('active');
 }
 
-async function scanSkill() {
+let pendingScan = 0;
+
+// Every scan goes through this, so the four states (busy, error, empty,
+// success) are reachable from one place instead of each caller inventing one.
+async function runScan(label, request) {
+  const token = ++pendingScan;
+  setBusy(true, label);
+  let resp;
+  try {
+    resp = await request();
+  } catch (e) {
+    if (token !== pendingScan) { return; }
+    setBusy(false);
+    renderError('Could not reach the Crucible API.',
+                'The server may have stopped. It runs locally: check the ' +
+                'terminal running `crucible --serve`, then try again.');
+    return;
+  }
+  let data = null;
+  try { data = await resp.json(); } catch (e) { data = null; }
+  if (token !== pendingScan) { return; }  // a newer scan already started
+  setBusy(false);
+  if (!resp.ok) {
+    renderError(describeDetail(data, resp.status), hintForStatus(resp.status));
+    return;
+  }
+  if (!data) { renderError('The server returned a response that is not JSON.', ''); return; }
+  renderResult(data);
+}
+
+function scanSkill() {
   const text = document.getElementById('skill-text').value;
   const name = document.getElementById('skill-name').value || 'uploaded';
-  if (!text.trim()) { alert('Paste a SKILL.md first'); return; }
-  showLoading();
-  try {
-    const resp = await fetch('/scan/skill', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({skill_text: text, skill_name: name})
-    });
-    const data = await resp.json();
-    if (resp.ok) { renderResult(data); } else { renderError(data.detail || 'Unknown error'); }
-  } catch (e) { renderError(e.message); }
+  if (!requireValue(text, 'skill-text', 'Paste a SKILL.md first.')) { return; }
+  return runScan('Compiling and auditing the skill', () => fetch('/scan/skill', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({skill_text: text, skill_name: name})
+  }));
 }
 
-async function scanDirectory() {
+function scanDirectory() {
   const path = document.getElementById('directory-path').value;
-  if (!path.trim()) { alert('Enter a directory path'); return; }
-  showLoading();
-  try {
-    const resp = await fetch('/scan/directory', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({directory: path})
-    });
-    const data = await resp.json();
-    if (resp.ok) { renderResult(data); } else { renderError(data.detail || 'Unknown error'); }
-  } catch (e) { renderError(e.message); }
+  if (!requireValue(path, 'directory-path', 'Enter a directory path first.')) { return; }
+  return runScan('Reading and auditing the directory', () => fetch('/scan/directory', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({directory: path})
+  }));
 }
 
-async function scanInstalled() {
-  showLoading();
-  try {
-    const resp = await fetch('/scan/installed');
-    const data = await resp.json();
-    if (resp.ok) { renderResult(data); } else { renderError(data.detail || 'Unknown error'); }
-  } catch (e) { renderError(e.message); }
+function scanInstalled() {
+  return runScan('Scanning installed skills', () => fetch('/scan/installed'));
 }
 
-function showLoading() {
-  document.getElementById('result').innerHTML = '<p class="loading">Scanning...</p>';
+// Inline validation. A modal alert blocks the page and says nothing the field
+// itself could not say next to the input.
+function requireValue(value, fieldId, message) {
+  const field = document.getElementById(fieldId);
+  const slot = document.getElementById(fieldId + '-error');
+  if (value && value.trim()) {
+    if (slot) { slot.textContent = ''; }
+    field.removeAttribute('aria-invalid');
+    return true;
+  }
+  if (slot) { slot.textContent = message; }
+  field.setAttribute('aria-invalid', 'true');
+  field.focus();
+  return false;
 }
 
-function renderError(msg) {
-  document.getElementById('result').innerHTML = '<div class="error">' + escapeHtml(msg) + '</div>';
+function setBusy(busy, label) {
+  document.querySelectorAll('button[data-scan]').forEach(b => { b.disabled = busy; });
+  const result = document.getElementById('result');
+  result.setAttribute('aria-busy', busy ? 'true' : 'false');
+  if (busy) {
+    result.innerHTML = '<p class="loading">' + escapeHtml(label || 'Scanning') +
+      '\u2026 nothing leaves this machine; no model is called.</p>';
+  }
+}
+
+// FastAPI returns `detail` as a string for HTTPException and as a list of
+// objects for a 422 validation error. Rendering the list directly printed
+// "[object Object]".
+function describeDetail(data, status) {
+  const detail = data && data.detail !== undefined ? data.detail : (data && data.error);
+  if (typeof detail === 'string' && detail) { return detail; }
+  if (Array.isArray(detail)) {
+    return detail.map(d => {
+      const where = Array.isArray(d.loc) ? d.loc.join('.') : '';
+      return (where ? where + ': ' : '') + (d.msg || JSON.stringify(d));
+    }).join('; ');
+  }
+  if (detail && typeof detail === 'object') { return JSON.stringify(detail); }
+  return 'The server returned HTTP ' + status + ' with no message.';
+}
+
+function hintForStatus(status) {
+  if (status === 400) { return 'Check the path exists and holds at least one SKILL.md.'; }
+  if (status === 404) { return 'That endpoint is not served by this build.'; }
+  if (status === 413 || status === 422) { return 'The request was rejected before any analysis ran.'; }
+  if (status >= 500) { return 'The failure is on the server side; its terminal has the traceback.'; }
+  return '';
+}
+
+function renderError(message, hint) {
+  let html = '<div class="error" role="alert"><strong>Scan failed.</strong> ' + escapeHtml(message);
+  if (hint) { html += '<div class="error-hint">' + escapeHtml(hint) + '</div>'; }
+  html += '</div>';
+  document.getElementById('result').innerHTML = html;
 }
 
 function renderResult(data) {
@@ -710,6 +821,15 @@ function renderResult(data) {
   const byClass = {};
   findings.forEach(f => { byClass[f.class] = (byClass[f.class] || 0) + 1; });
   const skillCount = data.ir ? data.ir.skills.length : 0;
+  if (skillCount === 0) {
+    // Zero skills analyzed is not a clean result; it means nothing was read.
+    document.getElementById('result').innerHTML =
+      '<div class="empty-state"><strong>No skills were analyzed.</strong> ' +
+      'Nothing was read, so this is not a statement about quality. ' +
+      'Check that the path holds at least one SKILL.md file.' +
+      renderCoverage(data.coverage) + '</div>';
+    return;
+  }
   let html = '<div class="summary">';
   html += '<div class="summary-card"><div class="summary-number">' + skillCount + '</div><div class="summary-label">Skills Scanned</div></div>';
   html += '<div class="summary-card"><div class="summary-number">' + findings.length + '</div><div class="summary-label">Findings</div></div>';

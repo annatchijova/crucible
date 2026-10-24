@@ -396,37 +396,49 @@ def _render_value(value: Any) -> str:
 
 
 _CSS = """
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #f5f5f5; color: #222; }
-.container { max-width: 960px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-h1 { margin-top: 0; color: #1a1a2e; }
-h2 { margin-top: 32px; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; color: #1a1a2e; }
-h3 { color: #333; }
-.version { color: #666; font-size: 14px; }
-.digest { font-size: 12px; color: #555; word-break: break-all; }
-.digest code { background: #f0f0f0; padding: 2px 4px; border-radius: 3px; }
+/* Shared palette with remember-the-seasons (same hackathon). Every text role
+   clears WCAG AA against --bg: text 16.5:1, --dim 7.1:1, --g 8.0:1,
+   --warn 10.1:1, --bad 5.5:1. */
+:root {
+  --g:#76b900; --g-dim:#5a9100;
+  --bg:#0b0f0a; --p:#121810; --p2:#0d130b;
+  --line:#22301c; --line2:#1a2414;
+  --dim:#8fa383; --tx:#e7f0e3; --warn:#e8b33d; --bad:#d16a6a;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+body { font-family: var(--sans); margin: 0; padding: 20px; background: var(--bg); color: var(--tx); }
+.container { max-width: 960px; margin: 0 auto; background: var(--p); padding: 40px; border: 1px solid var(--line); border-radius: 8px; }
+h1 { margin-top: 0; color: var(--tx); }
+h2 { margin-top: 32px; border-bottom: 1px solid var(--line); padding-bottom: 8px; color: var(--tx); font-size: 20px; }
+h3 { color: var(--dim); font-size: 15px; }
+.version { color: var(--dim); font-size: 14px; }
+.digest { font-size: 12px; color: var(--dim); word-break: break-all; }
+.digest code { background: var(--p2); border: 1px solid var(--line2); padding: 2px 4px; border-radius: 3px; }
 .status { font-weight: bold; padding: 4px 8px; border-radius: 4px; display: inline-block; margin: 4px 0; }
-.status.blocked { background: #fff3cd; color: #856404; }
-.status.available { background: #d4edda; color: #155724; }
-.status-detail { font-size: 13px; color: #666; margin-top: 4px; }
+.status.blocked { background: var(--p2); color: var(--warn); border: 1px solid var(--warn); }
+.status.available { background: var(--p2); color: var(--g); border: 1px solid var(--g); }
+.status-detail { font-size: 13px; color: var(--dim); margin-top: 4px; }
 .outcome { font-size: 18px; padding: 8px 12px; border-radius: 4px; display: inline-block; margin: 8px 0; }
-.outcome.accepted { background: #d4edda; color: #155724; }
-.outcome.rejected { background: #f8d7da; color: #721c24; }
-.rejection { color: #721c24; font-size: 14px; }
+.outcome.accepted { background: var(--p2); color: var(--g); border: 1px solid var(--g); }
+.outcome.rejected { background: var(--p2); color: var(--bad); border: 1px solid var(--bad); }
+.rejection { color: var(--bad); font-size: 14px; }
 table { border-collapse: collapse; width: 100%; margin: 12px 0; }
-th, td { text-align: left; padding: 8px 12px; border: 1px solid #ddd; vertical-align: top; }
-th { background: #f8f8f8; font-weight: 600; }
-td.key { font-weight: 600; color: #555; width: 200px; }
+th, td { text-align: left; padding: 8px 12px; border: 1px solid var(--line); vertical-align: top; }
+th { background: var(--p2); font-weight: 600; color: var(--dim); }
+td.key { font-weight: 600; color: var(--dim); width: 200px; }
+code { font-family: var(--mono); }
 .findings th, .mutations th, .behavioral th, .custody th { font-size: 13px; }
-.status-killed { color: #155724; font-weight: bold; }
-.status-survived { color: #856404; font-weight: bold; }
-.status-abstained { color: #6c757d; font-weight: bold; }
-.regression-yes { color: #721c24; }
-.regression-no { color: #155724; }
-.limitations { color: #555; }
+.status-killed { color: var(--g); font-weight: bold; }
+.status-survived { color: var(--warn); font-weight: bold; }
+.status-abstained { color: var(--dim); font-weight: bold; }
+.regression-yes { color: var(--bad); }
+.regression-no { color: var(--g); }
+.limitations { color: var(--dim); }
 .limitations li { margin-bottom: 8px; }
-.note { color: #555; font-size: 13px; margin: 4px 0 12px; }
-.outcome-abstained { color: #856404; font-weight: bold; }
-.outcome-exercised { color: #155724; }
+.note { color: var(--dim); font-size: 13px; margin: 4px 0 12px; }
+.outcome-abstained { color: var(--warn); font-weight: bold; }
+.outcome-exercised { color: var(--g); }
 .preconditions th, .excluded th, .coverage th, .corpus-inputs th { font-size: 13px; }
 table.preconditions { table-layout: fixed; }
 table.preconditions td:nth-child(1) { width: 20%; overflow-wrap: anywhere; }
@@ -435,9 +447,9 @@ table.preconditions td:nth-child(3) { width: 17%; }
 table.preconditions td:nth-child(4) { width: 7%; text-align: right; }
 table.preconditions td:nth-child(5) { width: 47%; }
 table.preconditions code { font-size: 11px; word-break: break-word; }
-.empty { color: #999; font-style: italic; }
-pre { background: #f8f8f8; padding: 8px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
-.bool { color: #007bff; }
-.int { color: #28a745; }
-.level { margin-bottom: 24px; padding: 16px; background: #fafafa; border-radius: 6px; }
+.empty { color: var(--dim); font-style: italic; }
+pre { background: var(--p2); border: 1px solid var(--line2); padding: 8px; border-radius: 4px; overflow-x: auto; font-size: 12px; font-family: var(--mono); }
+.bool { color: var(--g); }
+.int { color: var(--tx); }
+.level { margin-bottom: 24px; padding: 16px; background: var(--p2); border: 1px solid var(--line2); border-radius: 6px; }
 """
