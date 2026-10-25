@@ -83,6 +83,16 @@ la [frontera comparativa](docs/COMPETITIVE_BOUNDARY.md) y la
   privada capturada completó reparación, reauditoría y replay conductual sobre el
   fixture integrado. El [checkpoint activo](docs/NEXT_LEVELS.md) separa esa
   demostración de la evaluación held-out y de estar listo para release.
+- La ruta de consolidación corrió sobre skills que no escribió el autor. En
+  una rebanada de cuatro skills de un corpus externo sellado, con NVIDIA
+  Nemotron real en cada paso de modelo, el modelo confirmó dos candidatos de
+  redundancia, propuso una fusión para cada uno, y el gate determinista
+  **aceptó una y rechazó la otra** por introducir un defecto que los originales
+  no tenían. El mismo cluster había sido aceptado en una corrida anterior, así
+  que esto muestra que el gate funciona y que una aceptación no es evidencia de
+  una ruta confiable. Todos los clusters medidos son pares: fusionar un grupo
+  mayor está implementado pero no ejercitado sobre entrada real. Ver la
+  [corrida de consolidación en vivo](docs/evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md).
 - Cuatro corpus externos independientes están congelados por commit y digest de
   manifiesto, dos reservados como held-out. Auditar los cinco (2806 skills) dio
   un resultado negativo que conviene decir sin rodeos: el grafo de composición da

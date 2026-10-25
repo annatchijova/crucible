@@ -104,6 +104,41 @@ PYTHONPATH=src python3 -m pytest -q
 940 tests. A green suite means the contracts hold; it is not evidence about
 methodological accuracy on any corpus.
 
+## Optional — the consolidation path, with a real model
+
+Everything above is offline. This one step is not: it needs
+`NEBIUS_API_KEY` in `.env` and calls NVIDIA Nemotron.
+
+```bash
+PYTHONPATH=src python3 -m crucible.cli <corpus> --confirm        # L2.5, one call per candidate
+PYTHONPATH=src python3 -m crucible.cli <corpus> --consolidate    # L16, one call per cluster
+```
+
+`--mock-confirm` replaces only the **confirmation** verdict with a
+deterministic heuristic, so clustering runs for free. It does not replace the
+merge proposer: without credentials `--consolidate` returns
+`"outcome": "BLOCKED"` rather than simulating a proposal, which is the same
+discipline every other model path in this repository follows. So
+`--confirm --mock-confirm` costs nothing, and `--consolidate` costs one call
+per cluster whether or not confirmation was mocked.
+
+What it does: the auditor flags two skills as a redundancy candidate, the
+model is asked whether they really cover the same ground, connected components
+of confirmed pairs become clusters, the model proposes one skill to replace
+each cluster, and a deterministic gate accepts or refuses the proposal. The
+gate requires that the merge is no longer reported redundant, that every
+original rule and check has matching content, and that no finding appears that
+the originals did not already have.
+
+**It refuses real proposals.** On a four-skill slice of the sealed `vantaflow`
+corpus the gate accepted one merge and refused the other, because the model's
+merge introduced `STRUCTURAL_REDUNDANCY`. The same cluster was accepted in a
+different run at temperature 0, so one acceptance is not evidence that the
+path is reliable. Both results and their limits are in the
+[live run record](evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md).
+
+Expect about 16 seconds per proposal, and do not expect two runs to agree.
+
 ## CLI modes and flags
 
 Detail routed here from the README so the quick path stays short.

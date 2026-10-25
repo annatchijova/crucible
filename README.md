@@ -82,6 +82,15 @@ item can suppress a missing-check candidate. See the
   completed repair, re-audit and behavioral replay on the built-in fixture. The
   [execution checkpoint](docs/NEXT_LEVELS.md) separates that demonstration from
   held-out evaluation and release readiness.
+- The consolidation path ran on skills the author did not write. On a
+  four-skill slice of a sealed external corpus, with NVIDIA Nemotron real at
+  every model step, the model confirmed two redundancy candidates, proposed a
+  merge for each, and the deterministic gate **accepted one and refused the
+  other** for introducing a defect the originals did not have. The same cluster
+  had been accepted in an earlier run, so this shows the gate works and that one
+  acceptance is not evidence of a reliable path. Every measured cluster is a
+  pair: merging a larger group is implemented but unexercised on real input.
+  See the [live consolidation run](docs/evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md).
 - Four independent external corpora are frozen by commit and manifest digest,
   two of them reserved as held-out. Auditing all five (2806 skills) produced a
   negative result worth stating plainly: the composition graph yields 86 edges

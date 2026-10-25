@@ -119,11 +119,23 @@ block.
 
 **Say:** "On real corpora it reports coverage, not just findings: 101 analyzed
 of 299 discovered, 198 skipped as duplicates. Four external corpora are frozen
-by commit and digest, two held back as held-out. And one result is worth
-saying out loud because it is negative: the composition graph finds 86 edges
-in my own corpus and zero in all four written by other people — because an
-edge requires an author to name another skill. That is a limit of the tool,
-measured and written down, not a feature."
+by commit and digest, two held back as held-out. On one of them the model ran
+the whole chain: it confirmed two skills were the same, proposed a single
+skill to replace each pair — and the deterministic gate refused one of them,
+because the merge introduced a defect the originals did not have. The model
+proposes; the gate decides, and it says no. And one result is worth saying out
+loud because it is negative: the composition graph finds 86 edges in my own
+corpus and zero in all four written by other people — because an edge requires
+an author to name another skill. That is a limit of the tool, measured and
+written down, not a feature."
+
+---
+
+**Do not run the consolidation live on camera.** It needs provider
+credentials, takes about 16 seconds per proposal, and is not reproducible: the
+same cluster at temperature 0 was accepted in one run and refused in another.
+Narrate it over the coverage output and cite
+[the evidence record](evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md).
 
 ---
 
@@ -162,6 +174,9 @@ repeat claims the evidence narrows:
 - Not "detects bad methodologies" — it emits candidates for inspection.
 - Not "tests composition across skills" — composition is declaration-dependent
   and silent on every third-party corpus measured.
+- Not "merges ten skills into one" — batch consolidation is implemented, but
+  every measured cluster is a pair and no real corpus connects more than three.
+  Say "these two are the same", which is what was demonstrated 337 times.
 - Not "no tool does this" — the narrower, supportable claim is that the
   compared NVIDIA tooling does not jointly cover this boundary. See
   [`COMPETITIVE_BOUNDARY.md`](COMPETITIVE_BOUNDARY.md).
