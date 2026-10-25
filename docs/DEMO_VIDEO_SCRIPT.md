@@ -121,9 +121,10 @@ block.
 of 299 discovered, 198 skipped as duplicates. Four external corpora are frozen
 by commit and digest, two held back as held-out. On one of them the model ran
 the whole chain: it confirmed two skills were the same, proposed a single
-skill to replace each pair — and the deterministic gate refused one of them,
-because the merge introduced a defect the originals did not have. The model
-proposes; the gate decides, and it says no. And one result is worth saying out
+skill to replace each pair — and the deterministic gate refused one of them.
+Running it twice on identical input showed the model writes a different merge
+each time, under a different name, at temperature zero — and the gate returns
+the same verdict both times. The model varies; the decision does not. And one result is worth saying out
 loud because it is negative: the composition graph finds 86 edges in my own
 corpus and zero in all four written by other people — because an edge requires
 an author to name another skill. That is a limit of the tool, measured and

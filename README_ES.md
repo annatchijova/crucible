@@ -87,10 +87,12 @@ la [frontera comparativa](docs/COMPETITIVE_BOUNDARY.md) y la
   una rebanada de cuatro skills de un corpus externo sellado, con NVIDIA
   Nemotron real en cada paso de modelo, el modelo confirmó dos candidatos de
   redundancia, propuso una fusión para cada uno, y el gate determinista
-  **aceptó una y rechazó la otra** por introducir un defecto que los originales
-  no tenían. El mismo cluster había sido aceptado en una corrida anterior, así
-  que esto muestra que el gate funciona y que una aceptación no es evidencia de
-  una ruta confiable. Todos los clusters medidos son pares: fusionar un grupo
+  **aceptó una y rechazó la otra**. Investigar ese rechazo encontró dos defectos
+  en el gate mismo: un hallazgo de nivel corpus que se re-ancla a un skill no
+  tocado tras la fusión se lee como defecto nuevo. Una corrida controlada mostró
+  que el modelo es no determinista a temperatura 0 mientras el veredicto del
+  gate se mantuvo idéntico, que es la afirmación central de la arquitectura
+  puesta a prueba directamente. Todos los clusters medidos son pares: fusionar un grupo
   mayor está implementado pero no ejercitado sobre entrada real. Ver la
   [corrida de consolidación en vivo](docs/evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md).
 - Cuatro corpus externos independientes están congelados por commit y digest de

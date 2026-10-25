@@ -86,9 +86,11 @@ item can suppress a missing-check candidate. See the
   four-skill slice of a sealed external corpus, with NVIDIA Nemotron real at
   every model step, the model confirmed two redundancy candidates, proposed a
   merge for each, and the deterministic gate **accepted one and refused the
-  other** for introducing a defect the originals did not have. The same cluster
-  had been accepted in an earlier run, so this shows the gate works and that one
-  acceptance is not evidence of a reliable path. Every measured cluster is a
+  other**. Investigating that refusal found two defects in the gate itself: a
+  corpus-level finding that re-anchors to an untouched skill after a merge is
+  read as a newly introduced one. A controlled rerun showed the model is
+  non-deterministic at temperature 0 while the gate's verdict stayed identical,
+  which is the architecture's central claim tested directly. Every measured cluster is a
   pair: merging a larger group is implemented but unexercised on real input.
   See the [live consolidation run](docs/evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md).
 - Four independent external corpora are frozen by commit and manifest digest,

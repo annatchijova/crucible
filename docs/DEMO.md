@@ -131,11 +131,14 @@ original rule and check has matching content, and that no finding appears that
 the originals did not already have.
 
 **It refuses real proposals.** On a four-skill slice of the sealed `vantaflow`
-corpus the gate accepted one merge and refused the other, because the model's
-merge introduced `STRUCTURAL_REDUNDANCY`. The same cluster was accepted in a
-different run at temperature 0, so one acceptance is not evidence that the
-path is reliable. Both results and their limits are in the
-[live run record](evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md).
+corpus the gate accepted one merge and refused the other. The refusal turned
+out to be a gate defect rather than a bad merge: a corpus-level finding
+re-anchored to an untouched skill once the cluster was merged away, and the
+gate reads a moved finding as a new one. Both that defect and a second one in
+`redundancy_resolved` are recorded in the
+[live run record](evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md),
+along with a controlled rerun showing the model varies at temperature 0 while
+the gate's verdict does not.
 
 Expect about 16 seconds per proposal, and do not expect two runs to agree.
 
