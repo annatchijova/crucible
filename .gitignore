@@ -36,3 +36,6 @@ NO PUSH/
 
 # Reviewer material can echo source-derived tokens; never commit it.
 *.PRIVATE.json
+
+# Submission drafts and video scripts, reviewed offline, never committed.
+*.local.md
