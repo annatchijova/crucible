@@ -133,6 +133,22 @@ PYTHONPATH=src python3 -m pytest -q
 Drop `--human` for the sealed JSON artifact. Every other mode and flag, with
 its verified output, is in [docs/DEMO.md](docs/DEMO.md#cli-modes-and-flags).
 
+For a written report over one skill, a directory, or your installed skills:
+duplicate groups to merge, contradictions with their risk, repeated rule text,
+what was not analyzed, and a narrated recommendation per skill.
+`--with-consolidation` also has a model propose one merged skill per duplicate
+group, and the deterministic gate accepts or refuses each proposal.
+
+```bash
+# needs NEBIUS_API_KEY; --mock-narrate runs the same path with deterministic stand-ins
+PYTHONPATH=src python3 -m crucible.cli path/to/skills --narrate --with-consolidation --render-format html --out report.html
+PYTHONPATH=src python3 -m crucible.cli path/to/SKILL.md --narrate --render-format markdown
+PYTHONPATH=src python3 -m crucible.cli --scan-installed --narrate --render-format pdf --out report.pdf
+```
+
+The model writes the prose and proposes merges. It does not decide any
+recommendation, and every finding it cites is checked against the sealed audit.
+
 For the local HTTP interface, install its optional dependencies:
 
 ```bash

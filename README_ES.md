@@ -137,6 +137,22 @@ Sacá `--human` para el artefacto JSON sellado. Todos los demás modos y flags,
 con su salida verificada, están en
 [docs/DEMO.md](docs/DEMO.md#cli-modes-and-flags).
 
+Para un informe escrito sobre una skill, un directorio o tus skills instaladas:
+grupos de duplicados para fusionar, contradicciones con su riesgo, texto de
+reglas repetido, qué no se analizó y una recomendación narrada por skill.
+`--with-consolidation` además le pide al modelo que proponga una skill fusionada
+por grupo, y el gate determinista acepta o rechaza cada propuesta.
+
+```bash
+# necesita NEBIUS_API_KEY; --mock-narrate corre la misma ruta con sustitutos deterministas
+PYTHONPATH=src python3 -m crucible.cli path/to/skills --narrate --with-consolidation --render-format html --out report.html
+PYTHONPATH=src python3 -m crucible.cli path/to/SKILL.md --narrate --render-format markdown
+PYTHONPATH=src python3 -m crucible.cli --scan-installed --narrate --render-format pdf --out report.pdf
+```
+
+El modelo redacta la prosa y propone fusiones. No decide ninguna
+recomendación, y cada hallazgo que cita se verifica contra la auditoría sellada.
+
 Para la interfaz HTTP local, instalá las dependencias opcionales:
 
 ```bash

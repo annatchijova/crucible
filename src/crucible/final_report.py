@@ -13,10 +13,11 @@ same discipline as report.py's L1-L7 composite.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from .auditor import audit_corpus
-from .compiler import compile_corpus
+from .compiler import ON_DUPLICATE_ERROR, compile_corpus
 from .confirm import ConfirmExecutor, confirm_candidates
 from .ir import digest_payload
 from .narrator import NarrationExecutor, narrate_skill
@@ -116,18 +117,67 @@ def _corpus_sections(
     }
 
 
+def _consolidation_section(
+    corpus_root: str,
+    ir: dict[str, Any],
+    confirmation: dict[str, Any],
+    proposer: Any,
+) -> dict[str, Any]:
+    """Run L16 over every duplicate group and keep what a reader needs.
+
+    The model only proposes the merged text; whether it is acceptable is the
+    deterministic gate's verdict, recorded per group with its reason.
+    """
+    from .consolidation import run_consolidation_batch
+
+    root = Path(corpus_root).resolve()
+    corpus = {
+        skill["identity"]["name"]: (root / skill["identity"]["source_path"]).read_text(encoding="utf-8")
+        for skill in ir["skills"]
+    }
+    batch = run_consolidation_batch(corpus=corpus, confirmation=confirmation, proposer=proposer)
+    proposals = []
+    for report in batch["reports"]:
+        proposal = report.get("proposal") or {}
+        proposals.append({
+            "members": sorted(report["cluster"]),
+            "outcome": report["outcome"],
+            "rejection_reason": report["rejection_reason"],
+            "proposer": proposal.get("proposer"),
+            "proposed_name": proposal.get("proposed_name"),
+            "proposed_text": proposal.get("proposed_text"),
+            "coverage_gaps": report["coverage_gaps"],
+            "new_findings": report["new_findings"],
+            "consolidation_digest": report["consolidation_digest"],
+        })
+    return {
+        "batch_digest": batch["batch_digest"],
+        "behavioral_gate": None,
+        "proposals": proposals,
+    }
+
+
 def build_final_report(
     corpus_root: str,
     confirm_executor: ConfirmExecutor,
     narration_executor: NarrationExecutor,
+    *,
+    on_duplicate_name: str = ON_DUPLICATE_ERROR,
+    consolidation_proposer: Any = None,
+    input_scope: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build and seal the final per-skill report for one corpus.
 
     ``corpus_root`` is compiled and audited fresh; it is never retained in
     the sealed result (only its skill count and digests are), consistent
     with the scan API's existing redaction policy (RT-03).
+
+    ``consolidation_proposer``, when given, runs L16 over every duplicate
+    group and adds each proposed merge with the gate's verdict.
+    ``input_scope`` describes what was scanned (a single skill, a directory,
+    the installed skills and their coverage) so the report states it.
     """
-    ir = compile_corpus(corpus_root)
+    ir = compile_corpus(corpus_root, on_duplicate_name=on_duplicate_name)
     audit = audit_corpus(ir)
     confirmation = confirm_candidates(audit, ir, confirm_executor)
     all_skill_names = [skill["identity"]["name"] for skill in ir["skills"]]
@@ -176,8 +226,16 @@ def build_final_report(
             "by_recommendation": by_recommendation,
             "total_skills": len(skills),
         },
+        "input": {
+            **(input_scope or {"scope": "directory"}),
+            "excluded_duplicate_names": ir.get("excluded", []),
+        },
         "corpus": _corpus_sections(ir, audit, recommendations),
         "skills": skills,
     }
+    if consolidation_proposer is not None and recommendations["consolidation_groups"]:
+        report["corpus"]["consolidation"] = _consolidation_section(
+            corpus_root, ir, confirmation, consolidation_proposer
+        )
     report["report_digest"] = digest_payload(report)
     return report

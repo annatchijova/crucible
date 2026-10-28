@@ -98,6 +98,46 @@ _GROUP_NOTE = (
 )
 
 
+_GROUP_NOTE_GATED = (
+    "Each group is a set of skills joined by confirmed redundancy pairs. A "
+    "model proposed one merged skill per group; the deterministic gate "
+    "accepted it only if the merge is no longer redundant, keeps every "
+    "original rule and check, and introduces no new finding. The gate reads "
+    "text only: it does not show that an agent behaves the same with the "
+    "merged skill."
+)
+
+
+def _proposal_line(proposal: dict[str, Any]) -> str:
+    head = f"Proposed merge `{proposal.get('proposed_name')}` ({proposal.get('proposer')})"
+    if proposal["outcome"] == "ACCEPTED":
+        return f"{head}: ACCEPTED by the deterministic gate."
+    if proposal["outcome"] != "REJECTED":
+        return f"Merge not proposed: {proposal['outcome']}."
+    reason = proposal.get("rejection_reason")
+    if proposal.get("coverage_gaps"):
+        reason += f", {len(proposal['coverage_gaps'])} original rule(s) or check(s) missing"
+    if proposal.get("new_findings"):
+        reason += f", new: {', '.join(proposal['new_findings'])}"
+    return f"{head}: REJECTED by the deterministic gate ({reason})."
+
+
+def _input_line(report: dict[str, Any]) -> str:
+    scope = report.get("input") or {}
+    kind = scope.get("scope", "directory")
+    text = {"single-skill": "one skill file", "installed": "installed skills"}.get(kind, "a skill directory")
+    coverage = scope.get("coverage")
+    if coverage:
+        text += (
+            f" ({coverage.get('analyzed', 0)} analyzed of {coverage.get('discovered', 0)} "
+            f"discovered, {coverage.get('skipped', 0)} skipped)"
+        )
+    excluded = scope.get("excluded_duplicate_names") or []
+    if excluded:
+        text += f"; {len(excluded)} skill(s) excluded for a duplicate name"
+    return text
+
+
 def _sentence(text: str) -> str:
     return f"{text[:1].upper()}{text[1:]}." if text and not text.endswith(".") else text
 
@@ -118,22 +158,39 @@ def _corpus_blocks(report: dict[str, Any]) -> list[dict[str, Any]]:
     """
     corpus = report.get("corpus") or {}
     blocks: list[dict[str, Any]] = []
+    single = report.get("skill_count", 0) < 2
 
     groups = corpus.get("consolidation_groups", [])
+    consolidation = corpus.get("consolidation")
+    proposals = {
+        tuple(item["members"]): item
+        for item in (consolidation or {}).get("proposals", [])
+    }
+    group_items = []
+    for group in groups:
+        lines = [
+            f"{fid}: {evidence}"
+            for fid, evidence in zip(group["finding_ids"], group["evidence"])
+        ]
+        detail = None
+        proposal = proposals.get(tuple(group["members"]))
+        if proposal is not None:
+            lines.append(_proposal_line(proposal))
+            if proposal["outcome"] == "ACCEPTED":
+                detail = proposal.get("proposed_text")
+        group_items.append({
+            "heading": f"{group['size']} skills into 1: {', '.join(group['members'])}",
+            "lines": lines,
+            "detail": detail,
+        })
     blocks.append({
         "title": "Duplicate skills to consolidate",
-        "intro": _GROUP_NOTE,
-        "items": [
-            {
-                "heading": f"{group['size']} skills into 1: {', '.join(group['members'])}",
-                "lines": [
-                    f"{fid}: {evidence}"
-                    for fid, evidence in zip(group["finding_ids"], group["evidence"])
-                ],
-            }
-            for group in groups
-        ],
-        "empty": "No confirmed duplicate group in this corpus.",
+        "intro": _GROUP_NOTE_GATED if consolidation else _GROUP_NOTE,
+        "items": group_items,
+        "empty": (
+            "Only one skill was scanned; duplicates are found by comparing skills."
+            if single else "No confirmed duplicate group in this corpus."
+        ),
     })
 
     contradictions = corpus.get("contradictions", [])
@@ -167,6 +224,8 @@ def _corpus_blocks(report: dict[str, Any]) -> list[dict[str, Any]]:
     })
 
     shared = corpus.get("shared_rule_texts", [])
+    if single:
+        shared = []
     items = [
         {
             "heading": f"{item['skill_count']} skills share: {item['text']}",
@@ -181,7 +240,10 @@ def _corpus_blocks(report: dict[str, Any]) -> list[dict[str, Any]]:
         "title": "Rule text repeated across skills",
         "intro": intro,
         "items": items,
-        "empty": "No rule text is repeated verbatim across skills.",
+        "empty": (
+            "Only one skill was scanned; repetition is found by comparing skills."
+            if single else "No rule text is repeated verbatim across skills."
+        ),
     })
 
     preconditions = corpus.get("preconditions") or {}
@@ -212,6 +274,11 @@ def _corpus_markdown(report: dict[str, Any]) -> list[str]:
         for item in block["items"]:
             lines.append(f"- **{item['heading']}**")
             lines += [f"  - {line}" for line in item["lines"]]
+            if item.get("detail"):
+                lines += ["", "  <details><summary>Merged skill text</summary>", "",
+                          "  ```markdown"]
+                lines += [f"  {row}" if row else "" for row in item["detail"].splitlines()]
+                lines += ["  ```", "", "  </details>", ""]
         if block["items"]:
             lines.append("")
     return lines
@@ -224,6 +291,7 @@ def render_final_report_markdown(report: dict[str, Any]) -> str:
         f"- **Report digest:** `{report.get('report_digest', '')}`",
         f"- **Audit digest:** `{report.get('audit_digest', '')}`",
         f"- **Confirmation digest:** `{report.get('confirmation_digest', '')}`",
+        f"- **Input:** {_input_line(report)}",
         f"- **Skills scanned:** {report.get('skill_count', 0)}",
         f"- **Recommendations:** {_counts_line(report)}",
     ]
@@ -323,6 +391,8 @@ def _corpus_html(report: dict[str, Any]) -> str:
                 f"<li><strong>{_escape_html(item['heading'])}</strong>"
                 + ("<ul>" + "".join(f"<li>{_escape_html(line)}</li>" for line in item["lines"]) + "</ul>"
                    if item["lines"] else "")
+                + (f"<details><summary>Merged skill text</summary><pre>{_escape_html(item['detail'])}</pre></details>"
+                   if item.get("detail") else "")
                 + "</li>"
                 for item in block["items"]
             ) + "</ul>"
@@ -357,6 +427,7 @@ h1{{margin:0 0 8px;}}
 .corpus-card{{background:var(--card-bg);border:1px solid var(--rule);border-left:4px solid var(--ink);border-radius:6px;padding:16px 20px;margin-bottom:16px;}}
 .corpus-card h2{{margin-top:0;font-size:18px;}}
 .corpus-card li{{margin:4px 0;overflow-wrap:anywhere;}}
+pre{{white-space:pre-wrap;overflow-wrap:anywhere;background:#fafafa;border:1px solid var(--rule);padding:10px;font-size:12px;max-height:420px;overflow:auto;}}
 .intro{{color:var(--ink-muted);font-size:14px;}}
 .skill-card{{background:var(--card-bg);border:1px solid var(--rule);border-radius:6px;padding:18px 20px;margin-bottom:16px;}}
 .skill-card h2{{margin-top:0;display:flex;align-items:center;gap:10px;font-size:18px;}}
@@ -380,6 +451,7 @@ footer{{margin-top:28px;font-size:12px;color:var(--ink-muted);border-top:1px sol
 <h1>Crucible Skill Quality Report</h1>
 <p class="meta">
 Report digest: <code>{_escape_html(report.get('report_digest', ''))}</code><br>
+Input: {_escape_html(_input_line(report))}<br>
 Skills scanned: {report.get('skill_count', 0)} &mdash; {_escape_html(_counts_line(report))}
 </p>
 </header>
@@ -461,6 +533,7 @@ def render_final_report_pdf(report: dict[str, Any]) -> bytes:
         Paragraph("Crucible Skill Quality Report", styles["Title"]),
         Spacer(1, 8),
         Paragraph(f"Report digest: {_xml_escape(str(report.get('report_digest', '')))}", styles["Normal"]),
+        Paragraph(f"Input: {_xml_escape(_input_line(report))}", styles["Normal"]),
         Paragraph(f"Skills scanned: {report.get('skill_count', 0)} -- {_xml_escape(_counts_line(report))}", styles["Normal"]),
     ]
     if report.get("confirmation_digest_mismatch"):

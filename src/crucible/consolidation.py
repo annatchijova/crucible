@@ -57,6 +57,7 @@ and "behavioral_gate": None, explicitly, rather than omitting the field.
 from __future__ import annotations
 
 import os
+import re
 import tempfile
 from fractions import Fraction
 from pathlib import Path
@@ -297,6 +298,35 @@ CONSOLIDATION_SYSTEM_PROMPT = (
     "delimiter `---`). Output no preamble, fences, or explanation outside "
     "that JSON object."
 )
+
+
+class UnionConsolidationProposer:
+    """Deterministic stand-in proposer, for --mock-narrate and tests only.
+
+    It does not consolidate anything: it keeps the first member's text under
+    a new name and appends every other member's body after it, so coverage
+    holds by construction and the gate decides on redundancy and novelty
+    alone. Reports built with it say so through ``proposer``.
+    """
+
+    def propose_merge(
+        self,
+        cluster_skills: list[dict[str, str]],
+        evidence: list[dict[str, Any]],
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
+        first = cluster_skills[0]
+        name = f"{first['name']}-consolidated"
+        text = re.sub(r"(?m)^name:.*$", f"name: {name}", first["text"], count=1)
+        for other in cluster_skills[1:]:
+            parts = other["text"].split("---", 2)
+            text += "\n" + (parts[2] if len(parts) == 3 else other["text"])
+        return {
+            "proposed_name": name,
+            "proposed_text": text,
+            "rationale": "deterministic union of member bodies (mock, not a real merge)",
+            "proposer": "union-mock",
+        }
 
 
 class LLMConsolidationProposer:

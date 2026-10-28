@@ -19,6 +19,7 @@ from .confirm import (
 )
 from .consolidation import (
     LLMConsolidationProposer,
+    UnionConsolidationProposer,
     run_consolidation,
     run_consolidation_batch,
 )
@@ -67,6 +68,80 @@ def _compile(args: Any) -> dict[str, Any]:
     except ValueError as exc:
         # The duplicate-name refusal names its own opt-in; a traceback buries it.
         raise _CompileError(str(exc)) from exc
+
+
+def _write_rendered(final_report: dict[str, Any], args: Any, parser: Any) -> int:
+    render_format = args.render_format or "markdown"
+    if render_format == "markdown":
+        rendered: str | bytes = render_final_report_markdown(final_report)
+    elif render_format == "html":
+        rendered = render_final_report_html(final_report)
+    else:
+        rendered = render_final_report_pdf(final_report)
+    if isinstance(rendered, bytes):
+        if not args.out:
+            parser.error("--out is required for --render-format pdf")
+        with open(args.out, "wb") as fh:
+            fh.write(rendered)
+    elif args.out:
+        with open(args.out, "w", encoding="utf-8") as fh:
+            fh.write(rendered)
+    else:
+        print(rendered)
+    return 0
+
+
+def _narrate(args: Any, parser: Any) -> int:
+    """Narrated report over one skill file, a directory, or installed skills."""
+    if args.scan_installed and args.root:
+        parser.error("--scan-installed cannot be combined with a corpus path")
+    if args.scan_root and not args.scan_installed:
+        parser.error("--scan-root requires --scan-installed")
+    if not args.root and not args.scan_installed:
+        parser.error("--narrate needs a corpus path, a SKILL.md file, or --scan-installed")
+    if args.mock_narrate:
+        confirm_executor: Any = MockConfirmExecutor()
+        narration_executor: Any = MockNarrationExecutor()
+        proposer: Any = UnionConsolidationProposer()
+    else:
+        confirm_executor = NebiusConfirmExecutor()
+        narration_executor = NebiusNarrationExecutor()
+        proposer = LLMConsolidationProposer()
+    options = {
+        "on_duplicate_name": ON_DUPLICATE_SKIP if args.skip_duplicate_names else ON_DUPLICATE_ERROR,
+        "consolidation_proposer": proposer if args.with_consolidation else None,
+    }
+
+    def build(root: str, scope: dict[str, Any]) -> dict[str, Any]:
+        try:
+            return build_final_report(
+                root, confirm_executor, narration_executor, input_scope=scope, **options
+            )
+        except ValueError as exc:
+            raise _CompileError(str(exc)) from exc
+
+    if args.scan_installed:
+        from .api import stage_installed_skills
+        with stage_installed_skills(args.scan_root) as stage:
+            if stage.root is None:
+                raise _CompileError(stage.error or "no installed skills found")
+            final_report = build(stage.root, {"scope": "installed", "coverage": stage.coverage})
+    elif Path(args.root).is_file():
+        import shutil
+        import tempfile
+        source = Path(args.root)
+        with tempfile.TemporaryDirectory(prefix="crucible-narrate-") as tmpdir:
+            package = Path(tmpdir) / (source.parent.name or "skill")
+            package.mkdir()
+            shutil.copyfile(source, package / "SKILL.md")
+            final_report = build(tmpdir, {"scope": "single-skill"})
+    else:
+        final_report = build(args.root, {"scope": "directory"})
+
+    if args.render_format:
+        return _write_rendered(final_report, args, parser)
+    _emit(final_report, args.human)
+    return 0
 
 
 def main() -> int:
@@ -208,6 +283,13 @@ def _main() -> int:
              "narration (for testing; implies --narrate)",
     )
     parser.add_argument(
+        "--with-consolidation",
+        action="store_true",
+        help="with --narrate: run L16 over every duplicate group and add the "
+             "proposed merge and the gate's verdict to the report (Nemotron "
+             "proposes; with --mock-narrate a deterministic union stand-in does)",
+    )
+    parser.add_argument(
         "--render-report",
         metavar="FINAL_REPORT_JSON",
         help="render a sealed crucible-final-report/v1 JSON artifact (from "
@@ -217,7 +299,8 @@ def _main() -> int:
         "--render-format",
         choices=("markdown", "html", "pdf"),
         default=None,
-        help="output format for --render-report (default: markdown)",
+        help="output format for --render-report (default: markdown); with "
+             "--narrate, render the report in this format instead of emitting JSON",
     )
     parser.add_argument(
         "--out",
@@ -304,6 +387,10 @@ def _main() -> int:
             return 0 if result.get('status') == 'MATCH' else 1
         from .replay_cli import run_replay_command
         return run_replay_command(selected[0], getattr(args, selected[0]))
+    if args.narrate or args.mock_narrate:
+        return _narrate(args, parser)
+    if args.with_consolidation:
+        parser.error("--with-consolidation requires --narrate or --mock-narrate")
     if args.include_coverage and not args.scan_installed:
         parser.error('--include-coverage requires --scan-installed')
     if args.scan_installed and args.scan_installed_collection:
@@ -488,40 +575,10 @@ def _main() -> int:
         _emit(report, args.human)
         return 0
 
-    if args.narrate or args.mock_narrate:
-        if not args.root:
-            parser.error("root is required with --narrate")
-        if args.mock_narrate:
-            confirm_executor: Any = MockConfirmExecutor()
-            narration_executor: Any = MockNarrationExecutor()
-        else:
-            confirm_executor = NebiusConfirmExecutor()
-            narration_executor = NebiusNarrationExecutor()
-        final_report = build_final_report(args.root, confirm_executor, narration_executor)
-        _emit(final_report, args.human)
-        return 0
-
     if args.render_report:
         with open(args.render_report, encoding="utf-8") as fh:
             final_report = json.load(fh)
-        render_format = args.render_format or "markdown"
-        if render_format == "markdown":
-            rendered = render_final_report_markdown(final_report)
-        elif render_format == "html":
-            rendered = render_final_report_html(final_report)
-        else:
-            rendered = render_final_report_pdf(final_report)
-        if isinstance(rendered, bytes):
-            if not args.out:
-                parser.error("--out is required for --render-format pdf")
-            with open(args.out, "wb") as fh:
-                fh.write(rendered)
-        elif args.out:
-            with open(args.out, "w", encoding="utf-8") as fh:
-                fh.write(rendered)
-        else:
-            print(rendered)
-        return 0
+        return _write_rendered(final_report, args, parser)
 
     if not args.root:
         parser.error("root is required unless --mutate/--behave/--bob/--repair-loop/--report/--view/--render-report is given")

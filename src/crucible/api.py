@@ -19,11 +19,12 @@ The API is stateless: no input is retained after the response is sent.
 # fails with 422. Every annotation here is a builtin generic or a name already
 # in scope, so eager evaluation is safe on the supported Python floor (3.11+).
 
+import contextlib
 import os
 import stat
 import tempfile
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Iterator, Sequence
 
 from .auditor import audit_corpus
 from .compiler import (
@@ -53,6 +54,227 @@ def _coverage_summary(scope: str, discovered: int) -> dict[str, Any]:
 class _CollectionLimitError(ValueError):
     """A whole-scan limit, not an error confined to one package."""
 from .graph import build_composition_graph
+
+
+def scan_skill_text(skill_text: str, skill_name: str = "uploaded") -> dict[str, Any]:
+    """Compile and audit a single SKILL.md provided as text.
+
+    The skill is written to a temporary directory, compiled, audited, and
+    the temporary directory is removed. No input is retained.
+
+    Returns the audit artifact (crucible-audit/v2) with the L3 graph.
+    The full L1 IR (including body_text) is NOT returned to prevent
+    information disclosure (RT-03).
+    """
+    _validate_skill_text(skill_text)
+    safe_name = _sanitize_skill_name(skill_name)
+    with tempfile.TemporaryDirectory(prefix="crucible-scan-") as tmpdir:
+        skill_dir = Path(tmpdir) / safe_name
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text(skill_text, encoding="utf-8")
+        ir = compile_corpus(tmpdir)
+        audit = audit_corpus(ir)
+        graph = build_composition_graph(ir, audit)
+        return {
+            "audit": audit,
+            "ir": _redact_ir(ir),
+            "graph": graph,
+            "coverage": _coverage_summary('single-skill-text', len(ir['skills'])),
+        }
+
+
+def scan_directory(directory: str) -> dict[str, Any]:
+    """Compile and audit a directory of skills.
+
+    The directory must exist and contain at least one SKILL.md file.
+    Returns the audit artifact with the L3 graph. The full L1 IR
+    (including body_text) is NOT returned to prevent information
+    disclosure (RT-03).
+    """
+    _validate_directory(directory)
+    ir = compile_corpus(directory, max_skills=_MAX_SCAN_SKILLS)
+    audit = audit_corpus(ir)
+    graph = build_composition_graph(ir, audit)
+    return {
+        "audit": audit,
+        "ir": _redact_ir(ir),
+        "graph": graph,
+        "coverage": _coverage_summary('local-directory-skills', len(ir['skills'])),
+    }
+
+
+def _installed_children(root: Path, budget: _TraversalBudget,
+                        *, identities: dict | None = None) -> list[Path]:
+    """Bound the initial listing before sorting, including non-package entries."""
+    budget.add_directory()
+    if identities is None:
+        identities = {}
+    identities[root] = _file_identity(root.stat(follow_symlinks=False))
+    paths = []
+    with _scan_corpus_directory(root, identities=identities) as children:
+        for child in children:
+            budget.add_entry()
+            path = root / child.name
+            if child.is_dir(follow_symlinks=False):
+                identities[path] = _file_identity(child.stat(follow_symlinks=False))
+            paths.append(path)
+    return sorted(paths)
+
+
+class InstalledStage:
+    """Installed skills staged into one temporary directory for compiling.
+
+    ``root`` is None when nothing was staged; ``error`` then says why.
+    """
+
+    def __init__(self, root: str | None, coverage: dict[str, Any],
+                 skipped_duplicates: list[dict[str, str]], searched: list[str],
+                 error: str | None) -> None:
+        self.root = root
+        self.coverage = coverage
+        self.skipped_duplicates = skipped_duplicates
+        self.searched = searched
+        self.error = error
+
+
+@contextlib.contextmanager
+def stage_installed_skills(
+    roots: Sequence[str | os.PathLike[str]] | None = None,
+) -> Iterator[InstalledStage]:
+    """Stage the user's installed skills into a temporary directory.
+
+    Shared by the installed scan and the installed narrated report, so both
+    read exactly the same packages under the same bounds. The directory is
+    removed when the context exits.
+    """
+    if roots is None:
+        search_roots = _standard_skill_dirs()
+        skill_dirs = _find_installed_skill_dirs()
+    else:
+        search_roots = _normalize_explicit_roots(roots)
+        skill_dirs = search_roots
+
+    def coverage_report(items: list[dict[str, str]], analyzed: int) -> dict[str, Any]:
+        skipped = sum(item['status'] == 'SKIPPED_DUPLICATE' for item in items)
+        return {
+            'scope': 'installed-direct-child-packages',
+            'status': 'EMPTY' if not items else ('PARTIAL' if skipped else 'COMPLETE'),
+            'discovered': len(items),
+            'analyzed': analyzed,
+            'skipped': skipped,
+            'errors': 0,
+            'items': items,
+            'searched': [str(p) for p in search_roots],
+        }
+
+    if not skill_dirs:
+        yield InstalledStage(
+            None, coverage_report([], 0), [], [str(p) for p in search_roots],
+            "no installed skills found in standard directories",
+        )
+        return
+    # Stage only compiler inputs, with source identity and byte checks before
+    # writing. Preserve nested SKILL.md paths and historical package precedence.
+    skipped_duplicates: list[dict[str, str]] = []
+    coverage_items: list[dict[str, str]] = []
+    with tempfile.TemporaryDirectory(prefix="crucible-installed-") as tmpdir:
+        count = 0
+        staged_skills = 0
+        staged_bytes = 0
+        traversal_budget = _TraversalBudget()
+        for skill_dir in skill_dirs:
+            identities = {}
+            for skill_path in _installed_children(
+                skill_dir, traversal_budget, identities=identities
+            ):
+                if not skill_path.is_dir():
+                    continue
+                skill_md = skill_path / "SKILL.md"
+                if not skill_md.exists():
+                    continue
+                dest = Path(tmpdir) / skill_path.name
+                if dest.exists():
+                    coverage_items.append({
+                        'source_path': str(skill_md),
+                        'skill_name': skill_path.name,
+                        'status': 'SKIPPED_DUPLICATE',
+                    })
+                    skipped_duplicates.append({
+                        "skill_name": skill_path.name,
+                        "skipped_from": str(skill_dir),
+                    })
+                    continue
+                paths = _discover_corpus(
+                    skill_path, _MAX_SCAN_SKILLS - staged_skills,
+                    identities=identities, budget=traversal_budget,
+                )
+                if skill_md not in paths:
+                    raise ValueError('installed package entry point disappeared during discovery')
+                for source in paths:
+                    if source.is_symlink():
+                        raise ValueError('symlinked SKILL.md is not allowed')
+                    raw = _read_skill_bytes(
+                        source, min(1_000_000, _MAX_COLLECTION_BYTES - staged_bytes),
+                        identities=identities,
+                    )
+                    target = dest / source.relative_to(skill_path)
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(raw)
+                    staged_bytes += len(raw)
+                    staged_skills += 1
+                coverage_items.append({
+                    'source_path': str(skill_md),
+                    'skill_name': skill_path.name,
+                    'status': 'ANALYZED',
+                })
+                count += 1
+        if count == 0:
+            yield InstalledStage(
+                None, coverage_report(coverage_items, count), skipped_duplicates,
+                [str(p) for p in skill_dirs],
+                "no SKILL.md files found in installed skill directories",
+            )
+            return
+        yield InstalledStage(
+            tmpdir, coverage_report(coverage_items, count), skipped_duplicates,
+            [str(p) for p in search_roots], None,
+        )
+
+
+def scan_installed_skills(
+    roots: Sequence[str | os.PathLike[str]] | None = None,
+) -> dict[str, Any]:
+    """Scan the user's installed skills.
+
+    Searches the standard skill directories:
+    - ~/.config/devin/skills/
+    - ~/.claude/skills/
+    - ~/.local/share/devin/skills/
+    - ~/.codex/skills/ (direct child skill packages)
+
+    Returns the audit artifact with the L1 IR and L3 graph.
+    """
+    with stage_installed_skills(roots) as stage:
+        if stage.root is None:
+            return {
+                "audit": None,
+                "ir": None,
+                "graph": None,
+                "error": stage.error,
+                "skipped_duplicates": stage.skipped_duplicates,
+                "searched": stage.searched,
+                "coverage": stage.coverage,
+            }
+        ir = compile_corpus(stage.root, max_skills=_MAX_SCAN_SKILLS)
+        audit = audit_corpus(ir)
+        graph = build_composition_graph(ir, audit)
+        return {
+            "audit": audit,
+            "ir": _redact_ir(ir),
+            "graph": graph,
+            "skipped_duplicates": stage.skipped_duplicates,
+            "coverage": stage.coverage,
+        }
 
 
 def scan_skill_text(skill_text: str, skill_name: str = "uploaded") -> dict[str, Any]:
