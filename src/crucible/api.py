@@ -756,7 +756,7 @@ code { font-family: var(--mono); color: var(--dim); }
 /* The abstention reasons are full sentences; without fixed proportions the
    reason column collapses to a sliver while short columns keep the width. */
 table.preconditions { table-layout: fixed; }
-table.preconditions th:nth-child(1), table.preconditions td:nth-child(1) { width: 20%; overflow-wrap: anywhere; }
+table.preconditions th:nth-child(1), table.preconditions td:nth-child(1) { width: 20%; overflow-wrap: break-word; }
 table.preconditions th:nth-child(2), table.preconditions td:nth-child(2) { width: 9%; }
 table.preconditions th:nth-child(3), table.preconditions td:nth-child(3) { width: 17%; }
 table.preconditions th:nth-child(4), table.preconditions td:nth-child(4) { width: 7%; text-align: right; }
@@ -1045,7 +1045,7 @@ function renderPreconditions(audit) {
   checks.slice().sort((a, b) => (a.outcome === 'ABSTAINED' ? 0 : 1) - (b.outcome === 'ABSTAINED' ? 0 : 1)
       || String(a.check_class).localeCompare(String(b.check_class))).forEach(c => {
     const css = c.outcome === 'ABSTAINED' ? 'outcome-abstained' : 'outcome-exercised';
-    html += '<tr><td>' + escapeHtml(c.check_class || '') + '</td>';
+    html += '<tr><td>' + escapeHtml(c.check_class || '').split('_').join('_<wbr>') + '</td>';
     html += '<td class="' + css + '">' + escapeHtml(c.outcome || '') + '</td>';
     html += '<td><code>' + escapeHtml(c.requires || '') + '</code></td>';
     html += '<td>' + escapeHtml(String(c.observed)) + '</td>';
