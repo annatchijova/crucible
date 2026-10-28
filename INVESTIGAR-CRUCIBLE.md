@@ -2,6 +2,9 @@
 
 **Fecha:** 2026-10-24 · **Estado:** agenda de investigación, no resultados
 
+**Resultados:** el primer barrido sobre L1–L10 está registrado, con su
+revisión, en [`docs/evidence/2026-10-28-ru-zh-research-sweep`](docs/evidence/2026-10-28-ru-zh-research-sweep/FINDINGS.md).
+
 Este documento es una lista de preguntas abiertas con los términos para
 buscarlas. Las preguntas están en español; los términos de búsqueda están en
 ruso y en chino, porque la literatura de ingeniería de esos dos ecosistemas
