@@ -4,6 +4,10 @@
 
 **Resultados:** el primer barrido sobre L1–L10 está registrado, con su
 revisión, en [`docs/evidence/2026-10-28-ru-zh-research-sweep`](docs/evidence/2026-10-28-ru-zh-research-sweep/FINDINGS.md).
+Después del barrido: **L6 resuelto** con filtrado por prefijo exacto
+([registro](docs/evidence/2026-10-28-prefix-filter-redundancy/FINDINGS.md)), y
+**L5 medido en negativo** para familias grandes: ninguna similitud léxica arma
+familias de más de cinco skills ([registro](docs/evidence/2026-10-28-n-to-1-families/FINDINGS.md)).
 
 Este documento es una lista de preguntas abiertas con los términos para
 buscarlas. Las preguntas están en español; los términos de búsqueda están en

@@ -88,14 +88,25 @@ item can suppress a missing-check candidate. See the
   merge for each, and the deterministic gate **accepted one and refused the
   other**. Investigating that refusal found defects in the gate itself, not in
   the merge: a corpus-level finding that re-anchors to an untouched skill after
-  a merge was read as a newly introduced one. That and two related defects,
-  where a verdict depended on an unrelated skill's name, are now fixed. Replayed
+  a merge was read as a newly introduced one. That and three related defects,
+  where a verdict depended on an unrelated skill's name, are now fixed, along
+  with a path where a merge whose text declared another name passed coverage
+  vacuously. Replayed
   on the same real skills without a model, the refused cluster is accepted
   ([gate fixes](docs/evidence/2026-10-28-l16-gate-fixes/FINDINGS.md)). A controlled rerun showed the model is
   non-deterministic at temperature 0 while the gate's verdict stayed identical,
-  which is the architecture's central claim tested directly. Every measured cluster is a
-  pair: merging a larger group is implemented but unexercised on real input.
+  which is the architecture's central claim tested directly. Merging a larger
+  group is implemented but unexercised on real input: under every lexical
+  similarity measured, no real family of mergeable skills exceeds five
+  ([family measurement](docs/evidence/2026-10-28-n-to-1-families/FINDINGS.md)).
   See the [live consolidation run](docs/evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md).
+- The redundancy check no longer compares every pair. Exact prefix filtering
+  produces the same audit digest on `vantaflow` and `mukul975` while comparing
+  4,131 and 10,653 pairs instead of 239,086 and 334,153
+  ([measurement](docs/evidence/2026-10-28-prefix-filter-redundancy/FINDINGS.md)).
+- The narrated report (merge groups, contradictions with their risk, suggested
+  rewrites checked by the gate, an executive summary) is tested with
+  deterministic stand-ins. It has **not** yet been run with the live model.
 - Four independent external corpora are frozen by commit and manifest digest,
   two of them reserved as held-out. Auditing all five (2806 skills) produced a
   negative result worth stating plainly: the composition graph yields 86 edges

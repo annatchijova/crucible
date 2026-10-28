@@ -89,16 +89,27 @@ la [frontera comparativa](docs/COMPETITIVE_BOUNDARY.md) y la
   redundancia, propuso una fusión para cada uno, y el gate determinista
   **aceptó una y rechazó la otra**. Investigar ese rechazo encontró defectos en
   el gate mismo, no en la fusión: un hallazgo de nivel corpus que se re-ancla a
-  un skill no tocado tras la fusión se leía como defecto nuevo. Ese y dos
+  un skill no tocado tras la fusión se leía como defecto nuevo. Ese y tres
   defectos relacionados, en los que el veredicto dependía del nombre de un skill
-  ajeno, ya están corregidos. Repitiendo la prueba sobre los mismos skills reales y sin
+  ajeno, ya están corregidos, junto con un camino en el que una fusión cuyo
+  texto declaraba otro nombre pasaba la cobertura sin chequear nada. Repitiendo la prueba sobre los mismos skills reales y sin
   modelo, el cluster rechazado ahora se acepta
   ([correcciones del gate](docs/evidence/2026-10-28-l16-gate-fixes/FINDINGS.md)). Una corrida controlada mostró
   que el modelo es no determinista a temperatura 0 mientras el veredicto del
   gate se mantuvo idéntico, que es la afirmación central de la arquitectura
-  puesta a prueba directamente. Todos los clusters medidos son pares: fusionar un grupo
-  mayor está implementado pero no ejercitado sobre entrada real. Ver la
-  [corrida de consolidación en vivo](docs/evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md).
+  puesta a prueba directamente. Fusionar un grupo mayor está implementado pero
+  no ejercitado sobre entrada real: con todas las similitudes léxicas medidas,
+  ninguna familia real de skills fusionables pasa de cinco
+  ([medición de familias](docs/evidence/2026-10-28-n-to-1-families/FINDINGS.md)).
+  Ver la [corrida de consolidación en vivo](docs/evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md).
+- El chequeo de redundancia ya no compara todos los pares. El filtrado por
+  prefijo exacto da el mismo digest de auditoría en `vantaflow` y `mukul975`
+  comparando 4.131 y 10.653 pares en lugar de 239.086 y 334.153
+  ([medición](docs/evidence/2026-10-28-prefix-filter-redundancy/FINDINGS.md)).
+- El informe narrado (grupos para fusionar, contradicciones con su riesgo,
+  reescrituras sugeridas y verificadas por el gate, resumen ejecutivo) está
+  probado con sustitutos deterministas. **Todavía no** se corrió con el modelo
+  en vivo.
 - Cuatro corpus externos independientes están congelados por commit y digest de
   manifiesto, dos reservados como held-out. Auditar los cinco (2806 skills) dio
   un resultado negativo que conviene decir sin rodeos: el grafo de composición da
