@@ -27,7 +27,7 @@ Corrección menor del informe: cita la agenda como
 | L3 | [+] | El mapeo RU es una lista cerrada, del mismo tipo que la inglesa. No hay corpus RU no templado para medir falsos positivos, y la nota de método de la agenda sigue abierta. | Fuera de alcance para la entrega. |
 | L4 | [+] | El marco de reporte (muestra primaria + expansión, denominador explícito) es compatible con el instrumento ciego existente. Los valores concretos (≥10, ×10, número de sección) **no están verificados**. | Verificar el texto del ГОСТ Р 71207 antes de citarlo. |
 | L5 | [−] | Coincide con `COMPETITIVE_BOUNDARY.md`: redundancia por decisión, alcance y verificación no aparece. La advertencia sobre sobre-fusión por encadenamiento aplica a L16, que ya agrupa por componentes conexos. | Ninguna. |
-| L6 | [+] | Ver la sección siguiente: el informe resuelve la reproducibilidad pero no la equivalencia de salida. | Hay una alternativa exacta que el informe dejó como hueco. |
+| L6 | [+] | Ver la sección siguiente: el informe resuelve la reproducibilidad pero no la equivalencia de salida. | **Implementado el mismo día** con filtrado por prefijo exacto: [registro](../2026-10-28-prefix-filter-redundancy/FINDINGS.md). |
 | L7 | [+] | La propuesta principal (nombrar la abstención en la UI y dejar de decir "passed 28") **ya está implementada** en `d9dca37`, cuatro días antes del barrido. Lo nuevo es el vocabulario (*selective classification*, *coverage*, *reject option*) y la regla de que toda abstención declare una salida. | Opcional: usar "coverage" en la UI. La salida declarada ya existe en parte: cada chequeo abstenido nombra la entrada que requiere. |
 | L8 | [+] | El triaje en tres vías (e-TP / I / e-FP) es compatible con el contrato si el modelo sólo ordena. La advertencia sobre *leakage* (replicación de Kang, Aw y Lo) es la pieza más sólida y la más fácil de verificar. | Registrar como criterio de aceptación para cualquier priorización futura. |
 | L9 | [~] | La replay contra una línea base grabada coincide con lo que la corrida L16 del 2026-10-24 hizo a mano: mismo cluster, mismo digest, dos veces. Los porcentajes atribuidos al blog **no están verificados**. El oráculo no tautológico sigue abierto. | Ninguna antes de la entrega. |
@@ -56,8 +56,8 @@ o con enteros.
 Esto viene del conocimiento de quien escribe esta revisión, no del corpus
 barrido. Falta medirlo: cuántos candidatos genera sobre `vantaflow` frente a los
 334.153 pares actuales, y confirmar sobre los cinco corpus sellados que los
-hallazgos son idénticos byte a byte. No es trabajo para antes de la entrega: el
-costo actual es asequible, según el [registro de costo](../2026-10-23-cost-scaling/FINDINGS.md).
+hallazgos son idénticos byte a byte. **Actualización, mismo día:** implementado y medido. El digest es idéntico en `vantaflow` y `mukul975`, y los pares comparados bajan de 239.086 a 4.131 y de 334.153 a 10.653. Ver el
+[registro](../2026-10-28-prefix-filter-redundancy/FINDINGS.md).
 
 ## Qué no cambia
 

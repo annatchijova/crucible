@@ -628,6 +628,41 @@ def _skill_token_set(skill: dict[str, Any]) -> frozenset[str]:
     return _tokenize(combined)
 
 
+def _prefix_filter_candidates(
+    token_sets: list[frozenset[str]], threshold: Fraction
+) -> list[tuple[int, int]]:
+    """Index pairs (i < j) that can reach Jaccard >= threshold, in loop order.
+
+    Exact prefix filtering (the AllPairs/PPJoin family), with no randomness
+    and no floats. Order every set by one global token order. If
+    J(x, y) >= t then |x & y| >= t * max(|x|, |y|), so x and y share at
+    least ceil(t * |x|) tokens, and two sets sharing a tokens in the same
+    order must share one within the first |x| - a + 1 tokens of each. Only
+    those prefixes are indexed, so every qualifying pair is generated and
+    the caller's exact Jaccard decides. The result is the same pair set, in
+    the same (i, j) order, as comparing every pair; only the pairs that
+    cannot qualify are skipped.
+    """
+    frequency: dict[str, int] = {}
+    for tokens in token_sets:
+        for token in tokens:
+            frequency[token] = frequency.get(token, 0) + 1
+    # Rarest tokens first keeps prefixes selective; the token breaks ties so
+    # the order is total and does not depend on set iteration order.
+    index: dict[str, list[int]] = {}
+    candidates: set[tuple[int, int]] = set()
+    for j, tokens in enumerate(token_sets):
+        ordered = sorted(tokens, key=lambda token: (frequency[token], token))
+        size = len(ordered)
+        required = -((-threshold.numerator * size) // threshold.denominator)
+        prefix = ordered[: size - required + 1]
+        for token in prefix:
+            for i in index.get(token, ()):
+                candidates.add((i, j))
+            index.setdefault(token, []).append(j)
+    return sorted(candidates)
+
+
 def _check_semantic_redundancy(
     skills: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -658,51 +693,52 @@ def _check_semantic_redundancy(
             skill_tokens.append((name, path, tokens))
 
     findings: list[dict[str, Any]] = []
-    for i in range(len(skill_tokens)):
-        for j in range(i + 1, len(skill_tokens)):
-            name_i, path_i, tokens_i = skill_tokens[i]
-            name_j, path_j, tokens_j = skill_tokens[j]
-            overlap = _jaccard(tokens_i, tokens_j)
-            if overlap < _SEMANTIC_THRESHOLD:
-                continue
-            # Report on the lexicographically smaller skill name.
-            if name_i <= name_j:
-                report_name, report_path = name_i, path_i
-            else:
-                report_name, report_path = name_j, path_j
-            # Fraction reduces, and the reduced ratio alone hides how much
-            # text was compared: two identical 58-token fingerprints print as
-            # "1/1", and a pair sitting exactly on the 2/3 threshold could be
-            # 2 shared tokens of 3 or 400 of 600. Those are a coincidence and
-            # a substantive overlap, and the evidence has to tell them apart,
-            # so report the raw counts beside the exact ratio (still no float).
-            # COUPLING: confirm.py:_OTHER_SKILL_RE parses this exact wording to
-            # recover the pair. Changing it there and here must happen together.
-            shared, compared = len(tokens_i & tokens_j), len(tokens_i | tokens_j)
-            overlap_str = (f"{shared}/{compared} tokens "
-                           f"(ratio {overlap.numerator}/{overlap.denominator})")
-            findings.append(_finding(
-                cls="SEMANTIC_REDUNDANCY",
-                epistemic_status="CANDIDATE",
-                skill=report_name,
-                source_path=report_path,
-                source_span=None,
-                rule_id=None,
-                evidence=(
-                    f"lexical Jaccard overlap {overlap_str} with "
-                    f"{name_j if report_name == name_i else name_i} "
-                    f"(threshold 2/3); combined description+rules+checks "
-                    f"tokens are highly similar"
-                ),
-                violated_invariant=None,
-                limitation=(
-                    "lexical token overlap is not semantic equivalence; "
-                    "two skills may share vocabulary while governing "
-                    "different scopes; optional L2.5 confirmation records "
-                    "an executor verdict as a separate observation and "
-                    "does not modify the deterministic L2 audit"
-                ),
-            ))
+    for i, j in _prefix_filter_candidates(
+        [tokens for _name, _path, tokens in skill_tokens], _SEMANTIC_THRESHOLD
+    ):
+        name_i, path_i, tokens_i = skill_tokens[i]
+        name_j, path_j, tokens_j = skill_tokens[j]
+        overlap = _jaccard(tokens_i, tokens_j)
+        if overlap < _SEMANTIC_THRESHOLD:
+            continue
+        # Report on the lexicographically smaller skill name.
+        if name_i <= name_j:
+            report_name, report_path = name_i, path_i
+        else:
+            report_name, report_path = name_j, path_j
+        # Fraction reduces, and the reduced ratio alone hides how much
+        # text was compared: two identical 58-token fingerprints print as
+        # "1/1", and a pair sitting exactly on the 2/3 threshold could be
+        # 2 shared tokens of 3 or 400 of 600. Those are a coincidence and
+        # a substantive overlap, and the evidence has to tell them apart,
+        # so report the raw counts beside the exact ratio (still no float).
+        # COUPLING: confirm.py:_OTHER_SKILL_RE parses this exact wording to
+        # recover the pair. Changing it there and here must happen together.
+        shared, compared = len(tokens_i & tokens_j), len(tokens_i | tokens_j)
+        overlap_str = (f"{shared}/{compared} tokens "
+                       f"(ratio {overlap.numerator}/{overlap.denominator})")
+        findings.append(_finding(
+            cls="SEMANTIC_REDUNDANCY",
+            epistemic_status="CANDIDATE",
+            skill=report_name,
+            source_path=report_path,
+            source_span=None,
+            rule_id=None,
+            evidence=(
+                f"lexical Jaccard overlap {overlap_str} with "
+                f"{name_j if report_name == name_i else name_i} "
+                f"(threshold 2/3); combined description+rules+checks "
+                f"tokens are highly similar"
+            ),
+            violated_invariant=None,
+            limitation=(
+                "lexical token overlap is not semantic equivalence; "
+                "two skills may share vocabulary while governing "
+                "different scopes; optional L2.5 confirmation records "
+                "an executor verdict as a separate observation and "
+                "does not modify the deterministic L2 audit"
+            ),
+        ))
     return findings
 
 
