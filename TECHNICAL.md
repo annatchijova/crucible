@@ -469,6 +469,7 @@ uses local behavior and mock confirmation even when a provider key exists.
 | `POST /scan/skill` | JSON `skill_text`, optional `skill_name` (default `uploaded`); returns IR, audit, graph, and scope coverage counts |
 | `POST /scan/directory` | JSON `directory`; scans a path on the server filesystem and returns scope coverage counts |
 | `GET /scan/installed` | Legacy combined installed-skill scan |
+| `POST /report/skill`, `POST /report/directory`, `GET /report/installed` | Same inputs; return the sealed `crucible-final-report/v2` and its HTML. No model is called: confirmation is `BLOCKED` and narration states it was not requested, so candidates stay unconfirmed. The demo shows the HTML in a sandboxed frame |
 | `GET /` | Interactive local demo |
 
 There is no independent-collection HTTP route. POST handlers translate

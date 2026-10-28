@@ -56,6 +56,61 @@ class _CollectionLimitError(ValueError):
 from .graph import build_composition_graph
 
 
+_NO_MODEL = (
+    "this endpoint does not call a model; run --narrate from the CLI for "
+    "confirmation and narration"
+)
+
+
+class _ModelNotRequested:
+    """Executor for the report endpoints: every model step reports itself as
+    not run. Confirmation is BLOCKED and narration is blocked with this
+    reason, so the report shows what a model would add instead of faking it."""
+
+    model = "none"
+
+    def is_available(self) -> bool:
+        return False
+
+    def execute(self, system_prompt: str, user_prompt: str) -> dict[str, Any]:
+        return {"output": "", "error": _NO_MODEL, "model": "none", "blocked": True}
+
+
+def _report_payload(root: str, scope: dict[str, Any]) -> dict[str, Any]:
+    from .final_report import build_final_report
+    from .final_report_render import render_final_report_html
+
+    report = build_final_report(
+        root, _ModelNotRequested(), _ModelNotRequested(), input_scope=scope
+    )
+    return {"report": report, "html": render_final_report_html(report)}
+
+
+def report_skill_text(skill_text: str, skill_name: str = "uploaded") -> dict[str, Any]:
+    """The narrated report's deterministic part for one pasted SKILL.md."""
+    _validate_skill_text(skill_text)
+    safe_name = _sanitize_skill_name(skill_name)
+    with tempfile.TemporaryDirectory(prefix="crucible-report-") as tmpdir:
+        skill_dir = Path(tmpdir) / safe_name
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text(skill_text, encoding="utf-8")
+        return _report_payload(tmpdir, {"scope": "single-skill"})
+
+
+def report_directory(directory: str) -> dict[str, Any]:
+    """The narrated report's deterministic part for a directory of skills."""
+    _validate_directory(directory)
+    return _report_payload(directory, {"scope": "directory"})
+
+
+def report_installed() -> dict[str, Any]:
+    """The narrated report's deterministic part for the installed skills."""
+    with stage_installed_skills() as stage:
+        if stage.root is None:
+            raise ValueError(stage.error or "no installed skills found")
+        return _report_payload(stage.root, {"scope": "installed", "coverage": stage.coverage})
+
+
 def scan_skill_text(skill_text: str, skill_name: str = "uploaded") -> dict[str, Any]:
     """Compile and audit a single SKILL.md provided as text.
 
@@ -601,6 +656,30 @@ def create_app() -> Any:
             raise _refused(exc)
         return JSONResponse(content=result)
 
+    @app.post("/report/skill")
+    def report_skill(req: ScanSkillRequest) -> JSONResponse:
+        try:
+            result = report_skill_text(req.skill_text, req.skill_name)
+        except (ValueError, OSError) as exc:
+            raise _refused(exc)
+        return JSONResponse(content=result)
+
+    @app.post("/report/directory")
+    def report_dir(req: ScanDirectoryRequest) -> JSONResponse:
+        try:
+            result = report_directory(req.directory)
+        except (ValueError, OSError) as exc:
+            raise _refused(exc)
+        return JSONResponse(content=result)
+
+    @app.get("/report/installed")
+    def report_inst() -> JSONResponse:
+        try:
+            result = report_installed()
+        except (ValueError, OSError) as exc:
+            raise _refused(exc)
+        return JSONResponse(content=result)
+
     @app.get("/", response_class=HTMLResponse)
     def index() -> str:
         return _demo_html()
@@ -649,6 +728,10 @@ button { padding: 10px 20px; background: var(--g); color: var(--bg); border: non
 button:hover { background: var(--g-dim); }
 button:focus-visible { outline: 2px solid var(--tx); outline-offset: 2px; }
 button:disabled { background: var(--line); color: var(--dim); cursor: not-allowed; }
+button.secondary { background: transparent; color: var(--g); border: 1px solid var(--g); margin-left: 8px; }
+button.secondary:hover { background: var(--g-dim); color: var(--bg); }
+.report-note { color: var(--dim); font-size: 13px; margin: 0 0 8px; }
+.report-frame { width: 100%; height: 75vh; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
 .result { margin-top: 24px; }
 .digest { font-family: var(--mono); font-size: 12px; color: var(--dim); word-break: break-all; background: var(--p2); border: 1px solid var(--line2); padding: 8px; border-radius: 4px; }
 table { border-collapse: collapse; width: 100%; margin: 12px 0; }
@@ -706,6 +789,7 @@ table.preconditions code { font-size: 11px; word-break: break-word; }
 <p class="field-error" id="skill-text-error" role="alert"></p>
 <br>
 <button data-scan onclick="scanSkill()">Scan</button>
+<button data-scan class="secondary" onclick="reportSkill()">Report (no model)</button>
 </div>
 
 <div id="directory" class="panel">
@@ -714,12 +798,14 @@ table.preconditions code { font-size: 11px; word-break: break-word; }
 <p class="field-error" id="directory-path-error" role="alert"></p>
 <br>
 <button data-scan onclick="scanDirectory()">Scan</button>
+<button data-scan class="secondary" onclick="reportDirectory()">Report (no model)</button>
 </div>
 
 <div id="installed" class="panel">
 <h2>Scan Installed Skills</h2>
 <p>Scans ~/.config/devin/skills/, ~/.claude/skills/, and ~/.local/share/devin/skills/.</p>
 <button data-scan onclick="scanInstalled()">Scan</button>
+<button data-scan class="secondary" onclick="reportInstalled()">Report (no model)</button>
 </div>
 
 <div id="result" class="result" aria-live="polite" aria-busy="false"></div>
@@ -742,7 +828,7 @@ let pendingScan = 0;
 
 // Every scan goes through this, so the four states (busy, error, empty,
 // success) are reachable from one place instead of each caller inventing one.
-async function runScan(label, request) {
+async function runScan(label, request, render = renderResult) {
   const token = ++pendingScan;
   setBusy(true, label);
   let resp;
@@ -765,7 +851,7 @@ async function runScan(label, request) {
     return;
   }
   if (!data) { renderError('The server returned a response that is not JSON.', ''); return; }
-  renderResult(data);
+  render(data);
 }
 
 function scanSkill() {
@@ -791,6 +877,49 @@ function scanDirectory() {
 
 function scanInstalled() {
   return runScan('Scanning installed skills', () => fetch('/scan/installed'));
+}
+
+// The report endpoints return the sealed report and its own HTML rendering.
+// It is shown in a sandboxed frame (no scripts, no same-origin access), so the
+// skill text it quotes can never run in this page.
+function renderReport(data) {
+  const result = document.getElementById('result');
+  result.innerHTML = '';
+  const note = document.createElement('p');
+  note.className = 'report-note';
+  note.textContent = 'Deterministic report: no model was called, so candidate findings stay ' +
+    'unconfirmed and nothing is narrated. Report digest: ' + data.report.report_digest;
+  const frame = document.createElement('iframe');
+  frame.className = 'report-frame';
+  frame.setAttribute('sandbox', '');
+  frame.setAttribute('title', 'Crucible report');
+  frame.srcdoc = data.html;
+  result.append(note, frame);
+}
+
+function reportSkill() {
+  const text = document.getElementById('skill-text').value;
+  const name = document.getElementById('skill-name').value || 'uploaded';
+  if (!requireValue(text, 'skill-text', 'Paste a SKILL.md first.')) { return; }
+  return runScan('Building the report', () => fetch('/report/skill', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({skill_text: text, skill_name: name})
+  }), renderReport);
+}
+
+function reportDirectory() {
+  const path = document.getElementById('directory-path').value;
+  if (!requireValue(path, 'directory-path', 'Enter a directory path first.')) { return; }
+  return runScan('Building the report', () => fetch('/report/directory', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({directory: path})
+  }), renderReport);
+}
+
+function reportInstalled() {
+  return runScan('Building the report', () => fetch('/report/installed'), renderReport);
 }
 
 // Inline validation. A modal alert blocks the page and says nothing the field
