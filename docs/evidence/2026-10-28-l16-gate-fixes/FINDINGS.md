@@ -81,14 +81,28 @@ The check now recovers the pair from the evidence with the same parser L2.5
 confirmation uses (`confirm._parse_semantic_redundancy_pair`) and refuses in
 both cases.
 
-## Known variant not fixed
+## G-04: contradictions re-anchored the same way (fixed, same day)
 
-`NORMATIVE_CONFLICT` and `CONDITIONAL_CONTRADICTION` are also pairwise and
-attributed by order, so in principle they can re-anchor the same way. The
-evidence of those findings is a free-form sentence, and they fire rarely
-because subject extraction yields a subject in 27 of 2806 real skills
-([ADR-0027](../../decisions/0027-defer-imperative-subject-extraction.md)).
-Comparing them by identity would mean parsing prose or adding a structured
-participant field to the audit schema. Neither is done here. A false refusal
-from this variant remains possible and would show up as `NEW_FINDINGS` naming
-one of those classes on a skill outside the cluster.
+`NORMATIVE_CONFLICT` and `CONDITIONAL_CONTRADICTION` are pairwise and are
+attributed to the first skill in compile order. Reproduced with two identical
+retry skills that say `Releases MUST skip the staging environment.` and an
+outside skill that says `MUST NOT`, merged as `zz-merged`:
+
+| Outside skill | Before | After |
+|---|---|---|
+| `s-deploy` (sorts between members and merged name, so the attribution moves) | REJECTED, `NEW_FINDINGS: NORMATIVE_CONFLICT` | ACCEPTED |
+| `zzz-deploy` | ACCEPTED | ACCEPTED |
+
+Contradictions are now compared by identity: class, the evidence before the
+modalities (subject and, for a conditional, the condition), and both skills,
+with the cluster's members mapped to the merged name. The parties come from
+the evidence through `recommendation.contradiction_identity`, which shares its
+pattern with the report's `contradiction_parties`; the auditor's evidence
+wording carries a COUPLING note at each emission site. Negative control: a
+merge that adds `Artifacts MUST NOT be signed.` against an outside
+`Artifacts MUST be signed.` is still REJECTED with `NORMATIVE_CONFLICT`.
+
+The conflict was the same before and after in the reproduction, and the
+merge is now accepted with it. The gate checks that a merge introduces nothing
+new; it does not resolve a conflict the originals already had. The narrated
+report lists that conflict separately, on both skills.

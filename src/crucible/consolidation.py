@@ -74,6 +74,7 @@ from .compiler import compile_corpus
 from .confirm import _parse_semantic_redundancy_pair
 from .graph import _find_components, build_composition_graph
 from .ir import digest_payload
+from .recommendation import contradiction_identity
 
 CONSOLIDATION_VERSION = "crucible-consolidation/v1"
 
@@ -91,6 +92,7 @@ OUTCOME_NO_CLUSTERS = "NO_CLUSTERS"
 _COVERAGE_THRESHOLD = Fraction(1, 2)
 
 _REDUNDANCY_CLASSES = frozenset({"SEMANTIC_REDUNDANCY"})
+_CONTRADICTION_CLASSES = frozenset({"NORMATIVE_CONFLICT", "CONDITIONAL_CONTRADICTION"})
 
 REJECTION_REASONS = {
     "REDUNDANCY_PERSISTS": (
@@ -553,6 +555,12 @@ def _evaluate_novelty(
     (G-01, docs/evidence/2026-10-24-l16-live-real-corpus). It is compared
     by its own identity -- the duplicated text -- so a duplication is new
     only if that text was not already duplicated before the merge.
+
+    NORMATIVE_CONFLICT and CONDITIONAL_CONTRADICTION are pairwise in the same
+    way (G-04): each is compared by its subject, condition and both skills,
+    with the cluster's members mapped to the merged name, so a conflict the
+    originals already had is not new wherever it is attributed, and a conflict
+    the merge introduces still is.
     """
     cluster_set = set(cluster)
     original_classes_for_cluster = {
@@ -572,6 +580,12 @@ def _evaluate_novelty(
         if f.get("class") == "STRUCTURAL_REDUNDANCY"
     }
     original_duplicated_texts.discard(None)
+    merged_into = {member: proposed_name for member in cluster}
+    original_contradictions = {
+        contradiction_identity(f, merged_into)
+        for f in original_findings
+        if f.get("class") in _CONTRADICTION_CLASSES
+    }
 
     new_findings: list[dict[str, Any]] = []
     for finding in repaired_findings:
@@ -580,6 +594,9 @@ def _evaluate_novelty(
         if cls == "STRUCTURAL_REDUNDANCY":
             text = _rule_text(repaired_ir, skill, finding.get("rule_id"))
             if text is None or text not in original_duplicated_texts:
+                new_findings.append(finding)
+        elif cls in _CONTRADICTION_CLASSES and contradiction_identity(finding) is not None:
+            if contradiction_identity(finding) not in original_contradictions:
                 new_findings.append(finding)
         elif skill == proposed_name:
             if cls in _REDUNDANCY_CLASSES:

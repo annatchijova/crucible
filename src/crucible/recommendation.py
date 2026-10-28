@@ -88,6 +88,26 @@ def contradiction_parties(finding: dict[str, Any]) -> list[str]:
     return sorted(set(match.groups()))
 
 
+def contradiction_identity(
+    finding: dict[str, Any], rename: dict[str, str] | None = None
+) -> tuple[str, str, tuple[str, ...]] | None:
+    """What a contradiction is, independent of which skill it is attributed to.
+
+    (class, head, parties): the head is the evidence before the modalities --
+    the subject and, for a conditional one, the condition -- and the parties
+    are both skills, after ``rename`` (used to map merged skills to the name
+    of their merge). None when the evidence cannot be parsed.
+    """
+    evidence = finding.get("evidence", "")
+    match = _CONTRADICTION_PARTIES_RE.search(evidence)
+    if match is None:
+        return None
+    head = evidence[: match.start()].rsplit(" ", 1)[0]
+    rename = rename or {}
+    parties = tuple(sorted({rename.get(p, p) for p in match.groups()}))
+    return finding.get("class", ""), head, parties
+
+
 def compute_recommendations(
     audit: dict[str, Any],
     confirmation: dict[str, Any] | None = None,

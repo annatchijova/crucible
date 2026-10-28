@@ -635,3 +635,77 @@ def test_redundancy_resolved_is_measured_not_copied_from_the_outcome() -> None:
     )
     assert blocked["outcome"] == OUTCOME_BLOCKED
     assert blocked["redundancy_resolved"] is None
+
+
+# ---------------------------------------------------------------------------
+# Contradictions re-anchor too (G-04)
+# ---------------------------------------------------------------------------
+
+def _conflict_skill(name: str, rule: str, description: str) -> str:
+    return (
+        f"---\nname: {name}\ndescription: {description}\nlicense: Apache-2.0\n---\n\n"
+        f"# {name}\n\n{rule}\n\nRetries MUST have a finite budget.\n\n"
+        "## Checks\n\n- Verify the retry budget is enforced: run `scripts/check_budget.sh`.\n"
+    )
+
+
+def _conflict_corpus(outsider: str) -> dict[str, str]:
+    retry = "Retry failed network calls with a bounded budget."
+    return {
+        "retry-a": _conflict_skill("retry-a", "Releases MUST skip the staging environment.", retry),
+        "retry-b": _conflict_skill("retry-b", "Releases MUST skip the staging environment.", retry),
+        outsider: _conflict_skill(
+            outsider, "Releases MUST NOT skip the staging environment.",
+            "Deploy services to production clusters safely and audit logs.",
+        ),
+    }
+
+
+class RenameFirstProposer:
+    def __init__(self, name: str, extra: str = "") -> None:
+        self.name, self.extra = name, extra
+
+    def propose_merge(self, cluster_skills, evidence, context):
+        first = cluster_skills[0]
+        text = first["text"].replace(f"name: {first['name']}", f"name: {self.name}", 1)
+        text = text.replace("Retries MUST have a finite budget.\n",
+                            "Retries MUST have a finite budget.\n" + self.extra, 1)
+        return {"proposed_name": self.name, "proposed_text": text,
+                "rationale": "test", "proposer": "rename-first-test-only"}
+
+
+def test_a_conflict_the_originals_had_is_not_new_whatever_the_outsider_is_called() -> None:
+    """Invariant: a NORMATIVE_CONFLICT the cluster already had with an outside
+    skill is not new after the merge, whether its attribution moves to the
+    outside skill ("s-deploy" sorts between the members and "zz-merged") or
+    stays on the merge ("zzz-deploy").
+    Mutation: compare contradictions by (class, skill) again -> the s-deploy
+    run is REJECTED with NEW_FINDINGS -> red."""
+    outcomes = []
+    for outsider in ("s-deploy", "zzz-deploy"):
+        corpus = _conflict_corpus(outsider)
+        ir, audit = _compile_ir_and_audit(corpus)
+        report = run_consolidation(
+            corpus=corpus, confirmation=_confirm_only_retry_pair(audit),
+            proposer=RenameFirstProposer("zz-merged"),
+        )
+        outcomes.append((report["outcome"], report["new_findings"]))
+    assert outcomes == [(OUTCOME_ACCEPTED, []), (OUTCOME_ACCEPTED, [])]
+
+
+def test_a_conflict_the_merge_introduces_is_still_new() -> None:
+    """Negative control for G-04: the merge adds a rule that contradicts the
+    outside skill on a subject nobody had conflicted on before."""
+    corpus = _conflict_corpus("s-deploy")
+    corpus["s-deploy"] = corpus["s-deploy"].replace(
+        "Retries MUST have a finite budget.\n",
+        "Retries MUST have a finite budget.\n\nArtifacts MUST be signed.\n",
+    )
+    ir, audit = _compile_ir_and_audit(corpus)
+    report = run_consolidation(
+        corpus=corpus, confirmation=_confirm_only_retry_pair(audit),
+        proposer=RenameFirstProposer("zz-merged", "\nArtifacts MUST NOT be signed.\n"),
+    )
+    assert report["outcome"] == OUTCOME_REJECTED
+    assert report["rejection_reason"] == "NEW_FINDINGS"
+    assert "NORMATIVE_CONFLICT" in report["new_findings"]
