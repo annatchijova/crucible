@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crucible Skill Quality Report</title>
+<style>
+:root{
+  --bg:#f5f5f5; --card-bg:#fff; --ink:#1a1a2e; --ink-muted:#666; --rule:#e0e0e0;
+  --ok-bg:#d4edda; --ok-ink:#155724; --fail-bg:#f8d7da; --fail-ink:#721c24;
+  --caution-bg:#fff3cd; --caution-ink:#856404; --muted-bg:#e2e3e5; --muted-ink:#383d41;
+}
+*{box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:0;padding:24px;background:var(--bg);color:var(--ink);}
+.wrap{max-width:980px;margin:0 auto;}
+header{margin-bottom:24px;}
+h1{margin:0 0 8px;}
+.meta{font-size:13px;color:var(--ink-muted);}
+.meta code{background:#eee;padding:1px 4px;border-radius:3px;word-break:break-all;}
+.corpus-card{background:var(--card-bg);border:1px solid var(--rule);border-left:4px solid var(--ink);border-radius:6px;padding:16px 20px;margin-bottom:16px;}
+.corpus-card h2{margin-top:0;font-size:18px;}
+.corpus-card li{margin:4px 0;overflow-wrap:anywhere;}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#fafafa;border:1px solid var(--rule);padding:10px;font-size:12px;max-height:420px;overflow:auto;}
+.intro{color:var(--ink-muted);font-size:14px;}
+.skill-card{background:var(--card-bg);border:1px solid var(--rule);border-radius:6px;padding:18px 20px;margin-bottom:16px;}
+.skill-card h2{margin-top:0;display:flex;align-items:center;gap:10px;font-size:18px;}
+.badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:.03em;}
+.badge.tone-ok, .tone-ok .badge{background:var(--ok-bg);color:var(--ok-ink);}
+.badge.tone-fail, .tone-fail .badge{background:var(--fail-bg);color:var(--fail-ink);}
+.badge.tone-caution, .tone-caution .badge{background:var(--caution-bg);color:var(--caution-ink);}
+.badge.tone-muted, .tone-muted .badge{background:var(--muted-bg);color:var(--muted-ink);}
+table.findings{border-collapse:collapse;width:100%;margin-top:10px;font-size:13px;}
+table.findings th, table.findings td{text-align:left;padding:6px 10px;border:1px solid var(--rule);vertical-align:top;}
+table.findings th{background:#fafafa;}
+.empty-state{color:#999;font-style:italic;}
+.untraceable{color:var(--fail-ink);background:var(--fail-bg);padding:6px 10px;border-radius:4px;font-size:13px;}
+footer{margin-top:28px;font-size:12px;color:var(--ink-muted);border-top:1px solid var(--rule);padding-top:14px;}
+@media print { body{background:#fff;} .skill-card{break-inside:avoid;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>Crucible Skill Quality Report</h1>
+<p class="meta">
+Report digest: <code>sha256:29eedcebcf4bf26cb4f49402e9b43be8477f1b806335b32ee3e0742f1de7498b</code><br>
+Input: a skill directory<br>
+Skills scanned: 4 &mdash; MODIFY: 4
+</p>
+</header>
+<section class='corpus-card'><h2>Summary</h2><p></p><p>All four skills examined require modification, with no duplicate groups identified and no rule contradictions found; the text‑only gate accepted two of the four rewrite attempts, indicating partial success in automated fixes, while each skill presents a distinct confirmed finding that drives the recommended changes.  
+1. Update the adonisjs skill to resolve the issue recorded in finding-0001.  
+2. Update the auth-system-setup skill to resolve the issue recorded in finding-0002.  
+3. Update the aws-rds skill to resolve the issue recorded in finding-0003.  
+4. Update the batch-processor skill to resolve the issue recorded in finding-0004.  
+The audit could not evaluate the checks for BROKEN_REFERENCE, COMPOSITION_CYCLE, CONDITIONAL_CONTRADICTION, NORMATIVE_CONFLICT, ORPHAN_SKILL, and SELF_COMPOSITION because their required inputs were absent from the corpus.</p></section><section class='corpus-card'><h2>Duplicate skills to consolidate</h2><p class='intro'>Each group is a set of skills joined by confirmed redundancy pairs. The recommendation is to merge each group into one skill; which member survives, and what the merged text says, is not decided here. Add --with-consolidation to have a merge proposed for each group and checked by the deterministic gate.</p><p class='empty-state'>No confirmed duplicate group in this corpus.</p></section><section class='corpus-card'><h2>Contradictions between rules</h2><p class='empty-state'>Not evaluated: the contradiction checks abstained because no two extracted rules share a normalized subject, so this check compared no rule pair. Read this with rules_with_subject: only the RFC-2119 modal extraction route assigns a subject at all, while the negative-starter and imperative routes record an empty one by construction (no object extraction), so a low count usually means a subject was never attempted rather than attempted and unmatched. This is not evidence that the skills agree with each other.</p></section><section class='corpus-card'><h2>Rule text repeated across skills</h2><p class='intro'>The same rule text appears verbatim in several skills. A repeated block is a candidate for one shared skill or reference document; it is not by itself a defect, and editing one copy leaves the others behind.</p><p class='empty-state'>No rule text is repeated verbatim across skills.</p></section><section class='corpus-card'><h2>Suggested rewrites</h2><p class='intro'>4 of 4 skill(s) recommended MODIFY received a suggested rewrite; 2 passed the deterministic gate. The gate re-audits text only, so an accepted rewrite is one the auditor no longer objects to, not evidence of better agent behaviour.</p><ul><li><strong>adonisjs</strong><ul><li>Suggested rewrite (llm-nebius): no rewrite was proposed for REQUIREMENT_WITHOUT_CHECK.</li></ul></li><li><strong>auth-system-setup</strong><ul><li>Suggested rewrite (llm-nebius): ACCEPTED by the deterministic gate; resolves REQUIREMENT_WITHOUT_CHECK. The gate re-audits text only: an accepted rewrite is one the auditor no longer objects to, not evidence that an agent following it behaves better.</li></ul></li><li><strong>aws-rds</strong><ul><li>Suggested rewrite (llm-nebius): ACCEPTED by the deterministic gate; resolves REQUIREMENT_WITHOUT_CHECK. The gate re-audits text only: an accepted rewrite is one the auditor no longer objects to, not evidence that an agent following it behaves better.</li></ul></li><li><strong>batch-processor</strong><ul><li>Suggested rewrite (llm-nebius): no rewrite was proposed for REQUIREMENT_WITHOUT_CHECK.</li></ul></li></ul></section><section class='corpus-card'><h2>What was not analyzed</h2><p class='intro'>An ABSTAINED check produced no findings because this corpus did not supply the input it consumes; that is not evidence the corpus is free of that defect class.</p><ul><li><strong>BROKEN_REFERENCE abstained</strong><ul><li>requires declared_relations, observed 0: the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine</li></ul></li><li><strong>COMPOSITION_CYCLE abstained</strong><ul><li>requires declared_relations, observed 0: the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine</li></ul></li><li><strong>CONDITIONAL_CONTRADICTION abstained</strong><ul><li>requires comparable_rule_pairs_by_subject, observed 0: no two extracted rules share a normalized subject, so this check compared no rule pair. Read this with rules_with_subject: only the RFC-2119 modal extraction route assigns a subject at all, while the negative-starter and imperative routes record an empty one by construction (no object extraction), so a low count usually means a subject was never attempted rather than attempted and unmatched</li></ul></li><li><strong>NORMATIVE_CONFLICT abstained</strong><ul><li>requires comparable_rule_pairs_by_subject, observed 0: no two extracted rules share a normalized subject, so this check compared no rule pair. Read this with rules_with_subject: only the RFC-2119 modal extraction route assigns a subject at all, while the negative-starter and imperative routes record an empty one by construction (no object extraction), so a low count usually means a subject was never attempted rather than attempted and unmatched</li></ul></li><li><strong>ORPHAN_SKILL abstained</strong><ul><li>requires declared_relations, observed 0: the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine</li></ul></li><li><strong>SELF_COMPOSITION abstained</strong><ul><li>requires declared_relations, observed 0: the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine</li></ul></li></ul></section>
+<h2>Skills</h2>
+<section class="skill-card tone-caution">
+  <h2>adonisjs <span class="badge tone-caution">MODIFY</span></h2>
+  
+  <p>
+
+The recommendation to MODIFY follows from finding‑0001, which shows that the skill contains a normative rule without any extracted check, violating the invariant that every rule must have an identifiable verification path; therefore the skill must be altered to add the missing checks.  
+
+Next steps:  
+1. Locate the unspecified normative rule referenced in finding‑0001 and define a concrete check that verifies its compliance.  
+2. Implement the check in the skill’s validation logic (e.g., add a test or runtime assertion).  
+3. Update any associated documentation or examples to reflect the new verification path.  
+4. Run the skill’s test suite to confirm that the newly added check passes and that no existing functionality is broken.</p>
+  <p><strong>Suggested rewrite (llm-nebius): no rewrite was proposed for REQUIREMENT_WITHOUT_CHECK.</strong></p>
+  
+  <table class='findings'><tr><th>Finding</th><th>Status</th><th>Class</th><th>Evidence</th></tr><tr><td><code>finding-0001</code></td><td>CONFIRMED</td><td>REQUIREMENT_WITHOUT_CHECK</td><td>skill has 1 normative rule(s) but 0 extracted checks</td></tr></table>
+</section><section class="skill-card tone-caution">
+  <h2>auth-system-setup <span class="badge tone-caution">MODIFY</span></h2>
+  
+  <p>
+
+The skill contains a normative rule that lacks any associated check, leaving no way to verify that the rule is satisfied (finding-0002). Because verification is missing, the skill must be modified to add a proper verification path or adjust the rule accordingly.
+
+1. Determine what verification is needed for the existing normative rule and specify a concrete check.  
+2. Implement the check within the skill’s validation or test suite.  
+3. Update any relevant documentation to describe the new verification process.  
+4. Re‑run the audit to confirm that finding-0002 is resolved.</p>
+  <p><strong>Suggested rewrite (llm-nebius): ACCEPTED by the deterministic gate; resolves REQUIREMENT_WITHOUT_CHECK. The gate re-audits text only: an accepted rewrite is one the auditor no longer objects to, not evidence that an agent following it behaves better.</strong></p><details><summary>Suggested change</summary><pre>--- auth-system-setup/SKILL.md (current)
++++ auth-system-setup/SKILL.md (suggested)
+@@ -1,128 +1,30 @@
+----
+-name: auth-system-setup
+-description: &gt;-
+-  When the user wants to set up authentication and authorization for a web application.
+-  Use when the user mentions &quot;auth,&quot; &quot;login,&quot; &quot;OAuth,&quot; &quot;SSO,&quot; &quot;single sign-on,&quot;
+-  &quot;role-based access,&quot; &quot;RBAC,&quot; &quot;permissions,&quot; &quot;user roles,&quot; &quot;access control,&quot;
+-  &quot;authentication,&quot; or &quot;authorization.&quot; Covers OAuth 2.0 provider integration,
+-  session management, and role/permission architecture. For JWT-specific tasks,
+-  see jwt-handler. For security review, see security-audit.
+-license: Apache-2.0
+-compatibility: &quot;Any backend framework (Node.js, Python, Go, etc.)&quot;
+-metadata:
+-  author: terminal-skills
+-  version: &quot;1.0.0&quot;
+-  category: development
+-  tags: [&quot;authentication&quot;, &quot;authorization&quot;, &quot;oauth&quot;, &quot;rbac&quot;, &quot;security&quot;]
+----
+-
+-# Auth System Setup
+-
+-## Overview
+-
+-Designs and implements complete authentication and authorization systems for web applications. Covers OAuth 2.0 provider integration (Google, GitHub, Microsoft), session and token management, role-based access control (RBAC), and permission architectures. Generates production-ready code, database migrations, and tests.
+-
+-## Instructions
+-
+-### 1. Gather Requirements
+-
+-Before generating any code, determine:
+-
+-- **Tech stack**: Backend framework, database, frontend framework
+-- **Auth method**: OAuth providers, email/password, magic links, or combination
+-- **Roles needed**: What roles exist? What can each role do?
+-- **Token strategy**: Stateless JWT, server-side sessions, or hybrid
+-- **Compliance**: GDPR, SOC 2, HIPAA — affects data storage and logging
+-
+-### 2. Design the Auth Architecture
+-
+-Create the auth flow diagram and data model:
+-
+-- **User table**: id, email, name, avatar, provider, provider_id, created_at
+-- **Role table**: id, name, description
+-- **Permission table**: id, resource, action (read/write/delete)
+-- **Role-Permission mapping**: role_id, permission_id
+-- **User-Role mapping**: user_id, role_id
+-- **Refresh token table**: id, user_id, token_hash, family_id, expires_at, revoked_at
+-
+-### 3. Implement OAuth Flow
+-
+-For each OAuth provider:
+-
+-1. Create provider configuration (client ID, secret, scopes, callback URL)
+-2. Implement the authorization redirect with state parameter and PKCE
+-3. Handle the callback: exchange code for tokens, extract user profile
+-4. Provision or update the user record
+-5. Issue application tokens (access + refresh)
+-
+-Always use PKCE for public clients. Always validate the state parameter.
+-
+-### 4. Implement RBAC
+-
+-Generate the permission-checking middleware:
+-
+-```
+-authorize(resource, action) → middleware function
+-  1. Extract user from request (via JWT or session)
+-  2. Load user roles and permissions (cache with TTL)
+-  3. Check if any role grants the required permission
+-  4. Return 403 with clear error if denied
+-```
+-
+-For row-level security, add ownership filters:
+-
+-```
+-filterByOwnership(resource) → middleware function
+-  1. If user role has wildcard access, skip filter
+-  2. Otherwise, add WHERE clause: resource.owner_id = user.id
+-  3. Apply to SELECT, UPDATE, DELETE queries
+-```
+-
+-### 5. Generate Tests
+-
+-Create tests for:
+-
+-- OAuth flow: successful login, invalid state, expired code
+-- Token lifecycle: issue, refresh, rotate, revoke
+-- RBAC: each role accessing allowed and denied resources
+-- Edge cases: expired tokens, revoked refresh tokens, role changes mid-session
+-
+-## Examples
+-
+-### Example 1: Express + PostgreSQL + Google OAuth
+-
+-**Prompt**: &quot;Set up Google OAuth with JWT tokens for my Express app. I need admin and user roles.&quot;
+-
+-**Output**:
+-- `auth/providers/google.ts` — OAuth 2.0 + PKCE flow
+-- `auth/middleware/authenticate.ts` — JWT verification
+-- `auth/middleware/authorize.ts` — Role checker
+-- `migrations/001_auth_tables.sql` — Users, roles, permissions, refresh_tokens
+-- `auth/services/token.service.ts` — JWT issuance with refresh rotation
+-- `auth/routes.ts` — /auth/google, /auth/callback, /auth/refresh, /auth/logout
+-- `tests/auth.test.ts` — 18 integration tests
+-
+-### Example 2: Django + GitHub OAuth + Multi-tenant RBAC
+-
+-**Prompt**: &quot;Add GitHub login to my Django app. Each organization has its own roles: owner, editor, viewer.&quot;
+-
+-**Output**:
+-- `accounts/providers/github.py` — OAuth integration via django-allauth
+-- `accounts/models.py` — Organization, Membership, Role models
+-- `accounts/permissions.py` — Per-organization permission backend
+-- `accounts/middleware.py` — Org context middleware (from subdomain or header)
+-- `accounts/decorators.py` — @require_org_role('editor') decorator
+-- `migrations/0001_multi_tenant_auth.py` — Schema migration
+-- `tests/test_permissions.py` — 22 test cases across org boundaries
+-
+-## Guidelines
+-
+-- **Never store plain-text passwords** — use bcrypt with cost factor 12+ or argon2id
+-- **Always use PKCE** for OAuth flows, even with confidential clients
+-- **Rotate refresh tokens** on every use — detect reuse to identify token theft
+-- **Set short access token TTL** — 15 minutes is the standard
+-- **Cache permissions** — reload on role change, not on every request
+-- **Log auth events** — login, logout, failed attempts, role changes (for audit trail)
+-- **Rate limit auth endpoints** — prevent brute force on login and token refresh
+-- **Use httpOnly, Secure, SameSite=Strict cookies** for refresh tokens in browsers
+-- **Never put sensitive data in JWT payload** — it's base64, not encrypted
++---
++name: auth-system-setup
++description: &gt;-
++  When the user wants to set up authentication and authorization for a web application.
++  Use when the user mentions &quot;auth,&quot; &quot;login,&quot; &quot;OAuth,&quot; &quot;SSO,&quot; &quot;single sign-on,&quot;
++  &quot;role-based access,&quot; &quot;RBAC,&quot; &quot;permissions,&quot; &quot;user roles,&quot; &quot;access control,&quot;
++  &quot;authentication,&quot; or &quot;authorization.&quot; Covers OAuth 2.0 provider integration,
++  session management, and role/permission architecture. For JWT-specific tasks,
++  see jwt-handler. For security review, see security-audit.
++license: Apache-2.0
++compatibility: &quot;Any backend framework (Node.js, Python, Go, etc.)&quot;
++metadata:
++  author: terminal-skills
++  version: &quot;1.0.0&quot;
++  category: development
++  tags: [&quot;authentication&quot;, &quot;authorization&quot;, &quot;oauth&quot;, &quot;rbac&quot;, &quot;security&quot;]
++---
++
++# Auth System Setup
++
++## Overview
++
++Designs and implements complete authentication and authorization systems for web applications. Covers OAuth 2.0 provider integration (Google, GitHub, Microsoft), session and token management, role-based access control (RBAC), and permission architectures. Generates production-ready code, database migrations, and tests.
++
++## Instructions
++
++### 1. Gather Requirements
++
++Before generating any code, determine:\n\n- **Tech stack**: Backend framework, database, frontend framework\n- **Auth method**: OAuth providers, email/password, magic links, or combination\n- **Roles needed**: What roles exist? What can each role do?\n- **Token strategy**: Stateless JWT, server-side sessions, or hybrid\n- **Compliance**: GDPR, SOC 2, HIPAA — affects data storage and logging\n\n### 2. Design the Auth Architecture\n\nCreate the auth flow diagram and data model:\n\n- **User table**: id, email, name, avatar, provider, provider_id, created_at\n- **Role table**: id, name, description\n- **Permission table**: id, resource, action (read/write/delete)\n- **Role-Permission mapping**: role_id, permission_id\n- **User-Role mapping**: user_id, role_id\n- **Refresh token table**: id, user_id, token_hash, family_id, expires_at, revoked_at\n\n### 3. Implement OAuth Flow\n\nFor each OAuth provider:\n\n1. Create provider configuration (client ID, secret, scopes, callback URL)\n2. Implement the authorization redirect with state parameter and PKCE\n3. Handle the callback: exchange code for tokens, extract user profile\n4. Provision or update the user record\n5. Issue application tokens (access + refresh)\n\nAlways use PKCE for public clients. Always validate the state parameter.\n\n### 4. Implement RBAC\n\nGenerate the permission-checking middleware:\n\n```\nauthorize(resource, action) → middleware function\n  1. Extract user from request (via JWT or session)\n  2. Load user roles and permissions (cache with TTL)\n  3. Check if any role grants the required permission\n  4. Return 403 with clear error if denied\n```\n\nFor row-level security, add ownership filters:\n\n```\nfilterByOwnership(resource) → middleware function\n  1. If user role has wildcard access, skip filter\n  2. Otherwise, add WHERE clause: resource.owner_id = user.id\n  3. Apply to SELECT, UPDATE, DELETE queries\n```\n\n### 5. Generate Tests\n\nCreate tests for:\n\n- OAuth flow: successful login, invalid state, expired code\n- Token lifecycle: issue, refresh, rotate, revoke\n- RBAC: each role accessing allowed and denied resources\n- Edge cases: expired tokens, revoked refresh tokens, role changes mid-session\n\n## Examples\n\n### Example 1: Express + PostgreSQL + Google OAuth\n\n**Prompt**: \&quot;Set up Google OAuth with JWT tokens for my Express app. I need admin and user roles.\&quot;\n\n**Output**:\n- `auth/providers/google.ts` — OAuth 2.0 + PKCE flow\n- `auth/middleware/authenticate.ts` — JWT verification\n- `auth/middleware/authorize.ts` — Role checker\n- `migrations/001_auth_tables.sql` — Users, roles, permissions, refresh_tokens\n- `auth/services/token.service.ts` — JWT issuance with refresh rotation\n- `auth/routes.ts` — /auth/google, /auth/callback, /auth/refresh, /auth/logout\n- `tests/auth.test.ts` — 18 integration tests\n\n### Example 2: Django + GitHub OAuth + Multi-tenant RBAC\n\n**Prompt**: \&quot;Add GitHub login to my Django app. Each organization has its own roles: owner, editor, viewer.\&quot;\n\n**Output**:\n- `accounts/providers/github.py` — OAuth integration via django-allauth\n- `accounts/models.py` — Organization, Membership, Role models\n- `accounts/permissions.py` — Per-organization permission backend\n- `accounts/middleware.py` — Org context middleware (from subdomain or header)\n- `accounts/decorators.py` — @require_org_role('editor') decorator\n- `migrations/0001_multi_tenant_auth.py` — Schema migration\n- `tests/test_permissions.py` — 22 test cases across org boundaries\n\n## Guidelines\n\n- **Never store plain-text passwords** — use bcrypt with cost factor 12+ or argon2id\n- **Always use PKCE** for OAuth flows, even with confidential clients\n- **Rotate refresh tokens** on every use — detect reuse to identify token theft\n- **Set short access token TTL** — 15 minutes is the standard\n- **Cache permissions** — reload on role change, not on every request\n- **Log auth events** — login, logout, failed attempts, role changes (for audit trail)\n- **Rate limit auth endpoints** — prevent brute force on login and token refresh\n- **Use httpOnly, Secure, SameSite=Strict cookies** for refresh tokens in browsers\n- **Never put sensitive data in JWT payload** — it's base64, not encrypted\n\n## Checks\n\n- Does the `auth/providers/google.ts` file implement PKCE and validate the state parameter?\n- Does the `auth/middleware/authorize.ts` middleware return a 403 response when a user lacks the required permission?\n- Are the tables defined in `migrations/001_auth_tables.sql` include users, roles, permissions, role_permissions, user_roles, and refresh_tokens?
++---</pre></details>
+  
+  <table class='findings'><tr><th>Finding</th><th>Status</th><th>Class</th><th>Evidence</th></tr><tr><td><code>finding-0002</code></td><td>CONFIRMED</td><td>REQUIREMENT_WITHOUT_CHECK</td><td>skill has 1 normative rule(s) but 0 extracted checks</td></tr></table>
+</section><section class="skill-card tone-caution">
+  <h2>aws-rds <span class="badge tone-caution">MODIFY</span></h2>
+  
+  <p>
+
+The skill contains one normative rule but has no extracted checks (finding-0003), meaning there is no verification path for that requirement and the invariant that normative rules should have an identifiable verification path is violated; therefore the skill must be modified to add the missing checks.  
+
+1. Identify the normative rule and define a concrete check that can be extracted and executed.  
+2. Implement the check in the skill’s validation logic and link it to the rule.  
+3. Run the updated validation to confirm the invariant is satisfied and update any related documentation or tests.</p>
+  <p><strong>Suggested rewrite (llm-nebius): ACCEPTED by the deterministic gate; resolves REQUIREMENT_WITHOUT_CHECK. The gate re-audits text only: an accepted rewrite is one the auditor no longer objects to, not evidence that an agent following it behaves better.</strong></p><details><summary>Suggested change</summary><pre>--- aws-rds/SKILL.md (current)
++++ aws-rds/SKILL.md (suggested)
+@@ -205,2 +205,6 @@
+ - Use parameter groups to tune engine settings per workload
+ - Place RDS in private subnets; never expose to the public internet
++
++## Checks
++
++- Does the DB instance returned by `aws rds describe-db-instances --db-instance-identifier app-db-prod` show a status of `available`?</pre></details>
+  
+  <table class='findings'><tr><th>Finding</th><th>Status</th><th>Class</th><th>Evidence</th></tr><tr><td><code>finding-0003</code></td><td>CONFIRMED</td><td>REQUIREMENT_WITHOUT_CHECK</td><td>skill has 1 normative rule(s) but 0 extracted checks</td></tr></table>
+</section><section class="skill-card tone-caution">
+  <h2>batch-processor <span class="badge tone-caution">MODIFY</span></h2>
+  
+  <p>
+
+The skill contains a normative rule that lacks any corresponding check (finding-0004), violating the invariant that each rule must have an identifiable verification path; therefore the skill must be modified to introduce the missing verification.  
+
+1. Identify the missing verification logic for the sole normative rule.  
+2. Implement a concrete check (e.g., a unit test or validation step) that can be extracted and linked to the rule.  
+3. Update the skill’s documentation or metadata to reflect the new check and ensure the rule now has a verification path.</p>
+  <p><strong>Suggested rewrite (llm-nebius): no rewrite was proposed for REQUIREMENT_WITHOUT_CHECK.</strong></p>
+  
+  <table class='findings'><tr><th>Finding</th><th>Status</th><th>Class</th><th>Evidence</th></tr><tr><td><code>finding-0004</code></td><td>CONFIRMED</td><td>REQUIREMENT_WITHOUT_CHECK</td><td>skill has 1 normative rule(s) but 0 extracted checks</td></tr></table>
+</section>
+<footer>The recommendation for every skill (KEEP, NEEDS_CONFIRMATION, MODIFY, or CONSOLIDATE) is computed by a deterministic rule over L2 audit findings and L2.5/L12 confirmation verdicts, before any language model is consulted. The model is given that decision as a fixed fact and asked only to explain it in prose, citing findings by id. Every finding id the model cites is checked after the fact against the sealed findings for that skill; an id that does not exist there is listed as an untraceable claim, not silently presented as evidence. report_digest is the canonical seal of this report: recompute it independently to confirm this rendering was not altered after the fact.</footer>
+</div>
+</body>
+</html>

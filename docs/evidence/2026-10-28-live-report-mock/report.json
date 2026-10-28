@@ -1,0 +1,248 @@
+{
+  "audit_digest": "sha256:60662c6958ed66e9026fe6e465593b514353e02081600ddf22868a851209d47a",
+  "confirmation_digest": "sha256:944d96cf86b13e5e05721abd0292757b4e9b3bb443825dbd92bcb9036dfddc0e",
+  "confirmation_digest_mismatch": false,
+  "corpus": {
+    "consolidation_groups": [],
+    "contradictions": [],
+    "preconditions": {
+      "abstained_count": 6,
+      "checks": [
+        {
+          "check_class": "BROKEN_REFERENCE",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine",
+          "requires": "declared_relations"
+        },
+        {
+          "check_class": "COMPOSITION_CYCLE",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine",
+          "requires": "declared_relations"
+        },
+        {
+          "check_class": "CONDITIONAL_CONTRADICTION",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "no two extracted rules share a normalized subject, so this check compared no rule pair. Read this with rules_with_subject: only the RFC-2119 modal extraction route assigns a subject at all, while the negative-starter and imperative routes record an empty one by construction (no object extraction), so a low count usually means a subject was never attempted rather than attempted and unmatched",
+          "requires": "comparable_rule_pairs_by_subject"
+        },
+        {
+          "check_class": "NORMATIVE_CONFLICT",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "no two extracted rules share a normalized subject, so this check compared no rule pair. Read this with rules_with_subject: only the RFC-2119 modal extraction route assigns a subject at all, while the negative-starter and imperative routes record an empty one by construction (no object extraction), so a low count usually means a subject was never attempted rather than attempted and unmatched",
+          "requires": "comparable_rule_pairs_by_subject"
+        },
+        {
+          "check_class": "ORPHAN_SKILL",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine",
+          "requires": "declared_relations"
+        },
+        {
+          "check_class": "REQUIREMENT_WITHOUT_CHECK",
+          "observed": 4,
+          "outcome": "EXERCISED",
+          "reason": null,
+          "requires": "rules"
+        },
+        {
+          "check_class": "SEMANTIC_REDUNDANCY",
+          "observed": 6,
+          "outcome": "EXERCISED",
+          "reason": null,
+          "requires": "comparable_skill_pairs"
+        },
+        {
+          "check_class": "SELF_COMPOSITION",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine",
+          "requires": "declared_relations"
+        }
+      ],
+      "corpus_inputs": {
+        "checks": 0,
+        "comparable_rule_pairs_by_subject": 0,
+        "comparable_skill_pairs": 6,
+        "declared_relations": 0,
+        "rules": 4,
+        "rules_with_subject": 0,
+        "skills": 4,
+        "skills_with_fingerprint": 4
+      },
+      "limitation": "an ABSTAINED check produced no findings because this corpus did not supply the input it consumes; that is not evidence the corpus is free of that defect class"
+    },
+    "redundancy_candidate_pairs": {
+      "confirmed": 0,
+      "pending": 0,
+      "rejected": 0
+    },
+    "repairs": {
+      "accepted": 0,
+      "attempted": 0,
+      "behavioral_gate": null,
+      "eligible": 0,
+      "not_attempted": []
+    },
+    "shared_rule_texts": []
+  },
+  "executive_summary": {
+    "blocked": false,
+    "cited_finding_ids": [],
+    "error": null,
+    "executor_model": "crucible-mock-narration/v1",
+    "narration_digest": "sha256:2c914ade7f6d8519a950a0085daa983e2ee2a4d52ee1d45262c160dd3e2be29d",
+    "narrative": "Mock narration.",
+    "schema_version": "crucible-corpus-narration/v1",
+    "untraceable_finding_ids": []
+  },
+  "input": {
+    "excluded_duplicate_names": [],
+    "scope": "directory"
+  },
+  "recommendation_digest": "sha256:ba0a043d6fba9cf9e1acd537a4fdc59644c587974fd856d17c706e8c07a8f46f",
+  "report_digest": "sha256:dd78387089b1edac6ddba8a357b04ddcb6af5a927344b6605b72364b1d06e493",
+  "schema_version": "crucible-final-report/v2",
+  "skill_count": 4,
+  "skills": {
+    "adonisjs": {
+      "cited_finding_ids": [],
+      "confirmed_finding_ids": [],
+      "consolidation_finding_ids": [],
+      "consolidation_group": [],
+      "findings": [
+        {
+          "class": "REQUIREMENT_WITHOUT_CHECK",
+          "epistemic_status": "CANDIDATE",
+          "evidence": "skill has 1 normative rule(s) but 0 extracted checks",
+          "id": "finding-0001",
+          "limitation": "the IR does not link checks to specific rules; this is a coarse skill-level heuristic, not a per-rule coverage claim",
+          "rule_id": "rule-0001",
+          "skill": "adonisjs",
+          "source_path": "adonisjs/SKILL.md",
+          "source_span": {
+            "column": 1,
+            "line": 200
+          },
+          "violated_invariant": "normative rules should have an identifiable verification path"
+        }
+      ],
+      "narration_blocked": false,
+      "narration_error": null,
+      "narrative": "No action recommended: 1 candidate finding(s) were raised and all were rejected by confirmation.",
+      "pending_finding_ids": [],
+      "recommendation": "KEEP",
+      "rejected_finding_ids": [
+        "finding-0001"
+      ],
+      "untraceable_finding_ids": []
+    },
+    "auth-system-setup": {
+      "cited_finding_ids": [],
+      "confirmed_finding_ids": [],
+      "consolidation_finding_ids": [],
+      "consolidation_group": [],
+      "findings": [
+        {
+          "class": "REQUIREMENT_WITHOUT_CHECK",
+          "epistemic_status": "CANDIDATE",
+          "evidence": "skill has 1 normative rule(s) but 0 extracted checks",
+          "id": "finding-0002",
+          "limitation": "the IR does not link checks to specific rules; this is a coarse skill-level heuristic, not a per-rule coverage claim",
+          "rule_id": "rule-0001",
+          "skill": "auth-system-setup",
+          "source_path": "auth-system-setup/SKILL.md",
+          "source_span": {
+            "column": 1,
+            "line": 58
+          },
+          "violated_invariant": "normative rules should have an identifiable verification path"
+        }
+      ],
+      "narration_blocked": false,
+      "narration_error": null,
+      "narrative": "No action recommended: 1 candidate finding(s) were raised and all were rejected by confirmation.",
+      "pending_finding_ids": [],
+      "recommendation": "KEEP",
+      "rejected_finding_ids": [
+        "finding-0002"
+      ],
+      "untraceable_finding_ids": []
+    },
+    "aws-rds": {
+      "cited_finding_ids": [],
+      "confirmed_finding_ids": [],
+      "consolidation_finding_ids": [],
+      "consolidation_group": [],
+      "findings": [
+        {
+          "class": "REQUIREMENT_WITHOUT_CHECK",
+          "epistemic_status": "CANDIDATE",
+          "evidence": "skill has 1 normative rule(s) but 0 extracted checks",
+          "id": "finding-0003",
+          "limitation": "the IR does not link checks to specific rules; this is a coarse skill-level heuristic, not a per-rule coverage claim",
+          "rule_id": "rule-0001",
+          "skill": "aws-rds",
+          "source_path": "aws-rds/SKILL.md",
+          "source_span": {
+            "column": 1,
+            "line": 199
+          },
+          "violated_invariant": "normative rules should have an identifiable verification path"
+        }
+      ],
+      "narration_blocked": false,
+      "narration_error": null,
+      "narrative": "No action recommended: 1 candidate finding(s) were raised and all were rejected by confirmation.",
+      "pending_finding_ids": [],
+      "recommendation": "KEEP",
+      "rejected_finding_ids": [
+        "finding-0003"
+      ],
+      "untraceable_finding_ids": []
+    },
+    "batch-processor": {
+      "cited_finding_ids": [],
+      "confirmed_finding_ids": [],
+      "consolidation_finding_ids": [],
+      "consolidation_group": [],
+      "findings": [
+        {
+          "class": "REQUIREMENT_WITHOUT_CHECK",
+          "epistemic_status": "CANDIDATE",
+          "evidence": "skill has 1 normative rule(s) but 0 extracted checks",
+          "id": "finding-0004",
+          "limitation": "the IR does not link checks to specific rules; this is a coarse skill-level heuristic, not a per-rule coverage claim",
+          "rule_id": "rule-0001",
+          "skill": "batch-processor",
+          "source_path": "batch-processor/SKILL.md",
+          "source_span": {
+            "column": 1,
+            "line": 220
+          },
+          "violated_invariant": "normative rules should have an identifiable verification path"
+        }
+      ],
+      "narration_blocked": false,
+      "narration_error": null,
+      "narrative": "No action recommended: 1 candidate finding(s) were raised and all were rejected by confirmation.",
+      "pending_finding_ids": [],
+      "recommendation": "KEEP",
+      "rejected_finding_ids": [
+        "finding-0004"
+      ],
+      "untraceable_finding_ids": []
+    }
+  },
+  "summary": {
+    "by_recommendation": {
+      "KEEP": 4
+    },
+    "total_skills": 4
+  }
+}

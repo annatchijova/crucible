@@ -1,0 +1,381 @@
+{
+  "audit_digest": "sha256:60662c6958ed66e9026fe6e465593b514353e02081600ddf22868a851209d47a",
+  "confirmation_digest": "sha256:7e70f73b6bf8639d44b3de149bd3e30bc8a034d1c3dd90e69b8d0c2154716a94",
+  "confirmation_digest_mismatch": false,
+  "corpus": {
+    "consolidation_groups": [],
+    "contradictions": [],
+    "preconditions": {
+      "abstained_count": 6,
+      "checks": [
+        {
+          "check_class": "BROKEN_REFERENCE",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine",
+          "requires": "declared_relations"
+        },
+        {
+          "check_class": "COMPOSITION_CYCLE",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine",
+          "requires": "declared_relations"
+        },
+        {
+          "check_class": "CONDITIONAL_CONTRADICTION",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "no two extracted rules share a normalized subject, so this check compared no rule pair. Read this with rules_with_subject: only the RFC-2119 modal extraction route assigns a subject at all, while the negative-starter and imperative routes record an empty one by construction (no object extraction), so a low count usually means a subject was never attempted rather than attempted and unmatched",
+          "requires": "comparable_rule_pairs_by_subject"
+        },
+        {
+          "check_class": "NORMATIVE_CONFLICT",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "no two extracted rules share a normalized subject, so this check compared no rule pair. Read this with rules_with_subject: only the RFC-2119 modal extraction route assigns a subject at all, while the negative-starter and imperative routes record an empty one by construction (no object extraction), so a low count usually means a subject was never attempted rather than attempted and unmatched",
+          "requires": "comparable_rule_pairs_by_subject"
+        },
+        {
+          "check_class": "ORPHAN_SKILL",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine",
+          "requires": "declared_relations"
+        },
+        {
+          "check_class": "REQUIREMENT_WITHOUT_CHECK",
+          "observed": 4,
+          "outcome": "EXERCISED",
+          "reason": null,
+          "requires": "rules"
+        },
+        {
+          "check_class": "SEMANTIC_REDUNDANCY",
+          "observed": 6,
+          "outcome": "EXERCISED",
+          "reason": null,
+          "requires": "comparable_skill_pairs"
+        },
+        {
+          "check_class": "SELF_COMPOSITION",
+          "observed": 0,
+          "outcome": "ABSTAINED",
+          "reason": "the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine",
+          "requires": "declared_relations"
+        }
+      ],
+      "corpus_inputs": {
+        "checks": 0,
+        "comparable_rule_pairs_by_subject": 0,
+        "comparable_skill_pairs": 6,
+        "declared_relations": 0,
+        "rules": 4,
+        "rules_with_subject": 0,
+        "skills": 4,
+        "skills_with_fingerprint": 4
+      },
+      "limitation": "an ABSTAINED check produced no findings because this corpus did not supply the input it consumes; that is not evidence the corpus is free of that defect class"
+    },
+    "redundancy_candidate_pairs": {
+      "confirmed": 0,
+      "pending": 0,
+      "rejected": 0
+    },
+    "repairs": {
+      "accepted": 2,
+      "attempted": 4,
+      "behavioral_gate": null,
+      "eligible": 4,
+      "not_attempted": []
+    },
+    "shared_rule_texts": []
+  },
+  "executive_summary": {
+    "blocked": false,
+    "cited_finding_ids": [
+      "finding-0001",
+      "finding-0002",
+      "finding-0003",
+      "finding-0004"
+    ],
+    "error": null,
+    "executor_model": "nvidia/nemotron-3-super-120b-a12b",
+    "narration_digest": "sha256:f9add91c546c410b8078605b4e996916f52d8498c976794052079ea7c272fa7f",
+    "narrative": "\n\nAll four skills examined require modification, with no duplicate groups identified and no rule contradictions found; the text‑only gate accepted two of the four rewrite attempts, indicating partial success in automated fixes, while each skill presents a distinct confirmed finding that drives the recommended changes.  \n1. Update the adonisjs skill to resolve the issue recorded in finding-0001.  \n2. Update the auth-system-setup skill to resolve the issue recorded in finding-0002.  \n3. Update the aws-rds skill to resolve the issue recorded in finding-0003.  \n4. Update the batch-processor skill to resolve the issue recorded in finding-0004.  \nThe audit could not evaluate the checks for BROKEN_REFERENCE, COMPOSITION_CYCLE, CONDITIONAL_CONTRADICTION, NORMATIVE_CONFLICT, ORPHAN_SKILL, and SELF_COMPOSITION because their required inputs were absent from the corpus.",
+    "schema_version": "crucible-corpus-narration/v1",
+    "untraceable_finding_ids": []
+  },
+  "input": {
+    "excluded_duplicate_names": [],
+    "scope": "directory"
+  },
+  "recommendation_digest": "sha256:686e295be80647cc0cd1f44c2404015d8c743b44fab0e84ee137126a616d00ec",
+  "report_digest": "sha256:29eedcebcf4bf26cb4f49402e9b43be8477f1b806335b32ee3e0742f1de7498b",
+  "schema_version": "crucible-final-report/v2",
+  "skill_count": 4,
+  "skills": {
+    "adonisjs": {
+      "cited_finding_ids": [
+        "finding-0001"
+      ],
+      "confirmed_finding_ids": [
+        "finding-0001"
+      ],
+      "consolidation_finding_ids": [],
+      "consolidation_group": [],
+      "findings": [
+        {
+          "class": "REQUIREMENT_WITHOUT_CHECK",
+          "epistemic_status": "CANDIDATE",
+          "evidence": "skill has 1 normative rule(s) but 0 extracted checks",
+          "id": "finding-0001",
+          "limitation": "the IR does not link checks to specific rules; this is a coarse skill-level heuristic, not a per-rule coverage claim",
+          "rule_id": "rule-0001",
+          "skill": "adonisjs",
+          "source_path": "adonisjs/SKILL.md",
+          "source_span": {
+            "column": 1,
+            "line": 200
+          },
+          "violated_invariant": "normative rules should have an identifiable verification path"
+        }
+      ],
+      "narration_blocked": false,
+      "narration_error": null,
+      "narrative": "\n\nThe recommendation to MODIFY follows from finding‑0001, which shows that the skill contains a normative rule without any extracted check, violating the invariant that every rule must have an identifiable verification path; therefore the skill must be altered to add the missing checks.  \n\nNext steps:  \n1. Locate the unspecified normative rule referenced in finding‑0001 and define a concrete check that verifies its compliance.  \n2. Implement the check in the skill’s validation logic (e.g., add a test or runtime assertion).  \n3. Update any associated documentation or examples to reflect the new verification path.  \n4. Run the skill’s test suite to confirm that the newly added check passes and that no existing functionality is broken.",
+      "pending_finding_ids": [],
+      "recommendation": "MODIFY",
+      "rejected_finding_ids": [],
+      "suggested_rewrite": {
+        "behavioral_gate": null,
+        "diff": null,
+        "limitation": "The gate re-audits text only: an accepted rewrite is one the auditor no longer objects to, not evidence that an agent following it behaves better.",
+        "new_findings": [],
+        "outcome": "NO_PROPOSAL",
+        "persisting_classes": [],
+        "proposals": [
+          {
+            "applied": false,
+            "class": "REQUIREMENT_WITHOUT_CHECK",
+            "finding_id": "finding-0001",
+            "proposer": "llm-nebius",
+            "rationale": "provider response incomplete: finish_reason=length"
+          }
+        ],
+        "proposed_text": null,
+        "rejection_reason": null,
+        "resolved_classes": [],
+        "schema_version": "crucible-repair-suggestion/v1",
+        "skill": "adonisjs",
+        "suggestion_digest": "sha256:70e54040fc1163fd8441d5e62446bcd2f6bb43963889f18528cb576713e75515",
+        "target_classes": [
+          "REQUIREMENT_WITHOUT_CHECK"
+        ],
+        "target_finding_ids": [
+          "finding-0001"
+        ]
+      },
+      "untraceable_finding_ids": []
+    },
+    "auth-system-setup": {
+      "cited_finding_ids": [
+        "finding-0002"
+      ],
+      "confirmed_finding_ids": [
+        "finding-0002"
+      ],
+      "consolidation_finding_ids": [],
+      "consolidation_group": [],
+      "findings": [
+        {
+          "class": "REQUIREMENT_WITHOUT_CHECK",
+          "epistemic_status": "CANDIDATE",
+          "evidence": "skill has 1 normative rule(s) but 0 extracted checks",
+          "id": "finding-0002",
+          "limitation": "the IR does not link checks to specific rules; this is a coarse skill-level heuristic, not a per-rule coverage claim",
+          "rule_id": "rule-0001",
+          "skill": "auth-system-setup",
+          "source_path": "auth-system-setup/SKILL.md",
+          "source_span": {
+            "column": 1,
+            "line": 58
+          },
+          "violated_invariant": "normative rules should have an identifiable verification path"
+        }
+      ],
+      "narration_blocked": false,
+      "narration_error": null,
+      "narrative": "\n\nThe skill contains a normative rule that lacks any associated check, leaving no way to verify that the rule is satisfied (finding-0002). Because verification is missing, the skill must be modified to add a proper verification path or adjust the rule accordingly.\n\n1. Determine what verification is needed for the existing normative rule and specify a concrete check.  \n2. Implement the check within the skill’s validation or test suite.  \n3. Update any relevant documentation to describe the new verification process.  \n4. Re‑run the audit to confirm that finding-0002 is resolved.",
+      "pending_finding_ids": [],
+      "recommendation": "MODIFY",
+      "rejected_finding_ids": [],
+      "suggested_rewrite": {
+        "behavioral_gate": null,
+        "diff": "--- auth-system-setup/SKILL.md (current)\n+++ auth-system-setup/SKILL.md (suggested)\n@@ -1,128 +1,30 @@\n----\n-name: auth-system-setup\n-description: >-\n-  When the user wants to set up authentication and authorization for a web application.\n-  Use when the user mentions \"auth,\" \"login,\" \"OAuth,\" \"SSO,\" \"single sign-on,\"\n-  \"role-based access,\" \"RBAC,\" \"permissions,\" \"user roles,\" \"access control,\"\n-  \"authentication,\" or \"authorization.\" Covers OAuth 2.0 provider integration,\n-  session management, and role/permission architecture. For JWT-specific tasks,\n-  see jwt-handler. For security review, see security-audit.\n-license: Apache-2.0\n-compatibility: \"Any backend framework (Node.js, Python, Go, etc.)\"\n-metadata:\n-  author: terminal-skills\n-  version: \"1.0.0\"\n-  category: development\n-  tags: [\"authentication\", \"authorization\", \"oauth\", \"rbac\", \"security\"]\n----\n-\n-# Auth System Setup\n-\n-## Overview\n-\n-Designs and implements complete authentication and authorization systems for web applications. Covers OAuth 2.0 provider integration (Google, GitHub, Microsoft), session and token management, role-based access control (RBAC), and permission architectures. Generates production-ready code, database migrations, and tests.\n-\n-## Instructions\n-\n-### 1. Gather Requirements\n-\n-Before generating any code, determine:\n-\n-- **Tech stack**: Backend framework, database, frontend framework\n-- **Auth method**: OAuth providers, email/password, magic links, or combination\n-- **Roles needed**: What roles exist? What can each role do?\n-- **Token strategy**: Stateless JWT, server-side sessions, or hybrid\n-- **Compliance**: GDPR, SOC 2, HIPAA — affects data storage and logging\n-\n-### 2. Design the Auth Architecture\n-\n-Create the auth flow diagram and data model:\n-\n-- **User table**: id, email, name, avatar, provider, provider_id, created_at\n-- **Role table**: id, name, description\n-- **Permission table**: id, resource, action (read/write/delete)\n-- **Role-Permission mapping**: role_id, permission_id\n-- **User-Role mapping**: user_id, role_id\n-- **Refresh token table**: id, user_id, token_hash, family_id, expires_at, revoked_at\n-\n-### 3. Implement OAuth Flow\n-\n-For each OAuth provider:\n-\n-1. Create provider configuration (client ID, secret, scopes, callback URL)\n-2. Implement the authorization redirect with state parameter and PKCE\n-3. Handle the callback: exchange code for tokens, extract user profile\n-4. Provision or update the user record\n-5. Issue application tokens (access + refresh)\n-\n-Always use PKCE for public clients. Always validate the state parameter.\n-\n-### 4. Implement RBAC\n-\n-Generate the permission-checking middleware:\n-\n-```\n-authorize(resource, action) → middleware function\n-  1. Extract user from request (via JWT or session)\n-  2. Load user roles and permissions (cache with TTL)\n-  3. Check if any role grants the required permission\n-  4. Return 403 with clear error if denied\n-```\n-\n-For row-level security, add ownership filters:\n-\n-```\n-filterByOwnership(resource) → middleware function\n-  1. If user role has wildcard access, skip filter\n-  2. Otherwise, add WHERE clause: resource.owner_id = user.id\n-  3. Apply to SELECT, UPDATE, DELETE queries\n-```\n-\n-### 5. Generate Tests\n-\n-Create tests for:\n-\n-- OAuth flow: successful login, invalid state, expired code\n-- Token lifecycle: issue, refresh, rotate, revoke\n-- RBAC: each role accessing allowed and denied resources\n-- Edge cases: expired tokens, revoked refresh tokens, role changes mid-session\n-\n-## Examples\n-\n-### Example 1: Express + PostgreSQL + Google OAuth\n-\n-**Prompt**: \"Set up Google OAuth with JWT tokens for my Express app. I need admin and user roles.\"\n-\n-**Output**:\n-- `auth/providers/google.ts` — OAuth 2.0 + PKCE flow\n-- `auth/middleware/authenticate.ts` — JWT verification\n-- `auth/middleware/authorize.ts` — Role checker\n-- `migrations/001_auth_tables.sql` — Users, roles, permissions, refresh_tokens\n-- `auth/services/token.service.ts` — JWT issuance with refresh rotation\n-- `auth/routes.ts` — /auth/google, /auth/callback, /auth/refresh, /auth/logout\n-- `tests/auth.test.ts` — 18 integration tests\n-\n-### Example 2: Django + GitHub OAuth + Multi-tenant RBAC\n-\n-**Prompt**: \"Add GitHub login to my Django app. Each organization has its own roles: owner, editor, viewer.\"\n-\n-**Output**:\n-- `accounts/providers/github.py` — OAuth integration via django-allauth\n-- `accounts/models.py` — Organization, Membership, Role models\n-- `accounts/permissions.py` — Per-organization permission backend\n-- `accounts/middleware.py` — Org context middleware (from subdomain or header)\n-- `accounts/decorators.py` — @require_org_role('editor') decorator\n-- `migrations/0001_multi_tenant_auth.py` — Schema migration\n-- `tests/test_permissions.py` — 22 test cases across org boundaries\n-\n-## Guidelines\n-\n-- **Never store plain-text passwords** — use bcrypt with cost factor 12+ or argon2id\n-- **Always use PKCE** for OAuth flows, even with confidential clients\n-- **Rotate refresh tokens** on every use — detect reuse to identify token theft\n-- **Set short access token TTL** — 15 minutes is the standard\n-- **Cache permissions** — reload on role change, not on every request\n-- **Log auth events** — login, logout, failed attempts, role changes (for audit trail)\n-- **Rate limit auth endpoints** — prevent brute force on login and token refresh\n-- **Use httpOnly, Secure, SameSite=Strict cookies** for refresh tokens in browsers\n-- **Never put sensitive data in JWT payload** — it's base64, not encrypted\n+---\r\n+name: auth-system-setup\r\n+description: >-\r\n+  When the user wants to set up authentication and authorization for a web application.\r\n+  Use when the user mentions \"auth,\" \"login,\" \"OAuth,\" \"SSO,\" \"single sign-on,\"\r\n+  \"role-based access,\" \"RBAC,\" \"permissions,\" \"user roles,\" \"access control,\"\r\n+  \"authentication,\" or \"authorization.\" Covers OAuth 2.0 provider integration,\r\n+  session management, and role/permission architecture. For JWT-specific tasks,\r\n+  see jwt-handler. For security review, see security-audit.\r\n+license: Apache-2.0\r\n+compatibility: \"Any backend framework (Node.js, Python, Go, etc.)\"\r\n+metadata:\r\n+  author: terminal-skills\r\n+  version: \"1.0.0\"\r\n+  category: development\r\n+  tags: [\"authentication\", \"authorization\", \"oauth\", \"rbac\", \"security\"]\r\n+---\r\n+\r\n+# Auth System Setup\r\n+\r\n+## Overview\r\n+\r\n+Designs and implements complete authentication and authorization systems for web applications. Covers OAuth 2.0 provider integration (Google, GitHub, Microsoft), session and token management, role-based access control (RBAC), and permission architectures. Generates production-ready code, database migrations, and tests.\r\n+\r\n+## Instructions\r\n+\r\n+### 1. Gather Requirements\r\n+\r\n+Before generating any code, determine:\\n\\n- **Tech stack**: Backend framework, database, frontend framework\\n- **Auth method**: OAuth providers, email/password, magic links, or combination\\n- **Roles needed**: What roles exist? What can each role do?\\n- **Token strategy**: Stateless JWT, server-side sessions, or hybrid\\n- **Compliance**: GDPR, SOC 2, HIPAA — affects data storage and logging\\n\\n### 2. Design the Auth Architecture\\n\\nCreate the auth flow diagram and data model:\\n\\n- **User table**: id, email, name, avatar, provider, provider_id, created_at\\n- **Role table**: id, name, description\\n- **Permission table**: id, resource, action (read/write/delete)\\n- **Role-Permission mapping**: role_id, permission_id\\n- **User-Role mapping**: user_id, role_id\\n- **Refresh token table**: id, user_id, token_hash, family_id, expires_at, revoked_at\\n\\n### 3. Implement OAuth Flow\\n\\nFor each OAuth provider:\\n\\n1. Create provider configuration (client ID, secret, scopes, callback URL)\\n2. Implement the authorization redirect with state parameter and PKCE\\n3. Handle the callback: exchange code for tokens, extract user profile\\n4. Provision or update the user record\\n5. Issue application tokens (access + refresh)\\n\\nAlways use PKCE for public clients. Always validate the state parameter.\\n\\n### 4. Implement RBAC\\n\\nGenerate the permission-checking middleware:\\n\\n```\\nauthorize(resource, action) → middleware function\\n  1. Extract user from request (via JWT or session)\\n  2. Load user roles and permissions (cache with TTL)\\n  3. Check if any role grants the required permission\\n  4. Return 403 with clear error if denied\\n```\\n\\nFor row-level security, add ownership filters:\\n\\n```\\nfilterByOwnership(resource) → middleware function\\n  1. If user role has wildcard access, skip filter\\n  2. Otherwise, add WHERE clause: resource.owner_id = user.id\\n  3. Apply to SELECT, UPDATE, DELETE queries\\n```\\n\\n### 5. Generate Tests\\n\\nCreate tests for:\\n\\n- OAuth flow: successful login, invalid state, expired code\\n- Token lifecycle: issue, refresh, rotate, revoke\\n- RBAC: each role accessing allowed and denied resources\\n- Edge cases: expired tokens, revoked refresh tokens, role changes mid-session\\n\\n## Examples\\n\\n### Example 1: Express + PostgreSQL + Google OAuth\\n\\n**Prompt**: \\\"Set up Google OAuth with JWT tokens for my Express app. I need admin and user roles.\\\"\\n\\n**Output**:\\n- `auth/providers/google.ts` — OAuth 2.0 + PKCE flow\\n- `auth/middleware/authenticate.ts` — JWT verification\\n- `auth/middleware/authorize.ts` — Role checker\\n- `migrations/001_auth_tables.sql` — Users, roles, permissions, refresh_tokens\\n- `auth/services/token.service.ts` — JWT issuance with refresh rotation\\n- `auth/routes.ts` — /auth/google, /auth/callback, /auth/refresh, /auth/logout\\n- `tests/auth.test.ts` — 18 integration tests\\n\\n### Example 2: Django + GitHub OAuth + Multi-tenant RBAC\\n\\n**Prompt**: \\\"Add GitHub login to my Django app. Each organization has its own roles: owner, editor, viewer.\\\"\\n\\n**Output**:\\n- `accounts/providers/github.py` — OAuth integration via django-allauth\\n- `accounts/models.py` — Organization, Membership, Role models\\n- `accounts/permissions.py` — Per-organization permission backend\\n- `accounts/middleware.py` — Org context middleware (from subdomain or header)\\n- `accounts/decorators.py` — @require_org_role('editor') decorator\\n- `migrations/0001_multi_tenant_auth.py` — Schema migration\\n- `tests/test_permissions.py` — 22 test cases across org boundaries\\n\\n## Guidelines\\n\\n- **Never store plain-text passwords** — use bcrypt with cost factor 12+ or argon2id\\n- **Always use PKCE** for OAuth flows, even with confidential clients\\n- **Rotate refresh tokens** on every use — detect reuse to identify token theft\\n- **Set short access token TTL** — 15 minutes is the standard\\n- **Cache permissions** — reload on role change, not on every request\\n- **Log auth events** — login, logout, failed attempts, role changes (for audit trail)\\n- **Rate limit auth endpoints** — prevent brute force on login and token refresh\\n- **Use httpOnly, Secure, SameSite=Strict cookies** for refresh tokens in browsers\\n- **Never put sensitive data in JWT payload** — it's base64, not encrypted\\n\\n## Checks\\n\\n- Does the `auth/providers/google.ts` file implement PKCE and validate the state parameter?\\n- Does the `auth/middleware/authorize.ts` middleware return a 403 response when a user lacks the required permission?\\n- Are the tables defined in `migrations/001_auth_tables.sql` include users, roles, permissions, role_permissions, user_roles, and refresh_tokens?\r\n+---",
+        "limitation": "The gate re-audits text only: an accepted rewrite is one the auditor no longer objects to, not evidence that an agent following it behaves better.",
+        "new_findings": [],
+        "outcome": "ACCEPTED",
+        "persisting_classes": [],
+        "proposals": [
+          {
+            "applied": true,
+            "class": "REQUIREMENT_WITHOUT_CHECK",
+            "finding_id": "finding-0002",
+            "proposer": "llm-nebius",
+            "rationale": "generated by Nemotron via Nebius Token Factory; removed leading line breaks before frontmatter"
+          }
+        ],
+        "proposed_text": "---\r\nname: auth-system-setup\r\ndescription: >-\r\n  When the user wants to set up authentication and authorization for a web application.\r\n  Use when the user mentions \"auth,\" \"login,\" \"OAuth,\" \"SSO,\" \"single sign-on,\"\r\n  \"role-based access,\" \"RBAC,\" \"permissions,\" \"user roles,\" \"access control,\"\r\n  \"authentication,\" or \"authorization.\" Covers OAuth 2.0 provider integration,\r\n  session management, and role/permission architecture. For JWT-specific tasks,\r\n  see jwt-handler. For security review, see security-audit.\r\nlicense: Apache-2.0\r\ncompatibility: \"Any backend framework (Node.js, Python, Go, etc.)\"\r\nmetadata:\r\n  author: terminal-skills\r\n  version: \"1.0.0\"\r\n  category: development\r\n  tags: [\"authentication\", \"authorization\", \"oauth\", \"rbac\", \"security\"]\r\n---\r\n\r\n# Auth System Setup\r\n\r\n## Overview\r\n\r\nDesigns and implements complete authentication and authorization systems for web applications. Covers OAuth 2.0 provider integration (Google, GitHub, Microsoft), session and token management, role-based access control (RBAC), and permission architectures. Generates production-ready code, database migrations, and tests.\r\n\r\n## Instructions\r\n\r\n### 1. Gather Requirements\r\n\r\nBefore generating any code, determine:\\n\\n- **Tech stack**: Backend framework, database, frontend framework\\n- **Auth method**: OAuth providers, email/password, magic links, or combination\\n- **Roles needed**: What roles exist? What can each role do?\\n- **Token strategy**: Stateless JWT, server-side sessions, or hybrid\\n- **Compliance**: GDPR, SOC 2, HIPAA — affects data storage and logging\\n\\n### 2. Design the Auth Architecture\\n\\nCreate the auth flow diagram and data model:\\n\\n- **User table**: id, email, name, avatar, provider, provider_id, created_at\\n- **Role table**: id, name, description\\n- **Permission table**: id, resource, action (read/write/delete)\\n- **Role-Permission mapping**: role_id, permission_id\\n- **User-Role mapping**: user_id, role_id\\n- **Refresh token table**: id, user_id, token_hash, family_id, expires_at, revoked_at\\n\\n### 3. Implement OAuth Flow\\n\\nFor each OAuth provider:\\n\\n1. Create provider configuration (client ID, secret, scopes, callback URL)\\n2. Implement the authorization redirect with state parameter and PKCE\\n3. Handle the callback: exchange code for tokens, extract user profile\\n4. Provision or update the user record\\n5. Issue application tokens (access + refresh)\\n\\nAlways use PKCE for public clients. Always validate the state parameter.\\n\\n### 4. Implement RBAC\\n\\nGenerate the permission-checking middleware:\\n\\n```\\nauthorize(resource, action) → middleware function\\n  1. Extract user from request (via JWT or session)\\n  2. Load user roles and permissions (cache with TTL)\\n  3. Check if any role grants the required permission\\n  4. Return 403 with clear error if denied\\n```\\n\\nFor row-level security, add ownership filters:\\n\\n```\\nfilterByOwnership(resource) → middleware function\\n  1. If user role has wildcard access, skip filter\\n  2. Otherwise, add WHERE clause: resource.owner_id = user.id\\n  3. Apply to SELECT, UPDATE, DELETE queries\\n```\\n\\n### 5. Generate Tests\\n\\nCreate tests for:\\n\\n- OAuth flow: successful login, invalid state, expired code\\n- Token lifecycle: issue, refresh, rotate, revoke\\n- RBAC: each role accessing allowed and denied resources\\n- Edge cases: expired tokens, revoked refresh tokens, role changes mid-session\\n\\n## Examples\\n\\n### Example 1: Express + PostgreSQL + Google OAuth\\n\\n**Prompt**: \\\"Set up Google OAuth with JWT tokens for my Express app. I need admin and user roles.\\\"\\n\\n**Output**:\\n- `auth/providers/google.ts` — OAuth 2.0 + PKCE flow\\n- `auth/middleware/authenticate.ts` — JWT verification\\n- `auth/middleware/authorize.ts` — Role checker\\n- `migrations/001_auth_tables.sql` — Users, roles, permissions, refresh_tokens\\n- `auth/services/token.service.ts` — JWT issuance with refresh rotation\\n- `auth/routes.ts` — /auth/google, /auth/callback, /auth/refresh, /auth/logout\\n- `tests/auth.test.ts` — 18 integration tests\\n\\n### Example 2: Django + GitHub OAuth + Multi-tenant RBAC\\n\\n**Prompt**: \\\"Add GitHub login to my Django app. Each organization has its own roles: owner, editor, viewer.\\\"\\n\\n**Output**:\\n- `accounts/providers/github.py` — OAuth integration via django-allauth\\n- `accounts/models.py` — Organization, Membership, Role models\\n- `accounts/permissions.py` — Per-organization permission backend\\n- `accounts/middleware.py` — Org context middleware (from subdomain or header)\\n- `accounts/decorators.py` — @require_org_role('editor') decorator\\n- `migrations/0001_multi_tenant_auth.py` — Schema migration\\n- `tests/test_permissions.py` — 22 test cases across org boundaries\\n\\n## Guidelines\\n\\n- **Never store plain-text passwords** — use bcrypt with cost factor 12+ or argon2id\\n- **Always use PKCE** for OAuth flows, even with confidential clients\\n- **Rotate refresh tokens** on every use — detect reuse to identify token theft\\n- **Set short access token TTL** — 15 minutes is the standard\\n- **Cache permissions** — reload on role change, not on every request\\n- **Log auth events** — login, logout, failed attempts, role changes (for audit trail)\\n- **Rate limit auth endpoints** — prevent brute force on login and token refresh\\n- **Use httpOnly, Secure, SameSite=Strict cookies** for refresh tokens in browsers\\n- **Never put sensitive data in JWT payload** — it's base64, not encrypted\\n\\n## Checks\\n\\n- Does the `auth/providers/google.ts` file implement PKCE and validate the state parameter?\\n- Does the `auth/middleware/authorize.ts` middleware return a 403 response when a user lacks the required permission?\\n- Are the tables defined in `migrations/001_auth_tables.sql` include users, roles, permissions, role_permissions, user_roles, and refresh_tokens?\r\n---",
+        "rejection_reason": null,
+        "resolved_classes": [
+          "REQUIREMENT_WITHOUT_CHECK"
+        ],
+        "schema_version": "crucible-repair-suggestion/v1",
+        "skill": "auth-system-setup",
+        "suggestion_digest": "sha256:6eb171200a742920cd3f3569fb55f70d7223fa348f23093cfafe482a20a8f9b3",
+        "target_classes": [
+          "REQUIREMENT_WITHOUT_CHECK"
+        ],
+        "target_finding_ids": [
+          "finding-0002"
+        ]
+      },
+      "untraceable_finding_ids": []
+    },
+    "aws-rds": {
+      "cited_finding_ids": [
+        "finding-0003"
+      ],
+      "confirmed_finding_ids": [
+        "finding-0003"
+      ],
+      "consolidation_finding_ids": [],
+      "consolidation_group": [],
+      "findings": [
+        {
+          "class": "REQUIREMENT_WITHOUT_CHECK",
+          "epistemic_status": "CANDIDATE",
+          "evidence": "skill has 1 normative rule(s) but 0 extracted checks",
+          "id": "finding-0003",
+          "limitation": "the IR does not link checks to specific rules; this is a coarse skill-level heuristic, not a per-rule coverage claim",
+          "rule_id": "rule-0001",
+          "skill": "aws-rds",
+          "source_path": "aws-rds/SKILL.md",
+          "source_span": {
+            "column": 1,
+            "line": 199
+          },
+          "violated_invariant": "normative rules should have an identifiable verification path"
+        }
+      ],
+      "narration_blocked": false,
+      "narration_error": null,
+      "narrative": "\n\nThe skill contains one normative rule but has no extracted checks (finding-0003), meaning there is no verification path for that requirement and the invariant that normative rules should have an identifiable verification path is violated; therefore the skill must be modified to add the missing checks.  \n\n1. Identify the normative rule and define a concrete check that can be extracted and executed.  \n2. Implement the check in the skill’s validation logic and link it to the rule.  \n3. Run the updated validation to confirm the invariant is satisfied and update any related documentation or tests.",
+      "pending_finding_ids": [],
+      "recommendation": "MODIFY",
+      "rejected_finding_ids": [],
+      "suggested_rewrite": {
+        "behavioral_gate": null,
+        "diff": "--- aws-rds/SKILL.md (current)\n+++ aws-rds/SKILL.md (suggested)\n@@ -205,2 +205,6 @@\n - Use parameter groups to tune engine settings per workload\n - Place RDS in private subnets; never expose to the public internet\n+\n+## Checks\n+\n+- Does the DB instance returned by `aws rds describe-db-instances --db-instance-identifier app-db-prod` show a status of `available`?",
+        "limitation": "The gate re-audits text only: an accepted rewrite is one the auditor no longer objects to, not evidence that an agent following it behaves better.",
+        "new_findings": [],
+        "outcome": "ACCEPTED",
+        "persisting_classes": [],
+        "proposals": [
+          {
+            "applied": true,
+            "class": "REQUIREMENT_WITHOUT_CHECK",
+            "finding_id": "finding-0003",
+            "proposer": "llm-nebius",
+            "rationale": "generated by Nemotron via Nebius Token Factory; removed leading line breaks before frontmatter"
+          }
+        ],
+        "proposed_text": "---\nname: aws-rds\ndescription: |\n  Manage Amazon RDS for fully managed relational databases. Provision MySQL,\n  PostgreSQL, and Aurora instances with automated backups and patching. Configure\n  read replicas for scaling, snapshots for recovery, and Aurora Serverless for\n  variable workloads.\nlicense: Apache-2.0\ncompatibility: 'aws-cli, boto3, terraform'\nmetadata:\n  author: terminal-skills\n  version: 1.0.0\n  category: devops\n  tags:\n    - aws\n    - rds\n    - database\n    - aurora\n    - postgresql\n---\n\n# AWS RDS\n\nAmazon Relational Database Service (RDS) takes care of provisioning, patching, backups, and failover for relational databases. Supports MySQL, PostgreSQL, MariaDB, Oracle, SQL Server, and Amazon Aurora.\n\n## Core Concepts\n\n- **DB Instance** — an isolated database environment in the cloud\n- **Multi-AZ** — synchronous standby replica in another AZ for high availability\n- **Read Replica** — asynchronous copy for read scaling\n- **Parameter Group** — engine configuration settings\n- **Subnet Group** — defines which subnets RDS can use\n- **Aurora** — AWS-native engine, MySQL/PostgreSQL compatible, 5x faster\n\n## Provisioning a Database\n\n```bash\n# Create a DB subnet group\naws rds create-db-subnet-group \\\n  --db-subnet-group-name app-db-subnets \\\n  --db-subnet-group-description \"Private subnets for RDS\" \\\n  --subnet-ids subnet-aaa subnet-bbb subnet-ccc\n```\n\n```bash\n# Launch a PostgreSQL instance with Multi-AZ\naws rds create-db-instance \\\n  --db-instance-identifier app-db-prod \\\n  --db-instance-class db.r6g.large \\\n  --engine postgres \\\n  --engine-version 15.4 \\\n  --master-username appuser \\\n  --master-user-password \"$(aws secretsmanager get-random-password --password-length 32 --query RandomPassword --output text)\" \\\n  --allocated-storage 100 \\\n  --storage-type gp3 \\\n  --multi-az \\\n  --db-subnet-group-name app-db-subnets \\\n  --vpc-security-group-ids sg-0123456789abcdef0 \\\n  --backup-retention-period 14 \\\n  --preferred-backup-window \"03:00-04:00\" \\\n  --preferred-maintenance-window \"sun:05:00-sun:06:00\" \\\n  --storage-encrypted \\\n  --tags Key=Env,Value=prod\n```\n\n## Aurora Cluster\n\n```bash\n# Create an Aurora PostgreSQL cluster\naws rds create-db-cluster \\\n  --db-cluster-identifier app-aurora-prod \\\n  --engine aurora-postgresql \\\n  --engine-version 15.4 \\\n  --master-username appuser \\\n  --master-user-password \"$DB_PASSWORD\" \\\n  --db-subnet-group-name app-db-subnets \\\n  --vpc-security-group-ids sg-0123456789abcdef0 \\\n  --backup-retention-period 14 \\\n  --storage-encrypted \\\n  --serverless-v2-scaling-configuration MinCapacity=0.5,MaxCapacity=16\n```\n\n```bash\n# Add writer and reader instances to the cluster\naws rds create-db-instance \\\n  --db-instance-identifier app-aurora-writer \\\n  --db-instance-class db.serverless \\\n  --engine aurora-postgresql \\\n  --db-cluster-identifier app-aurora-prod\n\naws rds create-db-instance \\\n  --db-instance-identifier app-aurora-reader \\\n  --db-instance-class db.serverless \\\n  --engine aurora-postgresql \\\n  --db-cluster-identifier app-aurora-prod\n```\n\n## Read Replicas\n\n```bash\n# Create a read replica in same region\naws rds create-db-instance-read-replica \\\n  --db-instance-identifier app-db-read-1 \\\n  --source-db-instance-identifier app-db-prod \\\n  --db-instance-class db.r6g.large\n```\n\n```bash\n# Create cross-region read replica for DR\naws rds create-db-instance-read-replica \\\n  --db-instance-identifier app-db-read-eu \\\n  --source-db-instance-identifier arn:aws:rds:us-east-1:123456789:db:app-db-prod \\\n  --db-instance-class db.r6g.large \\\n  --region eu-west-1\n```\n\n```bash\n# Promote replica to standalone (for migration or DR)\naws rds promote-read-replica --db-instance-identifier app-db-read-eu\n```\n\n## Snapshots and Recovery\n\n```bash\n# Create a manual snapshot\naws rds create-db-snapshot \\\n  --db-instance-identifier app-db-prod \\\n  --db-snapshot-identifier app-db-pre-migration-$(date +%Y%m%d)\n```\n\n```bash\n# Restore from snapshot (creates a new instance)\naws rds restore-db-instance-from-db-snapshot \\\n  --db-instance-identifier app-db-restored \\\n  --db-snapshot-identifier app-db-pre-migration-20240115 \\\n  --db-instance-class db.r6g.large \\\n  --db-subnet-group-name app-db-subnets \\\n  --vpc-security-group-ids sg-0123456789abcdef0\n```\n\n```bash\n# Point-in-time recovery\naws rds restore-db-instance-to-point-in-time \\\n  --source-db-instance-identifier app-db-prod \\\n  --target-db-instance-identifier app-db-pitr \\\n  --restore-time \"2024-01-15T10:30:00Z\" \\\n  --db-instance-class db.r6g.large\n```\n\n```bash\n# List automated snapshots\naws rds describe-db-snapshots \\\n  --db-instance-identifier app-db-prod \\\n  --snapshot-type automated \\\n  --query 'DBSnapshots[].[DBSnapshotIdentifier,SnapshotCreateTime,Status]' \\\n  --output table\n```\n\n## Parameter Groups\n\n```bash\n# Create custom parameter group\naws rds create-db-parameter-group \\\n  --db-parameter-group-name app-postgres15 \\\n  --db-parameter-group-family postgres15 \\\n  --description \"Custom params for app\"\n```\n\n```bash\n# Tune parameters for performance\naws rds modify-db-parameter-group \\\n  --db-parameter-group-name app-postgres15 \\\n  --parameters \\\n    \"ParameterName=shared_buffers,ParameterValue={DBInstanceClassMemory/4},ApplyMethod=pending-reboot\" \\\n    \"ParameterName=max_connections,ParameterValue=200,ApplyMethod=pending-reboot\" \\\n    \"ParameterName=log_min_duration_statement,ParameterValue=1000,ApplyMethod=immediate\"\n```\n\n## Monitoring\n\n```bash\n# Enable Performance Insights\naws rds modify-db-instance \\\n  --db-instance-identifier app-db-prod \\\n  --enable-performance-insights \\\n  --performance-insights-retention-period 7\n```\n\n```bash\n# Check instance status and endpoints\naws rds describe-db-instances \\\n  --db-instance-identifier app-db-prod \\\n  --query 'DBInstances[0].[Endpoint.Address,DBInstanceStatus,AllocatedStorage,MultiAZ]' \\\n  --output table\n```\n\n## Best Practices\n\n- Always enable Multi-AZ for production databases\n- Use Aurora Serverless v2 for unpredictable workloads\n- Store credentials in AWS Secrets Manager with automatic rotation\n- Set backup retention to at least 7 days; test restores periodically\n- Use read replicas to offload reporting and analytics queries\n- Enable Performance Insights and Enhanced Monitoring\n- Use parameter groups to tune engine settings per workload\n- Place RDS in private subnets; never expose to the public internet\n\n## Checks\n\n- Does the DB instance returned by `aws rds describe-db-instances --db-instance-identifier app-db-prod` show a status of `available`?",
+        "rejection_reason": null,
+        "resolved_classes": [
+          "REQUIREMENT_WITHOUT_CHECK"
+        ],
+        "schema_version": "crucible-repair-suggestion/v1",
+        "skill": "aws-rds",
+        "suggestion_digest": "sha256:35e47758917b94580a9b37ed7deb08c7494796e770a85b58e7d3915267a2f8fa",
+        "target_classes": [
+          "REQUIREMENT_WITHOUT_CHECK"
+        ],
+        "target_finding_ids": [
+          "finding-0003"
+        ]
+      },
+      "untraceable_finding_ids": []
+    },
+    "batch-processor": {
+      "cited_finding_ids": [
+        "finding-0004"
+      ],
+      "confirmed_finding_ids": [
+        "finding-0004"
+      ],
+      "consolidation_finding_ids": [],
+      "consolidation_group": [],
+      "findings": [
+        {
+          "class": "REQUIREMENT_WITHOUT_CHECK",
+          "epistemic_status": "CANDIDATE",
+          "evidence": "skill has 1 normative rule(s) but 0 extracted checks",
+          "id": "finding-0004",
+          "limitation": "the IR does not link checks to specific rules; this is a coarse skill-level heuristic, not a per-rule coverage claim",
+          "rule_id": "rule-0001",
+          "skill": "batch-processor",
+          "source_path": "batch-processor/SKILL.md",
+          "source_span": {
+            "column": 1,
+            "line": 220
+          },
+          "violated_invariant": "normative rules should have an identifiable verification path"
+        }
+      ],
+      "narration_blocked": false,
+      "narration_error": null,
+      "narrative": "\n\nThe skill contains a normative rule that lacks any corresponding check (finding-0004), violating the invariant that each rule must have an identifiable verification path; therefore the skill must be modified to introduce the missing verification.  \n\n1. Identify the missing verification logic for the sole normative rule.  \n2. Implement a concrete check (e.g., a unit test or validation step) that can be extracted and linked to the rule.  \n3. Update the skill’s documentation or metadata to reflect the new check and ensure the rule now has a verification path.",
+      "pending_finding_ids": [],
+      "recommendation": "MODIFY",
+      "rejected_finding_ids": [],
+      "suggested_rewrite": {
+        "behavioral_gate": null,
+        "diff": null,
+        "limitation": "The gate re-audits text only: an accepted rewrite is one the auditor no longer objects to, not evidence that an agent following it behaves better.",
+        "new_findings": [],
+        "outcome": "NO_PROPOSAL",
+        "persisting_classes": [],
+        "proposals": [
+          {
+            "applied": false,
+            "class": "REQUIREMENT_WITHOUT_CHECK",
+            "finding_id": "finding-0004",
+            "proposer": "llm-nebius",
+            "rationale": "provider response incomplete: finish_reason=length"
+          }
+        ],
+        "proposed_text": null,
+        "rejection_reason": null,
+        "resolved_classes": [],
+        "schema_version": "crucible-repair-suggestion/v1",
+        "skill": "batch-processor",
+        "suggestion_digest": "sha256:9ae0752c9e5db7ca5f8b96c86870a0e356ad0a7f1409737d7107dddaf878b786",
+        "target_classes": [
+          "REQUIREMENT_WITHOUT_CHECK"
+        ],
+        "target_finding_ids": [
+          "finding-0004"
+        ]
+      },
+      "untraceable_finding_ids": []
+    }
+  },
+  "summary": {
+    "by_recommendation": {
+      "MODIFY": 4
+    },
+    "total_skills": 4
+  }
+}

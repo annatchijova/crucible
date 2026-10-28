@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crucible Skill Quality Report</title>
+<style>
+:root{
+  --bg:#f5f5f5; --card-bg:#fff; --ink:#1a1a2e; --ink-muted:#666; --rule:#e0e0e0;
+  --ok-bg:#d4edda; --ok-ink:#155724; --fail-bg:#f8d7da; --fail-ink:#721c24;
+  --caution-bg:#fff3cd; --caution-ink:#856404; --muted-bg:#e2e3e5; --muted-ink:#383d41;
+}
+*{box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:0;padding:24px;background:var(--bg);color:var(--ink);}
+.wrap{max-width:980px;margin:0 auto;}
+header{margin-bottom:24px;}
+h1{margin:0 0 8px;}
+.meta{font-size:13px;color:var(--ink-muted);}
+.meta code{background:#eee;padding:1px 4px;border-radius:3px;word-break:break-all;}
+.corpus-card{background:var(--card-bg);border:1px solid var(--rule);border-left:4px solid var(--ink);border-radius:6px;padding:16px 20px;margin-bottom:16px;}
+.corpus-card h2{margin-top:0;font-size:18px;}
+.corpus-card li{margin:4px 0;overflow-wrap:anywhere;}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#fafafa;border:1px solid var(--rule);padding:10px;font-size:12px;max-height:420px;overflow:auto;}
+.intro{color:var(--ink-muted);font-size:14px;}
+.skill-card{background:var(--card-bg);border:1px solid var(--rule);border-radius:6px;padding:18px 20px;margin-bottom:16px;}
+.skill-card h2{margin-top:0;display:flex;align-items:center;gap:10px;font-size:18px;}
+.badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:.03em;}
+.badge.tone-ok, .tone-ok .badge{background:var(--ok-bg);color:var(--ok-ink);}
+.badge.tone-fail, .tone-fail .badge{background:var(--fail-bg);color:var(--fail-ink);}
+.badge.tone-caution, .tone-caution .badge{background:var(--caution-bg);color:var(--caution-ink);}
+.badge.tone-muted, .tone-muted .badge{background:var(--muted-bg);color:var(--muted-ink);}
+table.findings{border-collapse:collapse;width:100%;margin-top:10px;font-size:13px;}
+table.findings th, table.findings td{text-align:left;padding:6px 10px;border:1px solid var(--rule);vertical-align:top;}
+table.findings th{background:#fafafa;}
+.empty-state{color:#999;font-style:italic;}
+.untraceable{color:var(--fail-ink);background:var(--fail-bg);padding:6px 10px;border-radius:4px;font-size:13px;}
+footer{margin-top:28px;font-size:12px;color:var(--ink-muted);border-top:1px solid var(--rule);padding-top:14px;}
+@media print { body{background:#fff;} .skill-card{break-inside:avoid;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>Crucible Skill Quality Report</h1>
+<p class="meta">
+Report digest: <code>sha256:dd78387089b1edac6ddba8a357b04ddcb6af5a927344b6605b72364b1d06e493</code><br>
+Input: a skill directory<br>
+Skills scanned: 4 &mdash; KEEP: 4
+</p>
+</header>
+<section class='corpus-card'><h2>Summary</h2><p>Mock narration.</p></section><section class='corpus-card'><h2>Duplicate skills to consolidate</h2><p class='intro'>Each group is a set of skills joined by confirmed redundancy pairs. The recommendation is to merge each group into one skill; which member survives, and what the merged text says, is not decided here. Add --with-consolidation to have a merge proposed for each group and checked by the deterministic gate.</p><p class='empty-state'>No confirmed duplicate group in this corpus.</p></section><section class='corpus-card'><h2>Contradictions between rules</h2><p class='empty-state'>Not evaluated: the contradiction checks abstained because no two extracted rules share a normalized subject, so this check compared no rule pair. Read this with rules_with_subject: only the RFC-2119 modal extraction route assigns a subject at all, while the negative-starter and imperative routes record an empty one by construction (no object extraction), so a low count usually means a subject was never attempted rather than attempted and unmatched. This is not evidence that the skills agree with each other.</p></section><section class='corpus-card'><h2>Rule text repeated across skills</h2><p class='intro'>The same rule text appears verbatim in several skills. A repeated block is a candidate for one shared skill or reference document; it is not by itself a defect, and editing one copy leaves the others behind.</p><p class='empty-state'>No rule text is repeated verbatim across skills.</p></section><section class='corpus-card'><h2>Suggested rewrites</h2><p class='intro'>0 of 0 skill(s) recommended MODIFY received a suggested rewrite; 0 passed the deterministic gate. The gate re-audits text only, so an accepted rewrite is one the auditor no longer objects to, not evidence of better agent behaviour.</p><p class='empty-state'>No skill recommended MODIFY has a finding this path can rewrite.</p></section><section class='corpus-card'><h2>What was not analyzed</h2><p class='intro'>An ABSTAINED check produced no findings because this corpus did not supply the input it consumes; that is not evidence the corpus is free of that defect class.</p><ul><li><strong>BROKEN_REFERENCE abstained</strong><ul><li>requires declared_relations, observed 0: the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine</li></ul></li><li><strong>COMPOSITION_CYCLE abstained</strong><ul><li>requires declared_relations, observed 0: the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine</li></ul></li><li><strong>CONDITIONAL_CONTRADICTION abstained</strong><ul><li>requires comparable_rule_pairs_by_subject, observed 0: no two extracted rules share a normalized subject, so this check compared no rule pair. Read this with rules_with_subject: only the RFC-2119 modal extraction route assigns a subject at all, while the negative-starter and imperative routes record an empty one by construction (no object extraction), so a low count usually means a subject was never attempted rather than attempted and unmatched</li></ul></li><li><strong>NORMATIVE_CONFLICT abstained</strong><ul><li>requires comparable_rule_pairs_by_subject, observed 0: no two extracted rules share a normalized subject, so this check compared no rule pair. Read this with rules_with_subject: only the RFC-2119 modal extraction route assigns a subject at all, while the negative-starter and imperative routes record an empty one by construction (no object extraction), so a low count usually means a subject was never attempted rather than attempted and unmatched</li></ul></li><li><strong>ORPHAN_SKILL abstained</strong><ul><li>requires declared_relations, observed 0: the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine</li></ul></li><li><strong>SELF_COMPOSITION abstained</strong><ul><li>requires declared_relations, observed 0: the corpus declares no composes_with or delegates_to relation, so this check had no relation to examine</li></ul></li></ul></section>
+<h2>Skills</h2>
+<section class="skill-card tone-ok">
+  <h2>adonisjs <span class="badge tone-ok">KEEP</span></h2>
+  
+  <p>No action recommended: 1 candidate finding(s) were raised and all were rejected by confirmation.</p>
+  
+  
+  <table class='findings'><tr><th>Finding</th><th>Status</th><th>Class</th><th>Evidence</th></tr><tr><td><code>finding-0001</code></td><td>REJECTED</td><td>REQUIREMENT_WITHOUT_CHECK</td><td>skill has 1 normative rule(s) but 0 extracted checks</td></tr></table>
+</section><section class="skill-card tone-ok">
+  <h2>auth-system-setup <span class="badge tone-ok">KEEP</span></h2>
+  
+  <p>No action recommended: 1 candidate finding(s) were raised and all were rejected by confirmation.</p>
+  
+  
+  <table class='findings'><tr><th>Finding</th><th>Status</th><th>Class</th><th>Evidence</th></tr><tr><td><code>finding-0002</code></td><td>REJECTED</td><td>REQUIREMENT_WITHOUT_CHECK</td><td>skill has 1 normative rule(s) but 0 extracted checks</td></tr></table>
+</section><section class="skill-card tone-ok">
+  <h2>aws-rds <span class="badge tone-ok">KEEP</span></h2>
+  
+  <p>No action recommended: 1 candidate finding(s) were raised and all were rejected by confirmation.</p>
+  
+  
+  <table class='findings'><tr><th>Finding</th><th>Status</th><th>Class</th><th>Evidence</th></tr><tr><td><code>finding-0003</code></td><td>REJECTED</td><td>REQUIREMENT_WITHOUT_CHECK</td><td>skill has 1 normative rule(s) but 0 extracted checks</td></tr></table>
+</section><section class="skill-card tone-ok">
+  <h2>batch-processor <span class="badge tone-ok">KEEP</span></h2>
+  
+  <p>No action recommended: 1 candidate finding(s) were raised and all were rejected by confirmation.</p>
+  
+  
+  <table class='findings'><tr><th>Finding</th><th>Status</th><th>Class</th><th>Evidence</th></tr><tr><td><code>finding-0004</code></td><td>REJECTED</td><td>REQUIREMENT_WITHOUT_CHECK</td><td>skill has 1 normative rule(s) but 0 extracted checks</td></tr></table>
+</section>
+<footer>The recommendation for every skill (KEEP, NEEDS_CONFIRMATION, MODIFY, or CONSOLIDATE) is computed by a deterministic rule over L2 audit findings and L2.5/L12 confirmation verdicts, before any language model is consulted. The model is given that decision as a fixed fact and asked only to explain it in prose, citing findings by id. Every finding id the model cites is checked after the fact against the sealed findings for that skill; an id that does not exist there is listed as an untraceable claim, not silently presented as evidence. report_digest is the canonical seal of this report: recompute it independently to confirm this rendering was not altered after the fact.</footer>
+</div>
+</body>
+</html>

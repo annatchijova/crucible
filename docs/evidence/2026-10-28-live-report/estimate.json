@@ -1,0 +1,19 @@
+{
+  "audit_digest": "sha256:60662c6958ed66e9026fe6e465593b514353e02081600ddf22868a851209d47a",
+  "estimate_digest": "sha256:e30f4a54fbd64860b25d07c4bf344169bb5e0038f0937b4efe882f8e73aeeb13",
+  "exact_stages": [
+    "confirmation",
+    "executive_summary"
+  ],
+  "max_calls_by_stage": {
+    "confirmation": 4,
+    "consolidation": 0,
+    "executive_summary": 1,
+    "narration": 4,
+    "repairs": 4
+  },
+  "max_calls_total": 13,
+  "note": "Upper bounds: no model was called. Confirmation is exact; the other stages depend on its verdicts and cannot exceed these values.",
+  "schema_version": "crucible-call-estimate/v1",
+  "skill_count": 4
+}
