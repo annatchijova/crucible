@@ -105,8 +105,17 @@ item can suppress a missing-check candidate. See the
   4,131 and 10,653 pairs instead of 239,086 and 334,153
   ([measurement](docs/evidence/2026-10-28-prefix-filter-redundancy/FINDINGS.md)).
 - The narrated report (merge groups, contradictions with their risk, suggested
-  rewrites checked by the gate, an executive summary) is tested with
-  deterministic stand-ins. It has **not** yet been run with the live model.
+  rewrites checked by the gate, an executive summary) ran once with the live
+  model, on a four-skill slice of the held-out `TerminalSkills` corpus. Two of
+  four confirmed MODIFY candidates (`auth-system-setup`, `aws-rds`) got a real
+  NVIDIA Nemotron rewrite the gate accepted after re-auditing the slice; the
+  other two (`adonisjs`, `batch-processor`) got `NO_PROPOSAL`, a model
+  decision, not a circuit failure. 13 model calls, 114 s
+  ([evidence](docs/evidence/2026-10-28-live-report/RUN.md)). Four skills out
+  of 1057 does not establish narration quality or repair accuracy in general,
+  and no gate or proposer code changed in response to this run's output, so
+  the corpus's held-out status for an independent evaluation still holds for
+  its other 1053 skills.
 - Four independent external corpora are frozen by commit and manifest digest,
   two of them reserved as held-out. Auditing all five (2806 skills) produced a
   negative result worth stating plainly: the composition graph yields 86 edges

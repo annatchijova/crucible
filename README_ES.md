@@ -107,9 +107,19 @@ la [frontera comparativa](docs/COMPETITIVE_BOUNDARY.md) y la
   comparando 4.131 y 10.653 pares en lugar de 239.086 y 334.153
   ([medición](docs/evidence/2026-10-28-prefix-filter-redundancy/FINDINGS.md)).
 - El informe narrado (grupos para fusionar, contradicciones con su riesgo,
-  reescrituras sugeridas y verificadas por el gate, resumen ejecutivo) está
-  probado con sustitutos deterministas. **Todavía no** se corrió con el modelo
-  en vivo.
+  reescrituras sugeridas y verificadas por el gate, resumen ejecutivo) se
+  corrió una vez con el modelo en vivo, sobre una porción de cuatro skills
+  del corpus held-out `TerminalSkills`. Dos de las cuatro candidatas
+  confirmadas a MODIFY (`auth-system-setup`, `aws-rds`) recibieron una
+  reescritura real de NVIDIA Nemotron que el gate aceptó tras reauditar la
+  porción; las otras dos (`adonisjs`, `batch-processor`) recibieron
+  `NO_PROPOSAL`, una decisión del modelo, no un fallo del circuito. 13
+  llamadas al modelo, 114 s
+  ([evidencia](docs/evidence/2026-10-28-live-report/RUN.md)). Cuatro skills
+  de 1057 no establece calidad de narración ni precisión de reparación en
+  general, y ningún código del gate o del proposer cambió a partir del
+  resultado de esta corrida, así que el estatus held-out del corpus para una
+  evaluación independiente sigue vigente para las otras 1053 skills.
 - Cuatro corpus externos independientes están congelados por commit y digest de
   manifiesto, dos reservados como held-out. Auditar los cinco (2806 skills) dio
   un resultado negativo que conviene decir sin rodeos: el grafo de composición da
