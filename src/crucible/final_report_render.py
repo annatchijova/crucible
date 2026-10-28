@@ -1,4 +1,4 @@
-"""Markdown, HTML, and PDF renderers over a sealed `crucible-final-report/v1`
+"""Markdown, HTML, and PDF renderers over a sealed `crucible-final-report/v2`
 artifact (final_report.py).
 
 Every renderer here is a read-only projection, same discipline as
@@ -13,7 +13,7 @@ already states it is reusing shape+library from VIGIA for the same reason.
 The actual data model is new: ZAYNOR renders one `ZaynorAuthoritativeResult`
 with a single verdict and MITRE-tagged findings; Crucible renders one report
 that fans out per-skill, each with its own KEEP/NEEDS_CONFIRMATION/MODIFY/
-DELETE recommendation and its own LLM narrative -- no code from zaynor's
+CONSOLIDATE recommendation and its own LLM narrative -- no code from zaynor's
 renderer is copied, only the section shape and the reportlab usage pattern.
 
 Methodology statement, chain-of-custody fields, and the escaping discipline
@@ -31,7 +31,7 @@ class RenderError(RuntimeError):
 
 
 _RECOMMENDATION_TONE = {
-    "DELETE": "fail",
+    "CONSOLIDATE": "fail",
     "MODIFY": "caution",
     "NEEDS_CONFIRMATION": "muted",
     "KEEP": "ok",
@@ -39,7 +39,7 @@ _RECOMMENDATION_TONE = {
 
 _METHODOLOGY = (
     "The recommendation for every skill (KEEP, NEEDS_CONFIRMATION, MODIFY, "
-    "or DELETE) is computed by a deterministic rule over L2 audit findings "
+    "or CONSOLIDATE) is computed by a deterministic rule over L2 audit findings "
     "and L2.5/L12 confirmation verdicts, before any language model is "
     "consulted. The model is given that decision as a fixed fact and asked "
     "only to explain it in prose, citing findings by id. Every finding id "
@@ -57,7 +57,7 @@ def _skill_rows(report: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
 
 def _counts_line(report: dict[str, Any]) -> str:
     by_rec = report.get("summary", {}).get("by_recommendation", {})
-    order = ["DELETE", "MODIFY", "NEEDS_CONFIRMATION", "KEEP"]
+    order = ["CONSOLIDATE", "MODIFY", "NEEDS_CONFIRMATION", "KEEP"]
     parts = [f"{label}: {by_rec.get(label, 0)}" for label in order if by_rec.get(label, 0)]
     return ", ".join(parts) if parts else "no skills in this corpus"
 
@@ -72,11 +72,149 @@ def _finding_line(finding: dict[str, Any], status: str) -> str:
 def _status_for_finding(skill: dict[str, Any], finding_id: str) -> str:
     if finding_id in skill.get("confirmed_finding_ids", []):
         return "CONFIRMED"
+    if finding_id in skill.get("consolidation_finding_ids", []):
+        return "CONFIRMED"
     if finding_id in skill.get("rejected_finding_ids", []):
         return "REJECTED"
     if finding_id in skill.get("pending_finding_ids", []):
         return "PENDING"
     return "UNKNOWN"
+
+
+_SHARED_TEXT_LIMIT = 10
+
+_SHARED_TEXT_NOTE = (
+    "The same rule text appears verbatim in several skills. A repeated block "
+    "is a candidate for one shared skill or reference document; it is not by "
+    "itself a defect, and editing one copy leaves the others behind."
+)
+
+_GROUP_NOTE = (
+    "Each group is a set of skills joined by confirmed redundancy pairs. The "
+    "recommendation is to merge each group into one skill; which member "
+    "survives, and what the merged text says, is not decided here. Run "
+    "consolidation (--consolidate-all) to have a merge proposed and checked "
+    "by the deterministic gate."
+)
+
+
+def _sentence(text: str) -> str:
+    return f"{text[:1].upper()}{text[1:]}." if text and not text.endswith(".") else text
+
+
+def _abstained(report: dict[str, Any], check_class: str) -> dict[str, Any] | None:
+    preconditions = report.get("corpus", {}).get("preconditions") or {}
+    for check in preconditions.get("checks", []):
+        if check.get("check_class") == check_class and check.get("outcome") == "ABSTAINED":
+            return check
+    return None
+
+
+def _corpus_blocks(report: dict[str, Any]) -> list[dict[str, Any]]:
+    """The corpus-level sections as plain data, shared by every renderer.
+
+    Each block is {"title", "intro", "items": [{"heading", "lines"}],
+    "empty"}; a renderer only decides how to lay them out.
+    """
+    corpus = report.get("corpus") or {}
+    blocks: list[dict[str, Any]] = []
+
+    groups = corpus.get("consolidation_groups", [])
+    blocks.append({
+        "title": "Duplicate skills to consolidate",
+        "intro": _GROUP_NOTE,
+        "items": [
+            {
+                "heading": f"{group['size']} skills into 1: {', '.join(group['members'])}",
+                "lines": [
+                    f"{fid}: {evidence}"
+                    for fid, evidence in zip(group["finding_ids"], group["evidence"])
+                ],
+            }
+            for group in groups
+        ],
+        "empty": "No confirmed duplicate group in this corpus.",
+    })
+
+    contradictions = corpus.get("contradictions", [])
+    abstained = [
+        check for check in (
+            _abstained(report, "NORMATIVE_CONFLICT"),
+            _abstained(report, "CONDITIONAL_CONTRADICTION"),
+        ) if check
+    ]
+    if contradictions:
+        empty = ""
+    elif abstained:
+        empty = (
+            "Not evaluated: the contradiction checks abstained because "
+            f"{abstained[0]['reason']}. This is not evidence that the skills "
+            "agree with each other."
+        )
+    else:
+        empty = "No contradiction found between rules that state a comparable subject."
+    blocks.append({
+        "title": "Contradictions between rules",
+        "intro": "",
+        "items": [
+            {
+                "heading": f"{item['finding_id']} {item['class']} (reported on {item['skill']})",
+                "lines": [item["evidence"], f"Risk: {item['risk']}"],
+            }
+            for item in contradictions
+        ],
+        "empty": empty,
+    })
+
+    shared = corpus.get("shared_rule_texts", [])
+    items = [
+        {
+            "heading": f"{item['skill_count']} skills share: {item['text']}",
+            "lines": [", ".join(item["skills"])],
+        }
+        for item in shared[:_SHARED_TEXT_LIMIT]
+    ]
+    intro = _SHARED_TEXT_NOTE
+    if len(shared) > _SHARED_TEXT_LIMIT:
+        intro += f" Showing the {_SHARED_TEXT_LIMIT} most repeated of {len(shared)}."
+    blocks.append({
+        "title": "Rule text repeated across skills",
+        "intro": intro,
+        "items": items,
+        "empty": "No rule text is repeated verbatim across skills.",
+    })
+
+    preconditions = corpus.get("preconditions") or {}
+    not_run = [c for c in preconditions.get("checks", []) if c.get("outcome") == "ABSTAINED"]
+    blocks.append({
+        "title": "What was not analyzed",
+        "intro": _sentence(preconditions.get("limitation", "")),
+        "items": [
+            {
+                "heading": f"{check['check_class']} abstained",
+                "lines": [f"requires {check['requires']}, observed {check['observed']}: {check['reason']}"],
+            }
+            for check in not_run
+        ],
+        "empty": "Every check with a precondition received the input it needs.",
+    })
+    return blocks
+
+
+def _corpus_markdown(report: dict[str, Any]) -> list[str]:
+    lines: list[str] = []
+    for block in _corpus_blocks(report):
+        lines += [f"## {block['title']}", ""]
+        if block["intro"]:
+            lines += [block["intro"], ""]
+        if not block["items"]:
+            lines += [block["empty"], ""]
+        for item in block["items"]:
+            lines.append(f"- **{item['heading']}**")
+            lines += [f"  - {line}" for line in item["lines"]]
+        if block["items"]:
+            lines.append("")
+    return lines
 
 
 def render_final_report_markdown(report: dict[str, Any]) -> str:
@@ -94,11 +232,16 @@ def render_final_report_markdown(report: dict[str, Any]) -> str:
             "- **Warning:** the confirmation artifact does not match this audit; "
             "its verdicts were NOT trusted and affected findings are treated as pending."
         )
-    lines += ["", "## Skills", ""]
+    lines.append("")
+    lines += _corpus_markdown(report)
+    lines += ["## Skills", ""]
     if not report.get("skills"):
         lines.append("No skills found in this corpus.")
     for skill_name, skill in _skill_rows(report):
         lines += [f"### {skill_name} -- {skill['recommendation']}", ""]
+        if skill.get("consolidation_group"):
+            others = [n for n in skill["consolidation_group"] if n != skill_name]
+            lines += [f"**Consolidate with:** {', '.join(others)}", ""]
         if skill.get("narrative"):
             lines += [skill["narrative"], ""]
         elif skill.get("narration_blocked"):
@@ -154,15 +297,41 @@ def _skill_card_html(skill_name: str, skill: dict[str, Any]) -> str:
         if rows
         else "<p class='empty-state'>No findings for this skill.</p>"
     )
+    group_html = ""
+    if skill.get("consolidation_group"):
+        others = ", ".join(_escape_html(n) for n in skill["consolidation_group"] if n != skill_name)
+        group_html = f"<p><strong>Consolidate with:</strong> {others}</p>"
     return f"""<section class="skill-card tone-{tone}">
   <h2>{_escape_html(skill_name)} <span class="badge tone-{tone}">{_escape_html(skill['recommendation'])}</span></h2>
+  {group_html}
   {narrative_html}
   {untraceable_html}
   {table_html}
 </section>"""
 
 
+def _corpus_html(report: dict[str, Any]) -> str:
+    parts = []
+    for block in _corpus_blocks(report):
+        body = ""
+        if block["intro"]:
+            body += f"<p class='intro'>{_escape_html(block['intro'])}</p>"
+        if not block["items"]:
+            body += f"<p class='empty-state'>{_escape_html(block['empty'])}</p>"
+        else:
+            body += "<ul>" + "".join(
+                f"<li><strong>{_escape_html(item['heading'])}</strong>"
+                + ("<ul>" + "".join(f"<li>{_escape_html(line)}</li>" for line in item["lines"]) + "</ul>"
+                   if item["lines"] else "")
+                + "</li>"
+                for item in block["items"]
+            ) + "</ul>"
+        parts.append(f"<section class='corpus-card'><h2>{_escape_html(block['title'])}</h2>{body}</section>")
+    return "".join(parts)
+
+
 def render_final_report_html(report: dict[str, Any]) -> str:
+    corpus_cards = _corpus_html(report)
     skill_cards = "".join(_skill_card_html(name, skill) for name, skill in _skill_rows(report)) or (
         "<p class='empty-state'>No skills in this corpus.</p>"
     )
@@ -185,6 +354,10 @@ header{{margin-bottom:24px;}}
 h1{{margin:0 0 8px;}}
 .meta{{font-size:13px;color:var(--ink-muted);}}
 .meta code{{background:#eee;padding:1px 4px;border-radius:3px;word-break:break-all;}}
+.corpus-card{{background:var(--card-bg);border:1px solid var(--rule);border-left:4px solid var(--ink);border-radius:6px;padding:16px 20px;margin-bottom:16px;}}
+.corpus-card h2{{margin-top:0;font-size:18px;}}
+.corpus-card li{{margin:4px 0;overflow-wrap:anywhere;}}
+.intro{{color:var(--ink-muted);font-size:14px;}}
 .skill-card{{background:var(--card-bg);border:1px solid var(--rule);border-radius:6px;padding:18px 20px;margin-bottom:16px;}}
 .skill-card h2{{margin-top:0;display:flex;align-items:center;gap:10px;font-size:18px;}}
 .badge{{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:.03em;}}
@@ -210,6 +383,8 @@ Report digest: <code>{_escape_html(report.get('report_digest', ''))}</code><br>
 Skills scanned: {report.get('skill_count', 0)} &mdash; {_escape_html(_counts_line(report))}
 </p>
 </header>
+{corpus_cards}
+<h2>Skills</h2>
 {skill_cards}
 <footer>{_escape_html(_METHODOLOGY)}</footer>
 </div>
@@ -295,6 +470,20 @@ def render_final_report_pdf(report: dict[str, Any]) -> bytes:
         ))
     story.append(Spacer(1, 12))
 
+    for block in _corpus_blocks(report):
+        story.append(Paragraph(_xml_escape(block["title"]), styles["Heading2"]))
+        if block["intro"]:
+            story.append(Paragraph(_xml_escape(block["intro"]), styles["Normal"]))
+        if not block["items"]:
+            story.append(Paragraph(_xml_escape(block["empty"]), styles["Italic"]))
+        for item in block["items"]:
+            story.append(Spacer(1, 4))
+            story.append(Paragraph(f"<b>{_xml_escape(item['heading'])}</b>", styles["Normal"]))
+            for line in item["lines"]:
+                story.append(Paragraph(_xml_escape(line), cell_style))
+        story.append(Spacer(1, 10))
+
+    story.append(Paragraph("Skills", styles["Heading2"]))
     for skill_name, skill in _skill_rows(report):
         tone = _RECOMMENDATION_TONE.get(skill["recommendation"], "muted")
         bg, ink = tone_colors.get(tone, tone_colors["muted"])
@@ -313,6 +502,9 @@ def render_final_report_pdf(report: dict[str, Any]) -> bytes:
             ("LEFTPADDING", (0, 0), (-1, -1), 10),
         ]))
         story += [banner, Spacer(1, 6)]
+        if skill.get("consolidation_group"):
+            others = ", ".join(n for n in skill["consolidation_group"] if n != skill_name)
+            story.append(Paragraph(f"<b>Consolidate with:</b> {_xml_escape(others)}", styles["Normal"]))
         if skill.get("narrative"):
             story.append(Paragraph(_xml_escape(skill["narrative"]).replace("\n", "<br/>"), styles["Normal"]))
         else:

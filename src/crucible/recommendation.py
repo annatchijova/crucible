@@ -16,16 +16,26 @@ Recommendations:
   never run, was blocked, returned UNCLEAR, or the finding's class has no
   registered confirmation prompt). Nothing here is dismissed as fixed;
   the honest answer is "run --confirm before deciding."
-- DELETE: the skill has a CONFIRMED (natively, or via L2.5) redundancy
-  finding (STRUCTURAL_REDUNDANCY or SEMANTIC_REDUNDANCY) -- the skill
-  substantively duplicates another skill already in the corpus, so the
-  engineering answer is "remove it," not "repair it."
+- CONSOLIDATE: the skill belongs to a group of skills joined by CONFIRMED
+  SEMANTIC_REDUNDANCY pairs (a connected component, so a chain of ten
+  near-copies is one group of ten). Every member gets CONSOLIDATE and the
+  same ``consolidation_group``: the engineering answer is "merge these into
+  one," and which member survives is a decision for the merge, not for this
+  module. The L16 consolidation gate (consolidation.py) is the path that
+  proposes and checks that merge.
 - MODIFY: the skill has at least one other CONFIRMED finding. This is the
   default outcome for a real, non-redundant methodological defect.
 
 A REJECTED confirmation verdict removes a candidate from consideration
 entirely: the L2.5 layer judged it not to be a genuine instance of the
 stated defect, so it contributes to no recommendation.
+
+v1 recommended DELETE for the skill a redundancy finding happened to be
+attributed to, which the auditor picks by name order: of two identical
+skills ``a`` and ``b``, ``a`` was marked DELETE and ``b`` KEEP. That turned
+alphabetical order into an engineering recommendation, and a group larger
+than a pair was never reported as a group. v2 replaces DELETE with
+CONSOLIDATE, applied to the whole group.
 
 What this module deliberately does NOT do: assign a severity score, rank
 findings by subjective importance, or recommend DELETE for a skill whose
@@ -39,18 +49,43 @@ the redundancy one.
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
+from .confirm import _parse_semantic_redundancy_pair
+from .graph import _find_components
 from .ir import digest_payload
 
-RECOMMENDATION_VERSION = "crucible-recommendation/v1"
-
-_REDUNDANCY_CLASSES = frozenset({"STRUCTURAL_REDUNDANCY", "SEMANTIC_REDUNDANCY"})
+RECOMMENDATION_VERSION = "crucible-recommendation/v2"
 
 _KEEP = "KEEP"
 _NEEDS_CONFIRMATION = "NEEDS_CONFIRMATION"
-_DELETE = "DELETE"
+_CONSOLIDATE = "CONSOLIDATE"
 _MODIFY = "MODIFY"
+
+RECOMMENDATIONS = (_CONSOLIDATE, _MODIFY, _NEEDS_CONFIRMATION, _KEEP)
+
+_CONTRADICTION_CLASSES = frozenset({"NORMATIVE_CONFLICT", "CONDITIONAL_CONTRADICTION"})
+
+# COUPLING: auditor.py's _check_normative_conflict and
+# _check_conditional_contradiction word their evidence as
+# "... <MODALITY> in <skill> vs <MODALITY> in <skill> (rule <id>)".
+# Changing that wording there and this pattern here must happen together.
+_CONTRADICTION_PARTIES_RE = re.compile(r" in (\S+) vs \S+ in (\S+) \(rule [^)]*\)$")
+
+
+def contradiction_parties(finding: dict[str, Any]) -> list[str]:
+    """Both skills named by a contradiction finding, or just its attributed
+    skill when the evidence cannot be parsed.
+
+    A contradiction is attributed to one of its two skills, but it is a
+    property of the pair: without this, the other skill read KEEP with "no
+    findings" while it held half of a conflict.
+    """
+    match = _CONTRADICTION_PARTIES_RE.search(finding.get("evidence", ""))
+    if match is None:
+        return [finding.get("skill") or "(corpus-level)"]
+    return sorted(set(match.groups()))
 
 
 def compute_recommendations(
@@ -93,13 +128,27 @@ def compute_recommendations(
     for finding in findings:
         skill = finding.get("skill") or "(corpus-level)"
         by_skill.setdefault(skill, []).append(finding)
+        if finding.get("class") in _CONTRADICTION_CLASSES:
+            for party in contradiction_parties(finding):
+                if party != skill:
+                    by_skill.setdefault(party, []).append(finding)
     for skill_name in all_skill_names or ():
         by_skill.setdefault(skill_name, [])
+
+    groups = consolidation_groups(
+        findings, confirmation_by_id, confirmation_digest_mismatch
+    )
+    group_by_member = {
+        member: group for group in groups for member in group["members"]
+    }
+    for member in group_by_member:
+        by_skill.setdefault(member, [])
 
     skills: dict[str, Any] = {}
     for skill_name, skill_findings in sorted(by_skill.items()):
         skills[skill_name] = _recommend_for_skill(
-            skill_findings, confirmation_by_id, confirmation_digest_mismatch
+            skill_findings, confirmation_by_id, confirmation_digest_mismatch,
+            group_by_member.get(skill_name),
         )
 
     result: dict[str, Any] = {
@@ -109,10 +158,55 @@ def compute_recommendations(
             confirmation.get("confirmation_digest") if confirmation else None
         ),
         "confirmation_digest_mismatch": confirmation_digest_mismatch,
+        "consolidation_groups": groups,
         "skills": skills,
     }
     result["recommendation_digest"] = digest_payload(result)
     return result
+
+
+def consolidation_groups(
+    findings: list[dict[str, Any]],
+    confirmation_by_id: dict[str, dict[str, Any]],
+    confirmation_digest_mismatch: bool = False,
+) -> list[dict[str, Any]]:
+    """Connected components of CONFIRMED SEMANTIC_REDUNDANCY pairs.
+
+    Each group carries its sorted members and the ids of the pair findings
+    that join it, so every member can cite the evidence for its grouping
+    even though each pair finding is attributed to only one of its skills.
+    Verdicts from a confirmation computed against another audit are not
+    trusted, and SEMANTIC_REDUNDANCY is never natively CONFIRMED, so a
+    mismatch yields no groups.
+    """
+    edges: list[dict[str, Any]] = []
+    names: set[str] = set()
+    pair_findings: list[tuple[str, str, str]] = []
+    for finding in findings:
+        if finding.get("class") != "SEMANTIC_REDUNDANCY":
+            continue
+        if confirmation_digest_mismatch:
+            continue
+        if not _finding_is_confirmed(finding, confirmation_by_id):
+            continue
+        pair = _parse_semantic_redundancy_pair(finding)
+        if pair is None:
+            continue
+        skill_a, skill_b, _ratio = pair
+        edges.append({"source": skill_a, "target": skill_b, "resolved": True})
+        names.update((skill_a, skill_b))
+        pair_findings.append((skill_a, skill_b, finding.get("id", "")))
+
+    groups = []
+    for members in _find_components(edges, names):
+        member_set = set(members)
+        groups.append({
+            "members": sorted(members),
+            "finding_ids": sorted(
+                fid for a, b, fid in pair_findings if a in member_set
+            ),
+        })
+    return sorted(groups, key=lambda group: group["members"])
 
 
 def _index_confirmations(
@@ -149,6 +243,7 @@ def _recommend_for_skill(
     findings: list[dict[str, Any]],
     confirmation_by_id: dict[str, dict[str, Any]],
     confirmation_digest_mismatch: bool,
+    group: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     confirmed_basis: list[str] = []
     confirmed_classes: set[str] = set()
@@ -173,8 +268,8 @@ def _recommend_for_skill(
         else:
             pending_ids.append(finding_id)
 
-    if confirmed_classes & _REDUNDANCY_CLASSES:
-        recommendation = _DELETE
+    if group is not None:
+        recommendation = _CONSOLIDATE
     elif confirmed_basis:
         recommendation = _MODIFY
     elif pending_ids:
@@ -188,4 +283,6 @@ def _recommend_for_skill(
         "rejected_finding_ids": sorted(rejected_ids),
         "pending_finding_ids": sorted(pending_ids),
         "total_finding_count": len(findings),
+        "consolidation_group": group["members"] if group else [],
+        "consolidation_finding_ids": group["finding_ids"] if group else [],
     }

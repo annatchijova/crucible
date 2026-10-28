@@ -12,7 +12,7 @@ from crucible.final_report_render import (
 
 def _report(**overrides):
     base = {
-        "schema_version": "crucible-final-report/v1",
+        "schema_version": "crucible-final-report/v2",
         "report_digest": "sha256:deadbeef",
         "audit_digest": "sha256:a",
         "confirmation_digest": "sha256:c",

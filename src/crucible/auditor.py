@@ -529,6 +529,8 @@ def _check_normative_conflict(
                 if pair not in _CONFLICT_PAIRS:
                     continue
                 # Report on the first rule of the pair (deterministic order).
+                # COUPLING: recommendation.py:_CONTRADICTION_PARTIES_RE parses the
+                # "... in <skill> vs ... in <skill> (rule <id>)" tail of this evidence.
                 findings.append(_finding(
                     cls="NORMATIVE_CONFLICT",
                     epistemic_status="CONFIRMED",
@@ -854,6 +856,8 @@ def _check_conditional_contradiction(
                             else:
                                 r_name, r_path, r_rule = skill_j, path_j, rule_j
                                 other = skill_i
+                            # COUPLING: recommendation.py:_CONTRADICTION_PARTIES_RE parses the
+                            # "... in <skill> vs ... in <skill> (rule <id>)" tail of this evidence.
                             findings.append(_finding(
                                 cls="CONDITIONAL_CONTRADICTION",
                                 epistemic_status="CONFIRMED",
@@ -898,6 +902,8 @@ def _check_conditional_contradiction(
                 else:
                     r_name, r_path, r_rule = skill_j, path_j, rule_j
                     other = skill_i
+                # COUPLING: recommendation.py:_CONTRADICTION_PARTIES_RE parses the
+                # "... in <skill> vs ... in <skill> (rule <id>)" tail of this evidence.
                 findings.append(_finding(
                     cls="CONDITIONAL_CONTRADICTION",
                     epistemic_status="CONFIRMED",

@@ -22,7 +22,98 @@ from .ir import digest_payload
 from .narrator import NarrationExecutor, narrate_skill
 from .recommendation import compute_recommendations
 
-FINAL_REPORT_VERSION = "crucible-final-report/v1"
+FINAL_REPORT_VERSION = "crucible-final-report/v2"
+
+_CONTRADICTION_CLASSES = ("NORMATIVE_CONFLICT", "CONDITIONAL_CONTRADICTION")
+
+# Fixed, per-class statements of the methodological risk a contradiction
+# carries. They are written here, not by the model, so the risk a reader is
+# told about is the same for every corpus and every run.
+CONTRADICTION_RISK = {
+    "NORMATIVE_CONFLICT": (
+        "An agent that loads both rules receives opposite obligations about "
+        "the same subject and no declared priority between them. Which one it "
+        "follows depends on load order or on what is most recent in its "
+        "context, so the behaviour is not reproducible across sessions, and "
+        "an audit of either skill alone will not reveal it."
+    ),
+    "CONDITIONAL_CONTRADICTION": (
+        "When the stated condition holds, the two rules prescribe opposite "
+        "guidance and nothing declares which one wins. The conflict is "
+        "invisible in the common case and surfaces only when that condition "
+        "is met, which is when the guidance matters."
+    ),
+}
+
+
+def _rule_texts(ir: dict[str, Any]) -> dict[tuple[str, str], str]:
+    return {
+        (skill["identity"]["name"], rule["id"]): rule["text"]
+        for skill in ir["skills"]
+        for rule in skill.get("rules", [])
+    }
+
+
+def _skills_holding(ir: dict[str, Any], text: str) -> list[str]:
+    return sorted({
+        skill["identity"]["name"]
+        for skill in ir["skills"]
+        for rule in skill.get("rules", [])
+        if rule["text"] == text
+    })
+
+
+def _corpus_sections(
+    ir: dict[str, Any],
+    audit: dict[str, Any],
+    recommendations: dict[str, Any],
+) -> dict[str, Any]:
+    """The corpus-level part of the report: what no per-skill entry shows.
+
+    Every value here is read from the sealed audit, IR and recommendation;
+    nothing is computed by a model.
+    """
+    findings_by_id = {f["id"]: f for f in audit["findings"]}
+    groups = [
+        {
+            "members": group["members"],
+            "size": len(group["members"]),
+            "finding_ids": group["finding_ids"],
+            "evidence": [findings_by_id[fid]["evidence"] for fid in group["finding_ids"]],
+        }
+        for group in recommendations.get("consolidation_groups", [])
+    ]
+    contradictions = [
+        {
+            "finding_id": f["id"],
+            "class": f["class"],
+            "skill": f["skill"],
+            "evidence": f["evidence"],
+            "risk": CONTRADICTION_RISK[f["class"]],
+        }
+        for f in audit["findings"]
+        if f["class"] in _CONTRADICTION_CLASSES
+    ]
+    texts = _rule_texts(ir)
+    shared = []
+    for f in audit["findings"]:
+        if f["class"] != "STRUCTURAL_REDUNDANCY":
+            continue
+        text = texts.get((f["skill"], f["rule_id"]), "")
+        holders = _skills_holding(ir, text)
+        shared.append({
+            "finding_id": f["id"],
+            "text": text,
+            "skill_count": len(holders),
+            "skills": holders,
+        })
+    shared.sort(key=lambda item: (-item["skill_count"], item["text"]))
+    return {
+        "consolidation_groups": groups,
+        "contradictions": contradictions,
+        "shared_rule_texts": shared,
+        "preconditions": audit.get("preconditions"),
+    }
 
 
 def build_final_report(
@@ -52,6 +143,7 @@ def build_final_report(
                 set(skill_recommendation["confirmed_finding_ids"])
                 | set(skill_recommendation["rejected_finding_ids"])
                 | set(skill_recommendation["pending_finding_ids"])
+                | set(skill_recommendation["consolidation_finding_ids"])
             )
         ]
         skills[skill_name] = {
@@ -59,6 +151,8 @@ def build_final_report(
             "confirmed_finding_ids": skill_recommendation["confirmed_finding_ids"],
             "rejected_finding_ids": skill_recommendation["rejected_finding_ids"],
             "pending_finding_ids": skill_recommendation["pending_finding_ids"],
+            "consolidation_group": skill_recommendation["consolidation_group"],
+            "consolidation_finding_ids": skill_recommendation["consolidation_finding_ids"],
             "findings": skill_findings,
             "narrative": narration["narrative"],
             "narration_blocked": narration["blocked"],
@@ -82,6 +176,7 @@ def build_final_report(
             "by_recommendation": by_recommendation,
             "total_skills": len(skills),
         },
+        "corpus": _corpus_sections(ir, audit, recommendations),
         "skills": skills,
     }
     report["report_digest"] = digest_payload(report)

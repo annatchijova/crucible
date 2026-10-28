@@ -213,10 +213,19 @@ def _build_user_prompt(
     skill_name: str,
     recommendation: str,
     cited_findings: list[dict[str, Any]],
+    consolidation_group: list[str] | None = None,
 ) -> str:
     lines = [
         f"Skill: {skill_name}",
         f"Decided recommendation (do not contradict this): {recommendation}",
+    ]
+    if consolidation_group:
+        others = [name for name in consolidation_group if name != skill_name]
+        lines.append(
+            "Consolidation group (decided; merge these into one skill, and do "
+            f"not pick which one survives): {', '.join(others)}"
+        )
+    lines += [
         "",
         "Findings (cite only these ids):",
     ]
@@ -231,7 +240,7 @@ def _build_user_prompt(
         "",
         "Write: (1) one short paragraph explaining why this recommendation "
         "follows from the findings above, citing their ids; (2) if the "
-        "recommendation is MODIFY or DELETE, a short prioritized list of "
+        "recommendation is MODIFY or CONSOLIDATE, a short prioritized list of "
         "concrete next steps.",
     ]
     return "\n".join(lines)
@@ -264,8 +273,11 @@ def narrate_skill(
     finding's resolution status (confirmed/rejected/pending) for the model.
     """
     recommendation = skill_recommendation["recommendation"]
-    known_ids = set(skill_recommendation["confirmed_finding_ids"]) | set(
-        skill_recommendation["pending_finding_ids"]
+    group_ids = skill_recommendation.get("consolidation_finding_ids", [])
+    known_ids = (
+        set(skill_recommendation["confirmed_finding_ids"])
+        | set(skill_recommendation["pending_finding_ids"])
+        | set(group_ids)
     )
 
     result: dict[str, Any] = {
@@ -280,11 +292,18 @@ def narrate_skill(
     }
 
     if recommendation == "KEEP":
-        result["narrative"] = "No findings for this skill; no action recommended."
+        rejected = skill_recommendation.get("rejected_finding_ids", [])
+        result["narrative"] = (
+            f"No action recommended: {len(rejected)} candidate finding(s) "
+            "were raised and all were rejected by confirmation."
+            if rejected
+            else "No findings for this skill; no action recommended."
+        )
         result["narration_digest"] = digest_payload(result)
         return result
 
-    status_by_id = {fid: "confirmed" for fid in skill_recommendation["confirmed_finding_ids"]}
+    status_by_id = {fid: "confirmed" for fid in group_ids}
+    status_by_id.update({fid: "confirmed" for fid in skill_recommendation["confirmed_finding_ids"]})
     status_by_id.update({fid: "pending confirmation" for fid in skill_recommendation["pending_finding_ids"]})
 
     cited_findings = []
@@ -294,7 +313,10 @@ def narrate_skill(
         cited_findings.append(finding)
 
     system_prompt = _SYSTEM_PROMPT
-    user_prompt = _build_user_prompt(skill_name, recommendation, cited_findings)
+    user_prompt = _build_user_prompt(
+        skill_name, recommendation, cited_findings,
+        skill_recommendation.get("consolidation_group"),
+    )
     response = executor.execute(system_prompt, user_prompt)
 
     result["executor_model"] = response.get("model")

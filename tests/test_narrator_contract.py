@@ -140,3 +140,20 @@ def test_narration_digest_is_deterministic_for_identical_results():
     r1 = narrate_skill("retrier", recommendation, findings_by_id, MockNarrationExecutor())
     r2 = narrate_skill("retrier", recommendation, findings_by_id, MockNarrationExecutor())
     assert r1["narration_digest"] == r2["narration_digest"]
+
+
+def test_keep_after_rejections_does_not_claim_there_were_no_findings() -> None:
+    """Invariant: a KEEP whose candidates were all rejected says so; "No
+    findings" is reserved for a skill that had none.
+    Mutation: restore the fixed "No findings" sentence -> red."""
+    from crucible.narrator import MockNarrationExecutor, narrate_skill
+
+    recommendation = {
+        "recommendation": "KEEP",
+        "confirmed_finding_ids": [],
+        "rejected_finding_ids": ["finding-0001", "finding-0002"],
+        "pending_finding_ids": [],
+    }
+    result = narrate_skill("s", recommendation, {}, MockNarrationExecutor())
+    assert "No findings" not in result["narrative"]
+    assert "2 candidate finding(s)" in result["narrative"]
