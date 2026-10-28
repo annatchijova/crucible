@@ -92,8 +92,8 @@ _SHARED_TEXT_NOTE = (
 _GROUP_NOTE = (
     "Each group is a set of skills joined by confirmed redundancy pairs. The "
     "recommendation is to merge each group into one skill; which member "
-    "survives, and what the merged text says, is not decided here. Run "
-    "consolidation (--consolidate-all) to have a merge proposed and checked "
+    "survives, and what the merged text says, is not decided here. Add "
+    "--with-consolidation to have a merge proposed for each group and checked "
     "by the deterministic gate."
 )
 
@@ -203,9 +203,18 @@ def _corpus_blocks(report: dict[str, Any]) -> list[dict[str, Any]]:
             "lines": lines,
             "detail": detail,
         })
+    pairs = corpus.get("redundancy_candidate_pairs")
+    pairs_note = ""
+    if pairs and (pairs["rejected"] or pairs["pending"]):
+        pairs_note = (
+            f" Of {sum(pairs.values())} lexical redundancy candidate pair(s), "
+            f"{pairs['confirmed']} were confirmed, {pairs['rejected']} rejected "
+            f"by confirmation and {pairs['pending']} left unconfirmed; only "
+            "confirmed pairs form a group."
+        )
     blocks.append({
         "title": "Duplicate skills to consolidate",
-        "intro": _GROUP_NOTE_GATED if consolidation else _GROUP_NOTE,
+        "intro": (_GROUP_NOTE_GATED if consolidation else _GROUP_NOTE) + pairs_note,
         "items": group_items,
         "empty": (
             "Only one skill was scanned; duplicates are found by comparing skills."

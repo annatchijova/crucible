@@ -135,3 +135,15 @@ def test_repair_flags_need_the_narrated_report(tmp_path, capsys) -> None:
         with pytest.raises(SystemExit) as exc:
             _run(argv, capsys)
         assert exc.value.code == 2
+
+
+def test_rejected_redundancy_candidates_are_counted_not_hidden(tmp_path) -> None:
+    """Invariant: when confirmation rejects a lexical candidate pair, the
+    duplicate section says so instead of only reporting "no group".
+    Mutation: drop the candidate-pair note -> red."""
+    _write_corpus(tmp_path, CONSOLIDATION_FIXTURE)  # its pair is under the mock's 80% bar
+    report = build_final_report(str(tmp_path), MockConfirmExecutor(), MockNarrationExecutor())
+    assert report["corpus"]["redundancy_candidate_pairs"] == {
+        "confirmed": 0, "rejected": 1, "pending": 0,
+    }
+    assert "1 rejected by confirmation" in render_final_report_markdown(report)

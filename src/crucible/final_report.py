@@ -84,6 +84,17 @@ def _corpus_sections(
         }
         for group in recommendations.get("consolidation_groups", [])
     ]
+    grouped = {fid for group in groups for fid in group["finding_ids"]}
+    rejected = {
+        fid for skill in recommendations["skills"].values()
+        for fid in skill["rejected_finding_ids"]
+    }
+    candidate_pairs = {"confirmed": 0, "rejected": 0, "pending": 0}
+    for f in audit["findings"]:
+        if f["class"] != "SEMANTIC_REDUNDANCY":
+            continue
+        key = "confirmed" if f["id"] in grouped else "rejected" if f["id"] in rejected else "pending"
+        candidate_pairs[key] += 1
     contradictions = [
         {
             "finding_id": f["id"],
@@ -111,6 +122,7 @@ def _corpus_sections(
     shared.sort(key=lambda item: (-item["skill_count"], item["text"]))
     return {
         "consolidation_groups": groups,
+        "redundancy_candidate_pairs": candidate_pairs,
         "contradictions": contradictions,
         "shared_rule_texts": shared,
         "preconditions": audit.get("preconditions"),
