@@ -144,6 +144,23 @@ the gate's verdict does not.
 
 Expect about 16 seconds per proposal, and do not expect two runs to agree.
 
+## Optional — the narrated report, live, in one command
+
+`crucible.live_run` bounds the model calls before making any, stops if the
+bound exceeds `--max-calls` (default 150), then builds the report with
+consolidation and rewrites and writes `report.json`, `report.md`,
+`report.html`, `estimate.json` and a factual `RUN.md` into a new directory.
+Check the command with `--mock` first; it calls no model.
+
+```bash
+python -m crucible.live_run path/to/corpus --skills skill-a,skill-b,skill-c --out-dir docs/evidence/NEW-DIR --mock
+NEBIUS_API_KEY=... python -m crucible.live_run path/to/corpus --skills skill-a,skill-b,skill-c --out-dir docs/evidence/NEW-DIR
+```
+
+To see the bound for any report without running it, add `--estimate-calls`
+to a `--narrate` command. On the whole `vantaflow` corpus the bound is about
+2,000 calls, which is why a run on a slice is the practical one.
+
 ## CLI modes and flags
 
 Detail routed here from the README so the quick path stays short.

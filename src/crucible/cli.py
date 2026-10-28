@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 from .auditor import audit_corpus
 from .behavioral import LocalExecutor, NebiusExecutor, run_behavioral_differential
@@ -91,6 +92,28 @@ def _write_rendered(final_report: dict[str, Any], args: Any, parser: Any) -> int
     return 0
 
 
+@contextlib.contextmanager
+def _narrate_input(args: Any) -> Iterator[tuple[str, dict[str, Any]]]:
+    """Yield (compilable root, input scope) for a file, directory or installed skills."""
+    if args.scan_installed:
+        from .api import stage_installed_skills
+        with stage_installed_skills(args.scan_root) as stage:
+            if stage.root is None:
+                raise _CompileError(stage.error or "no installed skills found")
+            yield stage.root, {"scope": "installed", "coverage": stage.coverage}
+    elif Path(args.root).is_file():
+        import shutil
+        import tempfile
+        source = Path(args.root)
+        with tempfile.TemporaryDirectory(prefix="crucible-narrate-") as tmpdir:
+            package = Path(tmpdir) / (source.parent.name or "skill")
+            package.mkdir()
+            shutil.copyfile(source, package / "SKILL.md")
+            yield tmpdir, {"scope": "single-skill"}
+    else:
+        yield args.root, {"scope": "directory"}
+
+
 def _narrate(args: Any, parser: Any) -> int:
     """Narrated report over one skill file, a directory, or installed skills."""
     if args.scan_installed and args.root:
@@ -99,6 +122,28 @@ def _narrate(args: Any, parser: Any) -> int:
         parser.error("--scan-root requires --scan-installed")
     if not args.root and not args.scan_installed:
         parser.error("--narrate needs a corpus path, a SKILL.md file, or --scan-installed")
+    if args.repair_limit is not None and not args.with_repairs:
+        parser.error("--repair-limit requires --with-repairs")
+    repair_limit = 10 if args.repair_limit is None else args.repair_limit
+    if repair_limit < 1:
+        parser.error("--repair-limit must be at least 1")
+    on_duplicate_name = ON_DUPLICATE_SKIP if args.skip_duplicate_names else ON_DUPLICATE_ERROR
+
+    if args.estimate_calls:
+        from .call_estimate import estimate_model_calls
+        with _narrate_input(args) as (root, scope):
+            try:
+                estimate = estimate_model_calls(
+                    root, on_duplicate_name=on_duplicate_name,
+                    with_consolidation=args.with_consolidation,
+                    with_repairs=args.with_repairs, repair_limit=repair_limit,
+                )
+            except ValueError as exc:
+                raise _CompileError(str(exc)) from exc
+        estimate["input"] = scope
+        _emit(estimate, args.human)
+        return 0
+
     if args.mock_narrate:
         confirm_executor: Any = MockConfirmExecutor()
         narration_executor: Any = MockNarrationExecutor()
@@ -109,43 +154,19 @@ def _narrate(args: Any, parser: Any) -> int:
         narration_executor = NebiusNarrationExecutor()
         proposer = LLMConsolidationProposer()
         repairer = LLMProposer()
-    if args.repair_limit is not None and not args.with_repairs:
-        parser.error("--repair-limit requires --with-repairs")
-    repair_limit = 10 if args.repair_limit is None else args.repair_limit
-    if repair_limit < 1:
-        parser.error("--repair-limit must be at least 1")
     options = {
-        "on_duplicate_name": ON_DUPLICATE_SKIP if args.skip_duplicate_names else ON_DUPLICATE_ERROR,
+        "on_duplicate_name": on_duplicate_name,
         "consolidation_proposer": proposer if args.with_consolidation else None,
         "repair_proposer": repairer if args.with_repairs else None,
         "repair_limit": repair_limit,
     }
-
-    def build(root: str, scope: dict[str, Any]) -> dict[str, Any]:
+    with _narrate_input(args) as (root, scope):
         try:
-            return build_final_report(
+            final_report = build_final_report(
                 root, confirm_executor, narration_executor, input_scope=scope, **options
             )
         except ValueError as exc:
             raise _CompileError(str(exc)) from exc
-
-    if args.scan_installed:
-        from .api import stage_installed_skills
-        with stage_installed_skills(args.scan_root) as stage:
-            if stage.root is None:
-                raise _CompileError(stage.error or "no installed skills found")
-            final_report = build(stage.root, {"scope": "installed", "coverage": stage.coverage})
-    elif Path(args.root).is_file():
-        import shutil
-        import tempfile
-        source = Path(args.root)
-        with tempfile.TemporaryDirectory(prefix="crucible-narrate-") as tmpdir:
-            package = Path(tmpdir) / (source.parent.name or "skill")
-            package.mkdir()
-            shutil.copyfile(source, package / "SKILL.md")
-            final_report = build(tmpdir, {"scope": "single-skill"})
-    else:
-        final_report = build(args.root, {"scope": "directory"})
 
     if args.render_format:
         return _write_rendered(final_report, args, parser)
@@ -314,6 +335,12 @@ def _main() -> int:
              "first (default: 10); the rest are listed as not attempted",
     )
     parser.add_argument(
+        "--estimate-calls",
+        action="store_true",
+        help="with --narrate: audit only and print an upper bound on the model "
+             "calls the report would make, per stage, without calling a model",
+    )
+    parser.add_argument(
         "--render-report",
         metavar="FINAL_REPORT_JSON",
         help="render a sealed crucible-final-report/v1 JSON artifact (from "
@@ -413,8 +440,10 @@ def _main() -> int:
         return run_replay_command(selected[0], getattr(args, selected[0]))
     if args.narrate or args.mock_narrate:
         return _narrate(args, parser)
-    if args.with_consolidation or args.with_repairs or args.repair_limit is not None:
-        parser.error("--with-consolidation, --with-repairs and --repair-limit require --narrate or --mock-narrate")
+    if (args.with_consolidation or args.with_repairs or args.repair_limit is not None
+            or args.estimate_calls):
+        parser.error("--with-consolidation, --with-repairs, --repair-limit and "
+                     "--estimate-calls require --narrate or --mock-narrate")
     if args.include_coverage and not args.scan_installed:
         parser.error('--include-coverage requires --scan-installed')
     if args.scan_installed and args.scan_installed_collection:
