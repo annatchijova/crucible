@@ -399,6 +399,14 @@ def _corpus_facts(report: dict[str, Any]) -> tuple[str, set[str]]:
             f"{accepted} accepted of {len(proposals)}"
         )
 
+    repairs = corpus.get("repairs")
+    if repairs is not None:
+        lines.append(
+            f"Rewrites suggested and checked by the text-only gate: "
+            f"{repairs['accepted']} accepted of {repairs['attempted']} attempted "
+            f"({repairs['eligible']} skills eligible)"
+        )
+
     contradictions = corpus.get("contradictions", [])
     lines.append(f"Contradictions between rules: {len(contradictions)}")
     for item in contradictions[:_SUMMARY_LIMIT]:

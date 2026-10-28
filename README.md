@@ -137,11 +137,13 @@ For a written report over one skill, a directory, or your installed skills:
 duplicate groups to merge, contradictions with their risk, repeated rule text,
 what was not analyzed, and a narrated recommendation per skill.
 `--with-consolidation` also has a model propose one merged skill per duplicate
-group, and the deterministic gate accepts or refuses each proposal.
+group, `--with-repairs` has it suggest a rewrite for skills to modify
+(at most `--repair-limit`, default 10); the deterministic gate accepts or
+refuses each proposal by re-auditing the text.
 
 ```bash
 # needs NEBIUS_API_KEY; --mock-narrate runs the same path with deterministic stand-ins
-PYTHONPATH=src python3 -m crucible.cli path/to/skills --narrate --with-consolidation --render-format html --out report.html
+PYTHONPATH=src python3 -m crucible.cli path/to/skills --narrate --with-consolidation --with-repairs --render-format html --out report.html
 PYTHONPATH=src python3 -m crucible.cli path/to/SKILL.md --narrate --render-format markdown
 PYTHONPATH=src python3 -m crucible.cli --scan-installed --narrate --render-format pdf --out report.pdf
 ```

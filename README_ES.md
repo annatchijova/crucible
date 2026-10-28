@@ -141,11 +141,13 @@ Para un informe escrito sobre una skill, un directorio o tus skills instaladas:
 grupos de duplicados para fusionar, contradicciones con su riesgo, texto de
 reglas repetido, qué no se analizó y una recomendación narrada por skill.
 `--with-consolidation` además le pide al modelo que proponga una skill fusionada
-por grupo, y el gate determinista acepta o rechaza cada propuesta.
+por grupo, `--with-repairs` le pide una reescritura para las skills a
+modificar (hasta `--repair-limit`, 10 por defecto), y el gate determinista
+acepta o rechaza cada propuesta re-auditando el texto.
 
 ```bash
 # necesita NEBIUS_API_KEY; --mock-narrate corre la misma ruta con sustitutos deterministas
-PYTHONPATH=src python3 -m crucible.cli path/to/skills --narrate --with-consolidation --render-format html --out report.html
+PYTHONPATH=src python3 -m crucible.cli path/to/skills --narrate --with-consolidation --with-repairs --render-format html --out report.html
 PYTHONPATH=src python3 -m crucible.cli path/to/SKILL.md --narrate --render-format markdown
 PYTHONPATH=src python3 -m crucible.cli --scan-installed --narrate --render-format pdf --out report.pdf
 ```

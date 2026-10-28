@@ -103,13 +103,22 @@ def _narrate(args: Any, parser: Any) -> int:
         confirm_executor: Any = MockConfirmExecutor()
         narration_executor: Any = MockNarrationExecutor()
         proposer: Any = UnionConsolidationProposer()
+        repairer: Any = RuleBasedProposer()
     else:
         confirm_executor = NebiusConfirmExecutor()
         narration_executor = NebiusNarrationExecutor()
         proposer = LLMConsolidationProposer()
+        repairer = LLMProposer()
+    if args.repair_limit is not None and not args.with_repairs:
+        parser.error("--repair-limit requires --with-repairs")
+    repair_limit = 10 if args.repair_limit is None else args.repair_limit
+    if repair_limit < 1:
+        parser.error("--repair-limit must be at least 1")
     options = {
         "on_duplicate_name": ON_DUPLICATE_SKIP if args.skip_duplicate_names else ON_DUPLICATE_ERROR,
         "consolidation_proposer": proposer if args.with_consolidation else None,
+        "repair_proposer": repairer if args.with_repairs else None,
+        "repair_limit": repair_limit,
     }
 
     def build(root: str, scope: dict[str, Any]) -> dict[str, Any]:
@@ -290,6 +299,21 @@ def _main() -> int:
              "proposes; with --mock-narrate a deterministic union stand-in does)",
     )
     parser.add_argument(
+        "--with-repairs",
+        action="store_true",
+        help="with --narrate: suggest a rewrite for skills recommended MODIFY, "
+             "each re-audited by the deterministic gate (Nemotron proposes; "
+             "with --mock-narrate the rule-based proposer does)",
+    )
+    parser.add_argument(
+        "--repair-limit",
+        type=int,
+        default=None,
+        metavar="N",
+        help="with --with-repairs: at most N skills, most confirmed findings "
+             "first (default: 10); the rest are listed as not attempted",
+    )
+    parser.add_argument(
         "--render-report",
         metavar="FINAL_REPORT_JSON",
         help="render a sealed crucible-final-report/v1 JSON artifact (from "
@@ -389,8 +413,8 @@ def _main() -> int:
         return run_replay_command(selected[0], getattr(args, selected[0]))
     if args.narrate or args.mock_narrate:
         return _narrate(args, parser)
-    if args.with_consolidation:
-        parser.error("--with-consolidation requires --narrate or --mock-narrate")
+    if args.with_consolidation or args.with_repairs or args.repair_limit is not None:
+        parser.error("--with-consolidation, --with-repairs and --repair-limit require --narrate or --mock-narrate")
     if args.include_coverage and not args.scan_installed:
         parser.error('--include-coverage requires --scan-installed')
     if args.scan_installed and args.scan_installed_collection:

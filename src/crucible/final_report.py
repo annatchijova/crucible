@@ -117,6 +117,63 @@ def _corpus_sections(
     }
 
 
+def _read_corpus(corpus_root: str, ir: dict[str, Any]) -> dict[str, str]:
+    """Each compiled skill's SKILL.md text, keyed by its name."""
+    root = Path(corpus_root).resolve()
+    return {
+        skill["identity"]["name"]: (root / skill["identity"]["source_path"]).read_text(encoding="utf-8")
+        for skill in ir["skills"]
+    }
+
+
+def _repair_section(
+    corpus_root: str,
+    ir: dict[str, Any],
+    audit: dict[str, Any],
+    skills: dict[str, Any],
+    proposer: Any,
+    limit: int,
+) -> dict[str, Any]:
+    """Suggest a gated rewrite for up to ``limit`` MODIFY skills.
+
+    Skills are taken in order of most confirmed findings, then name, so the
+    selection is deterministic and the count left out is stated.
+    """
+    from .repair_suggestions import NOT_REPAIRED_HERE, suggest_rewrite
+
+    findings_by_id = {f["id"]: f for f in audit["findings"]}
+    eligible = sorted(
+        (
+            name for name, skill in skills.items()
+            if skill["recommendation"] == "MODIFY"
+            and any(
+                findings_by_id[fid]["class"] not in NOT_REPAIRED_HERE
+                and findings_by_id[fid]["skill"] == name
+                for fid in skill["confirmed_finding_ids"]
+            )
+        ),
+        key=lambda name: (-len(skills[name]["confirmed_finding_ids"]), name),
+    )
+    corpus = _read_corpus(corpus_root, ir)
+    attempted = eligible[:limit]
+    for name in attempted:
+        targets = [
+            findings_by_id[fid] for fid in skills[name]["confirmed_finding_ids"]
+            if findings_by_id[fid]["skill"] == name
+        ]
+        skills[name]["suggested_rewrite"] = suggest_rewrite(
+            corpus, audit["findings"], name, targets, proposer
+        )
+    outcomes = [skills[name]["suggested_rewrite"]["outcome"] for name in attempted]
+    return {
+        "eligible": len(eligible),
+        "attempted": len(attempted),
+        "accepted": outcomes.count("ACCEPTED"),
+        "not_attempted": eligible[limit:],
+        "behavioral_gate": None,
+    }
+
+
 def _consolidation_section(
     corpus_root: str,
     ir: dict[str, Any],
@@ -130,11 +187,7 @@ def _consolidation_section(
     """
     from .consolidation import run_consolidation_batch
 
-    root = Path(corpus_root).resolve()
-    corpus = {
-        skill["identity"]["name"]: (root / skill["identity"]["source_path"]).read_text(encoding="utf-8")
-        for skill in ir["skills"]
-    }
+    corpus = _read_corpus(corpus_root, ir)
     batch = run_consolidation_batch(corpus=corpus, confirmation=confirmation, proposer=proposer)
     proposals = []
     for report in batch["reports"]:
@@ -164,6 +217,8 @@ def build_final_report(
     *,
     on_duplicate_name: str = ON_DUPLICATE_ERROR,
     consolidation_proposer: Any = None,
+    repair_proposer: Any = None,
+    repair_limit: int = 10,
     input_scope: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build and seal the final per-skill report for one corpus.
@@ -174,6 +229,8 @@ def build_final_report(
 
     ``consolidation_proposer``, when given, runs L16 over every duplicate
     group and adds each proposed merge with the gate's verdict.
+    ``repair_proposer``, when given, suggests a gated rewrite for up to
+    ``repair_limit`` skills recommended MODIFY.
     ``input_scope`` describes what was scanned (a single skill, a directory,
     the installed skills and their coverage) so the report states it.
     """
@@ -236,6 +293,10 @@ def build_final_report(
     if consolidation_proposer is not None and recommendations["consolidation_groups"]:
         report["corpus"]["consolidation"] = _consolidation_section(
             corpus_root, ir, confirmation, consolidation_proposer
+        )
+    if repair_proposer is not None:
+        report["corpus"]["repairs"] = _repair_section(
+            corpus_root, ir, audit, skills, repair_proposer, repair_limit
         )
     report["executive_summary"] = narrate_corpus(report, narration_executor)
     report["report_digest"] = digest_payload(report)

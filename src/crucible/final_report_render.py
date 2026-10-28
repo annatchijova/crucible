@@ -122,6 +122,26 @@ def _proposal_line(proposal: dict[str, Any]) -> str:
     return f"{head}: REJECTED by the deterministic gate ({reason})."
 
 
+def _rewrite_line(rewrite: dict[str, Any]) -> str:
+    proposers = sorted({p["proposer"] for p in rewrite.get("proposals", [])}) or ["none"]
+    head = f"Suggested rewrite ({', '.join(proposers)})"
+    outcome = rewrite["outcome"]
+    if outcome == "ACCEPTED":
+        return (f"{head}: ACCEPTED by the deterministic gate; resolves "
+                f"{', '.join(rewrite['resolved_classes'])}. {rewrite['limitation']}")
+    if outcome == "NO_PROPOSAL":
+        return f"{head}: no rewrite was proposed for {', '.join(rewrite['target_classes'])}."
+    if outcome == "BLOCKED":
+        return f"{head}: not proposed ({rewrite.get('rejection_reason')})."
+    detail = []
+    if rewrite.get("persisting_classes"):
+        detail.append("still present: " + ", ".join(rewrite["persisting_classes"]))
+    if rewrite.get("new_findings"):
+        detail.append("new: " + ", ".join(rewrite["new_findings"]))
+    reason = rewrite.get("rejection_reason") or ""
+    return f"{head}: REJECTED by the deterministic gate ({'; '.join(detail) or reason})."
+
+
 def _input_line(report: dict[str, Any]) -> str:
     scope = report.get("input") or {}
     kind = scope.get("scope", "directory")
@@ -246,6 +266,29 @@ def _corpus_blocks(report: dict[str, Any]) -> list[dict[str, Any]]:
         ),
     })
 
+    repairs = corpus.get("repairs")
+    if repairs is not None:
+        skipped = repairs.get("not_attempted", [])
+        intro = (
+            f"{repairs['attempted']} of {repairs['eligible']} skill(s) recommended "
+            "MODIFY received a suggested rewrite; "
+            f"{repairs['accepted']} passed the deterministic gate. The gate "
+            "re-audits text only, so an accepted rewrite is one the auditor no "
+            "longer objects to, not evidence of better agent behaviour."
+        )
+        if skipped:
+            intro += f" Not attempted (over the limit): {', '.join(skipped)}."
+        blocks.append({
+            "title": "Suggested rewrites",
+            "intro": intro,
+            "items": [
+                {"heading": name, "lines": [_rewrite_line(skill["suggested_rewrite"])]}
+                for name, skill in sorted(report.get("skills", {}).items())
+                if skill.get("suggested_rewrite")
+            ],
+            "empty": "No skill recommended MODIFY has a finding this path can rewrite.",
+        })
+
     preconditions = corpus.get("preconditions") or {}
     not_run = [c for c in preconditions.get("checks", []) if c.get("outcome") == "ABSTAINED"]
     blocks.append({
@@ -348,6 +391,13 @@ def render_final_report_markdown(report: dict[str, Any]) -> str:
                 "(cited by the narrative but not found in this skill's sealed findings)",
                 "",
             ]
+        rewrite = skill.get("suggested_rewrite")
+        if rewrite:
+            lines += [f"**{_rewrite_line(rewrite)}**", ""]
+            if rewrite.get("diff"):
+                lines += ["<details><summary>Suggested change</summary>", "", "```diff"]
+                lines += rewrite["diff"].rstrip("\n").splitlines()
+                lines += ["```", "", "</details>", ""]
         if skill.get("findings"):
             lines.append("| Finding | Status | Class | Evidence |")
             lines.append("|---|---|---|---|")
@@ -395,10 +445,20 @@ def _skill_card_html(skill_name: str, skill: dict[str, Any]) -> str:
     if skill.get("consolidation_group"):
         others = ", ".join(_escape_html(n) for n in skill["consolidation_group"] if n != skill_name)
         group_html = f"<p><strong>Consolidate with:</strong> {others}</p>"
+    rewrite_html = ""
+    rewrite = skill.get("suggested_rewrite")
+    if rewrite:
+        rewrite_html = f"<p><strong>{_escape_html(_rewrite_line(rewrite))}</strong></p>"
+        if rewrite.get("diff"):
+            rewrite_html += (
+                "<details><summary>Suggested change</summary>"
+                f"<pre>{_escape_html(rewrite['diff'])}</pre></details>"
+            )
     return f"""<section class="skill-card tone-{tone}">
   <h2>{_escape_html(skill_name)} <span class="badge tone-{tone}">{_escape_html(skill['recommendation'])}</span></h2>
   {group_html}
   {narrative_html}
+  {rewrite_html}
   {untraceable_html}
   {table_html}
 </section>"""
@@ -625,6 +685,8 @@ def render_final_report_pdf(report: dict[str, Any]) -> bytes:
             story.append(Paragraph(
                 _xml_escape(skill.get("narration_error") or "No narrative available."), styles["Normal"],
             ))
+        if skill.get("suggested_rewrite"):
+            story.append(Paragraph(_xml_escape(_rewrite_line(skill["suggested_rewrite"])), cell_style))
         if skill.get("untraceable_finding_ids"):
             story.append(Paragraph(
                 f"Untraceable claims flagged: {_xml_escape(', '.join(skill['untraceable_finding_ids']))}",

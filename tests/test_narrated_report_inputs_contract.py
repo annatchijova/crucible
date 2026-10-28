@@ -119,3 +119,19 @@ def test_cli_renders_the_narrated_report_directly(tmp_path, capsys) -> None:
     assert out.startswith("# Crucible Skill Quality Report")
     assert "2 skills into 1: retry-a, retry-b" in out
     assert "ACCEPTED by the deterministic gate" in out
+
+
+def test_repair_flags_need_the_narrated_report(tmp_path, capsys) -> None:
+    """Invariant: --with-repairs/--repair-limit outside --narrate is an
+    error, not an ignored option; --repair-limit needs --with-repairs."""
+    import pytest
+
+    _write_corpus(tmp_path, CORPUS)
+    for argv in (
+        [str(tmp_path), "--with-repairs"],
+        [str(tmp_path), "--mock-narrate", "--repair-limit", "3"],
+        [str(tmp_path), "--mock-narrate", "--with-repairs", "--repair-limit", "0"],
+    ):
+        with pytest.raises(SystemExit) as exc:
+            _run(argv, capsys)
+        assert exc.value.code == 2
