@@ -263,6 +263,27 @@ def _corpus_blocks(report: dict[str, Any]) -> list[dict[str, Any]]:
     return blocks
 
 
+def _summary_parts(report: dict[str, Any]) -> tuple[str, str]:
+    """(text, warning) for the executive summary; both may be empty."""
+    summary = report.get("executive_summary")
+    if not summary:
+        return "", ""
+    if summary.get("narrative"):
+        text = summary["narrative"]
+    elif summary.get("blocked"):
+        text = f"Summary not written: {summary.get('error')}"
+    else:
+        text = f"Summary not written: {summary.get('error') or 'unknown error'}"
+    warning = ""
+    if summary.get("untraceable_finding_ids"):
+        warning = (
+            "Untraceable claims flagged in this summary: "
+            + ", ".join(summary["untraceable_finding_ids"])
+            + " (cited but not among the findings it was given)"
+        )
+    return text, warning
+
+
 def _corpus_markdown(report: dict[str, Any]) -> list[str]:
     lines: list[str] = []
     for block in _corpus_blocks(report):
@@ -301,6 +322,11 @@ def render_final_report_markdown(report: dict[str, Any]) -> str:
             "its verdicts were NOT trusted and affected findings are treated as pending."
         )
     lines.append("")
+    summary, warning = _summary_parts(report)
+    if summary:
+        lines += ["## Summary", "", summary, ""]
+        if warning:
+            lines += [f"**{warning}**", ""]
     lines += _corpus_markdown(report)
     lines += ["## Skills", ""]
     if not report.get("skills"):
@@ -401,7 +427,14 @@ def _corpus_html(report: dict[str, Any]) -> str:
 
 
 def render_final_report_html(report: dict[str, Any]) -> str:
-    corpus_cards = _corpus_html(report)
+    summary, warning = _summary_parts(report)
+    summary_card = (
+        "<section class='corpus-card'><h2>Summary</h2>"
+        + "".join(f"<p>{_escape_html(p)}</p>" for p in summary.split("\n\n"))
+        + (f"<p class='untraceable'>{_escape_html(warning)}</p>" if warning else "")
+        + "</section>"
+    ) if summary else ""
+    corpus_cards = summary_card + _corpus_html(report)
     skill_cards = "".join(_skill_card_html(name, skill) for name, skill in _skill_rows(report)) or (
         "<p class='empty-state'>No skills in this corpus.</p>"
     )
@@ -542,6 +575,14 @@ def render_final_report_pdf(report: dict[str, Any]) -> bytes:
             "its verdicts were not trusted.", styles["Normal"],
         ))
     story.append(Spacer(1, 12))
+
+    summary, warning = _summary_parts(report)
+    if summary:
+        story.append(Paragraph("Summary", styles["Heading2"]))
+        story.append(Paragraph(_xml_escape(summary).replace("\n", "<br/>"), styles["Normal"]))
+        if warning:
+            story.append(Paragraph(_xml_escape(warning), styles["Normal"]))
+        story.append(Spacer(1, 10))
 
     for block in _corpus_blocks(report):
         story.append(Paragraph(_xml_escape(block["title"]), styles["Heading2"]))

@@ -20,7 +20,7 @@ from .auditor import audit_corpus
 from .compiler import ON_DUPLICATE_ERROR, compile_corpus
 from .confirm import ConfirmExecutor, confirm_candidates
 from .ir import digest_payload
-from .narrator import NarrationExecutor, narrate_skill
+from .narrator import NarrationExecutor, narrate_corpus, narrate_skill
 from .recommendation import compute_recommendations
 
 FINAL_REPORT_VERSION = "crucible-final-report/v2"
@@ -237,5 +237,6 @@ def build_final_report(
         report["corpus"]["consolidation"] = _consolidation_section(
             corpus_root, ir, confirmation, consolidation_proposer
         )
+    report["executive_summary"] = narrate_corpus(report, narration_executor)
     report["report_digest"] = digest_payload(report)
     return report

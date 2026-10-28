@@ -157,3 +157,76 @@ def test_keep_after_rejections_does_not_claim_there_were_no_findings() -> None:
     result = narrate_skill("s", recommendation, {}, MockNarrationExecutor())
     assert "No findings" not in result["narrative"]
     assert "2 candidate finding(s)" in result["narrative"]
+
+
+class _SummaryExecutor:
+    def __init__(self, output: str) -> None:
+        self.output = output
+        self.prompts: list[str] = []
+
+    def execute(self, system_prompt: str, user_prompt: str):
+        self.prompts.append(user_prompt)
+        return {"output": self.output, "error": None, "model": "fixed", "blocked": False}
+
+
+def _summary_report():
+    return {
+        "skill_count": 3,
+        "summary": {"by_recommendation": {"CONSOLIDATE": 2, "MODIFY": 1}},
+        "corpus": {
+            "consolidation_groups": [
+                {"members": ["a", "b"], "size": 2, "finding_ids": ["finding-0001"], "evidence": ["e"]}
+            ],
+            "contradictions": [],
+            "shared_rule_texts": [],
+            "preconditions": {"checks": [
+                {"check_class": "NORMATIVE_CONFLICT", "outcome": "ABSTAINED",
+                 "requires": "comparable_rule_pairs_by_subject", "observed": 0,
+                 "reason": "no two extracted rules share a normalized subject"},
+                {"check_class": "UNBOUNDED_RETRY", "outcome": "EXERCISED"},
+            ]},
+        },
+        "skills": {
+            "c": {"recommendation": "MODIFY", "confirmed_finding_ids": ["finding-0002"]},
+        },
+    }
+
+
+def test_corpus_summary_flags_an_id_it_was_not_given() -> None:
+    """Invariant: the executive summary may cite only the ids handed to it;
+    any other id is reported as untraceable, not shown as evidence.
+    Mutation: drop check_traceability from narrate_corpus -> red."""
+    from crucible.narrator import narrate_corpus
+
+    executor = _SummaryExecutor("Merge a and b (finding-0001); fix c (finding-0002, finding-0099).")
+    result = narrate_corpus(_summary_report(), executor)
+    assert result["cited_finding_ids"] == ["finding-0001", "finding-0002", "finding-0099"]
+    assert result["untraceable_finding_ids"] == ["finding-0099"]
+
+
+def test_corpus_summary_is_told_which_checks_did_not_run() -> None:
+    """Invariant: the facts given to the model name the abstained checks, so
+    the summary has what it needs not to call them clean.
+    Mutation: omit the abstention line from _corpus_facts -> red."""
+    from crucible.narrator import narrate_corpus
+
+    executor = _SummaryExecutor("ok")
+    narrate_corpus(_summary_report(), executor)
+    [prompt] = executor.prompts
+    assert "Checks not evaluated on this corpus (their input was absent): NORMATIVE_CONFLICT" in prompt
+    assert "UNBOUNDED_RETRY" not in prompt
+
+
+def test_blocked_corpus_summary_is_stated_not_hidden() -> None:
+    from crucible.final_report_render import render_final_report_markdown
+    from crucible.narrator import narrate_corpus
+
+    class Blocked:
+        def execute(self, system_prompt, user_prompt):
+            return {"output": "", "error": "NEBIUS_API_KEY not set", "blocked": True}
+
+    report = _summary_report()
+    report["executive_summary"] = narrate_corpus(report, Blocked())
+    report["skills"] = {}
+    text = render_final_report_markdown(report)
+    assert "Summary not written: NEBIUS_API_KEY not set" in text
