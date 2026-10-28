@@ -106,3 +106,21 @@ The conflict was the same before and after in the reproduction, and the
 merge is now accepted with it. The gate checks that a merge introduces nothing
 new; it does not resolve a conflict the originals already had. The narrated
 report lists that conflict separately, on both skills.
+
+## Found while reviewing the new report paths (fixed, same day)
+
+- **NAME_MISMATCH.** The consolidation proposer returns a name and a text
+  separately. A text declaring another name compiled under that other name,
+  so the coverage check looked up `proposed_name`, found nothing, and passed
+  vacuously. A clean merge in that state was accepted, and the batch would
+  have applied it under a key its own frontmatter contradicts. It is now
+  refused before re-audit. With the guard removed, the test accepts the merge.
+- **RENAMED rewrites.** The same flaw in the new rewrite path: a rewrite that
+  changes `name:` moves every finding to the new name, so every targeted class
+  read as resolved. It is refused as `RENAMED`.
+- **Confirmation keyed by id across recompilation.** Consolidation recompiles
+  the corpus from text, and the confirmation's finding ids matched only
+  because findings sort by content: 0 mismatches over 935 + 1056 findings in
+  `vantaflow` and `mukul975`. Verdicts are now carried over by
+  `(class, skill, evidence)`. A verdict with no counterpart is dropped, so it
+  can leave a pair unconfirmed but cannot attach to a different finding.

@@ -17,6 +17,7 @@ detector without fixing the behaviour), and every suggestion says so.
 from __future__ import annotations
 
 import difflib
+import re
 from typing import Any
 
 from .bob import Proposer, _compile_and_audit
@@ -42,6 +43,15 @@ LIMITATION = (
     "The gate re-audits text only: an accepted rewrite is one the auditor no "
     "longer objects to, not evidence that an agent following it behaves better."
 )
+
+
+_FRONTMATTER_NAME = re.compile(r"\A---\r?\n(?:.*\r?\n)*?name:[ \t]*(.+?)[ \t]*\r?\n")
+
+
+def declared_name(text: str) -> str | None:
+    """The ``name:`` declared in a SKILL.md frontmatter, unquoted, or None."""
+    match = _FRONTMATTER_NAME.match(text)
+    return match.group(1).strip("'\"") if match else None
 
 
 def _diff(before: str, after: str, name: str) -> str:
@@ -118,6 +128,13 @@ def suggest_rewrite(
     repaired[skill_name] = text
     result["proposed_text"] = text
     result["diff"] = _diff(original_text, text, skill_name)
+    if declared_name(text) != declared_name(original_text):
+        # A renamed skill moves its findings to another name, so every
+        # targeted class would read as resolved on the old one.
+        result["outcome"] = OUTCOME_REJECTED
+        result["rejection_reason"] = "RENAMED"
+        result["suggestion_digest"] = digest_payload(result)
+        return result
     try:
         repaired_findings = _compile_and_audit(repaired)["findings"]
     except ValueError as exc:

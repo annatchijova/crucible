@@ -21,6 +21,8 @@ from .confirm import (
 from .consolidation import (
     LLMConsolidationProposer,
     UnionConsolidationProposer,
+    _compile_ir_and_audit,
+    translate_confirmation,
     run_consolidation,
     run_consolidation_batch,
 )
@@ -611,6 +613,10 @@ def _main() -> int:
         )
         confirmation = confirm_candidates(
             audit, artifact, confirm_executor, classes=["SEMANTIC_REDUNDANCY"]
+        )
+        _, text_audit = _compile_ir_and_audit(corpus)
+        confirmation = translate_confirmation(
+            confirmation, audit["findings"], text_audit["findings"]
         )
         if args.consolidate_all:
             report = run_consolidation_batch(

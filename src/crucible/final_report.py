@@ -177,6 +177,7 @@ def _repair_section(
 def _consolidation_section(
     corpus_root: str,
     ir: dict[str, Any],
+    audit: dict[str, Any],
     confirmation: dict[str, Any],
     proposer: Any,
 ) -> dict[str, Any]:
@@ -185,10 +186,12 @@ def _consolidation_section(
     The model only proposes the merged text; whether it is acceptable is the
     deterministic gate's verdict, recorded per group with its reason.
     """
-    from .consolidation import run_consolidation_batch
+    from .consolidation import _compile_ir_and_audit, run_consolidation_batch, translate_confirmation
 
     corpus = _read_corpus(corpus_root, ir)
-    batch = run_consolidation_batch(corpus=corpus, confirmation=confirmation, proposer=proposer)
+    _, text_audit = _compile_ir_and_audit(corpus)
+    translated = translate_confirmation(confirmation, audit["findings"], text_audit["findings"])
+    batch = run_consolidation_batch(corpus=corpus, confirmation=translated, proposer=proposer)
     proposals = []
     for report in batch["reports"]:
         proposal = report.get("proposal") or {}
@@ -292,7 +295,7 @@ def build_final_report(
     }
     if consolidation_proposer is not None and recommendations["consolidation_groups"]:
         report["corpus"]["consolidation"] = _consolidation_section(
-            corpus_root, ir, confirmation, consolidation_proposer
+            corpus_root, ir, audit, confirmation, consolidation_proposer
         )
     if repair_proposer is not None:
         report["corpus"]["repairs"] = _repair_section(

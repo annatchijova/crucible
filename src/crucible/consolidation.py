@@ -75,6 +75,7 @@ from .confirm import _parse_semantic_redundancy_pair
 from .graph import _find_components, build_composition_graph
 from .ir import digest_payload
 from .recommendation import contradiction_identity
+from .repair_suggestions import declared_name
 
 CONSOLIDATION_VERSION = "crucible-consolidation/v1"
 
@@ -108,6 +109,11 @@ REJECTION_REASONS = {
         "the rest of the corpus already had"
     ),
     "COMPILE_ERROR": "the repaired corpus does not compile",
+    "NAME_COLLISION": "the proposed name belongs to a skill outside the cluster",
+    "NAME_MISMATCH": (
+        "the merged text declares a different name from the one it was "
+        "proposed under"
+    ),
     "NO_PROPOSAL": "the proposer did not generate a merge",
     "PROPOSAL_ERROR": "the proposer raised an error",
     "EXTERNAL_REFERENCE_BLOCK": (
@@ -121,6 +127,38 @@ REJECTION_REASONS = {
 # ---------------------------------------------------------------------------
 # Clustering (A)
 # ---------------------------------------------------------------------------
+
+def translate_confirmation(
+    confirmation: dict[str, Any] | None,
+    source_findings: list[dict[str, Any]],
+    target_findings: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    """Re-key a confirmation from one audit's finding ids to another's.
+
+    A confirmation is computed against one audit, and its verdicts are keyed
+    by that audit's finding ids. Consolidation recompiles the corpus from
+    text elsewhere, where ids line up today only because findings sort by
+    content. Matching on (class, skill, evidence) makes that explicit: a
+    verdict whose finding has no counterpart is dropped, so it can only
+    leave a pair unconfirmed, never attach a verdict to a different finding.
+    """
+    if confirmation is None:
+        return None
+
+    def identity(finding: dict[str, Any]) -> tuple[Any, Any, Any]:
+        return finding.get("class"), finding.get("skill"), finding.get("evidence")
+
+    target_ids: dict[tuple[Any, Any, Any], list[str]] = {}
+    for finding in target_findings:
+        target_ids.setdefault(identity(finding), []).append(finding["id"])
+    by_source_id = {f["id"]: identity(f) for f in source_findings}
+    entries = []
+    for entry in confirmation.get("confirmations", []):
+        ids = target_ids.get(by_source_id.get(entry.get("finding_id")), [])
+        if len(ids) == 1:
+            entries.append({**entry, "finding_id": ids[0]})
+    return {**confirmation, "confirmations": entries}
+
 
 def find_redundancy_clusters(
     audit: dict[str, Any], confirmation: dict[str, Any] | None
@@ -791,6 +829,17 @@ def _run_gate_for_cluster(
         return _report(
             base_audit_digest=base_audit_digest, outcome=OUTCOME_REJECTED,
             rejection_reason="NAME_COLLISION", cluster=cluster, proposal=proposal,
+        )
+
+    # The proposer returns a name and a text separately, and nothing makes the
+    # text declare that name. If they differ, the merged skill compiles under
+    # another name: the coverage check finds no skill called proposed_name
+    # and passes vacuously, and an accepted merge would be applied under a
+    # key that disagrees with its own frontmatter.
+    if declared_name(proposed_text) != proposed_name:
+        return _report(
+            base_audit_digest=base_audit_digest, outcome=OUTCOME_REJECTED,
+            rejection_reason="NAME_MISMATCH", cluster=cluster, proposal=proposal,
         )
 
     repaired_corpus = {k: v for k, v in corpus.items() if k not in cluster}

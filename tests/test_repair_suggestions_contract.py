@@ -110,3 +110,27 @@ def test_without_a_key_the_rewrite_is_blocked_not_simulated(tmp_path, monkeypatc
     rewrite = _report(root, LLMProposer())["skills"]["timeouts"]["suggested_rewrite"]
     assert rewrite["outcome"] == "BLOCKED"
     assert rewrite["proposed_text"] is None
+
+
+class Renames:
+    def propose(self, finding, skill_text, context):
+        return {"proposed_text": skill_text.replace("name: timeouts", "name: timeouts-v2", 1),
+                "rationale": "test", "proposer": "renames"}
+
+
+def test_a_rewrite_that_renames_the_skill_is_rejected(tmp_path) -> None:
+    """Invariant: renaming moves every finding to another name, which would
+    read as all targets resolved; it is REJECTED as RENAMED instead.
+    Mutation: drop the declared-name comparison -> ACCEPTED -> red."""
+    root = _write(tmp_path, {"timeouts": _skill("timeouts", "Requests MUST use a 5 second timeout.")})
+    rewrite = _report(root, Renames())["skills"]["timeouts"]["suggested_rewrite"]
+    assert rewrite["outcome"] == "REJECTED"
+    assert rewrite["rejection_reason"] == "RENAMED"
+
+
+def test_declared_name_reads_the_frontmatter_only() -> None:
+    from crucible.repair_suggestions import declared_name
+
+    assert declared_name("---\nname: a\ndescription: x\n---\nname: b\n") == "a"
+    assert declared_name("---\ndescription: x\nname: 'q'\n---\n") == "q"
+    assert declared_name("no frontmatter\nname: c\n") is None

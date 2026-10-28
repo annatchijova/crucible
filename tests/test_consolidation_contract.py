@@ -709,3 +709,57 @@ def test_a_conflict_the_merge_introduces_is_still_new() -> None:
     assert report["outcome"] == OUTCOME_REJECTED
     assert report["rejection_reason"] == "NEW_FINDINGS"
     assert "NORMATIVE_CONFLICT" in report["new_findings"]
+
+
+def test_confirmation_is_translated_by_finding_identity_not_position() -> None:
+    """Invariant: a verdict follows its finding's (class, skill, evidence)
+    across audits; if ids are shuffled, the verdict moves with the finding,
+    and a verdict with no counterpart is dropped rather than misattached.
+    Mutation: copy finding_id across unchanged -> the shuffled verdict lands
+    on another finding -> red."""
+    from crucible.consolidation import translate_confirmation
+
+    source = [
+        {"id": "finding-0001", "class": "A", "skill": "x", "evidence": "e1"},
+        {"id": "finding-0002", "class": "B", "skill": "y", "evidence": "e2"},
+        {"id": "finding-0003", "class": "C", "skill": "z", "evidence": "gone"},
+    ]
+    target = [
+        {"id": "finding-0001", "class": "B", "skill": "y", "evidence": "e2"},
+        {"id": "finding-0002", "class": "A", "skill": "x", "evidence": "e1"},
+    ]
+    confirmation = {"confirmations": [
+        {"finding_id": "finding-0001", "verdict": "CONFIRMED"},
+        {"finding_id": "finding-0002", "verdict": "REJECTED"},
+        {"finding_id": "finding-0003", "verdict": "CONFIRMED"},
+    ]}
+    translated = translate_confirmation(confirmation, source, target)
+    assert translated["confirmations"] == [
+        {"finding_id": "finding-0002", "verdict": "CONFIRMED"},
+        {"finding_id": "finding-0001", "verdict": "REJECTED"},
+    ]
+
+
+class DeclaresAnotherName(NaiveConcatProposer):
+    """A complete, clean merge whose frontmatter declares a different name
+    from the proposed_name it is returned under."""
+
+    def propose_merge(self, cluster_skills, evidence, context):
+        proposal = super().propose_merge(cluster_skills, evidence, context)
+        proposal["proposed_text"] = proposal["proposed_text"].replace(
+            f"name: {self.name}", "name: something-else", 1)
+        return proposal
+
+
+def test_a_merge_declaring_another_name_is_rejected_before_reaudit() -> None:
+    """Invariant: the merged text must declare the proposed name. Otherwise
+    coverage looks up a skill that does not exist and passes vacuously.
+    Mutation: remove the NAME_MISMATCH guard -> this clean merge is
+    ACCEPTED under a name its own text contradicts -> red."""
+    ir, audit = _compile_ir_and_audit(CONSOLIDATION_FIXTURE)
+    report = run_consolidation(
+        corpus=CONSOLIDATION_FIXTURE, confirmation=_confirmed(audit),
+        proposer=DeclaresAnotherName(),
+    )
+    assert report["outcome"] == OUTCOME_REJECTED
+    assert report["rejection_reason"] == "NAME_MISMATCH"
