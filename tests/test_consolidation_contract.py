@@ -495,3 +495,143 @@ def test_batch_is_deterministic() -> None:
         proposer=GenericMergeProposer(),
     )
     assert b1["batch_digest"] == b2["batch_digest"]
+
+
+# ---------------------------------------------------------------------------
+# Gate verdicts must not depend on an unrelated skill's name (G-01, G-03)
+# ---------------------------------------------------------------------------
+
+def _migration_skill(name: str, extra_rule: str = "") -> str:
+    """An unrelated skill that shares one rule text with the retry cluster."""
+    return (
+        f"---\nname: {name}\n"
+        "description: Publish database schema migrations to production clusters.\n"
+        "license: Apache-2.0\n---\n\n# Schema migrations\n\n"
+        "Retries MUST have a finite budget.\n\n"
+        "Migrations MUST be reviewed by a database owner before deployment.\n\n"
+        f"{extra_rule}"
+        "## Checks\n\n- Verify the migration plan: run `scripts/check_migration.sh`.\n"
+    )
+
+
+def _retry_outsider(name: str) -> str:
+    """An unrelated skill lexically redundant with the retry cluster."""
+    return (
+        f"---\nname: {name}\n"
+        "description: Retry failed network calls and requests with a bounded budget.\n"
+        "license: Apache-2.0\n---\n\n# Retry network operations\n\n"
+        "Retries MUST have a finite budget.\n\n"
+        "## Checks\n\n- Verify the retry budget is enforced: run `scripts/check_budget.sh`.\n"
+    )
+
+
+def _confirm_only_retry_pair(audit):
+    return {"confirmations": [
+        {"finding_id": f["id"], "verdict": "CONFIRMED"}
+        for f in audit["findings"]
+        if f["class"] == "SEMANTIC_REDUNDANCY"
+        and f["skill"] == "retry-a" and "with retry-b " in f["evidence"]
+    ]}
+
+
+def test_moved_structural_redundancy_is_not_new_whatever_the_outsider_is_called() -> None:
+    """Invariant: a duplicated rule text already shared with an outside skill
+    is not a new finding after the merge, whether its attribution stays on
+    the merged skill or moves to the outside one. Names are chosen so that
+    "shared-policy" sorts between the members and the merged name (the
+    attribution moves) and "zeta-policy" sorts after it (it does not).
+    Mutation: compare STRUCTURAL_REDUNDANCY by (class, skill) again -> the
+    shared-policy run is REJECTED with NEW_FINDINGS -> red. G-01, observed
+    on vantaflow: docs/evidence/2026-10-24-l16-live-real-corpus."""
+    outcomes = []
+    for outsider in ("shared-policy", "zeta-policy"):
+        corpus = dict(CONSOLIDATION_FIXTURE)
+        corpus[outsider] = _migration_skill(outsider)
+        ir, audit = _compile_ir_and_audit(corpus)
+        report = run_consolidation(
+            corpus=corpus, confirmation=_confirmed(audit),
+            proposer=NaiveConcatProposer(name="standard-retry"),
+        )
+        outcomes.append((report["outcome"], report["new_findings"]))
+    assert outcomes == [(OUTCOME_ACCEPTED, []), (OUTCOME_ACCEPTED, [])]
+
+
+class DuplicatingProposer(NaiveConcatProposer):
+    """A complete merge that also copies one rule verbatim from an
+    unrelated skill, so the merge itself introduces a duplication."""
+
+    def propose_merge(self, cluster_skills, evidence, context):
+        proposal = super().propose_merge(cluster_skills, evidence, context)
+        proposal["proposed_text"] = proposal["proposed_text"].replace(
+            "Retries MUST have a finite budget.\n",
+            "Retries MUST have a finite budget.\n\n"
+            "Migrations MUST be reviewed by a database owner before deployment.\n",
+        )
+        return proposal
+
+
+def test_duplication_introduced_by_the_merge_is_still_new() -> None:
+    """Negative control for the G-01 fix: identifying a duplication by its
+    text must not excuse a text the merge newly duplicates.
+    Mutation: treat every STRUCTURAL_REDUNDANCY on a moved or merged skill
+    as known -> ACCEPTED -> red."""
+    corpus = dict(CONSOLIDATION_FIXTURE)
+    corpus["shared-policy"] = _migration_skill("shared-policy")
+    ir, audit = _compile_ir_and_audit(corpus)
+    report = run_consolidation(
+        corpus=corpus, confirmation=_confirmed(audit),
+        proposer=DuplicatingProposer(name="standard-retry"),
+    )
+    assert report["outcome"] == OUTCOME_REJECTED
+    assert report["rejection_reason"] == "NEW_FINDINGS"
+    assert "STRUCTURAL_REDUNDANCY" in report["new_findings"]
+
+
+def test_persisting_redundancy_is_caught_whatever_the_outsider_is_called() -> None:
+    """Invariant: a merged skill still redundant with an outside skill is
+    REDUNDANCY_PERSISTS whichever name of the pair sorts first -- the
+    finding is attributed to the smaller name, so checking only the
+    attributed skill missed "aaa-retry" and caught "zzz-retry".
+    Mutation: check f["skill"] == proposed_name only -> the aaa-retry run is
+    ACCEPTED -> red. G-03."""
+    outcomes = []
+    for outsider in ("aaa-retry", "zzz-retry"):
+        corpus = dict(CONSOLIDATION_FIXTURE)
+        corpus[outsider] = _retry_outsider(outsider)
+        ir, audit = _compile_ir_and_audit(corpus)
+        report = run_consolidation(
+            corpus=corpus, confirmation=_confirm_only_retry_pair(audit),
+            proposer=NaiveConcatProposer(name="standard-retry"),
+        )
+        assert report["cluster"] == ["retry-a", "retry-b"]
+        outcomes.append((report["outcome"], report["rejection_reason"],
+                         report["redundancy_resolved"]))
+    assert outcomes == [
+        (OUTCOME_REJECTED, "REDUNDANCY_PERSISTS", False),
+        (OUTCOME_REJECTED, "REDUNDANCY_PERSISTS", False),
+    ]
+
+
+# ---------------------------------------------------------------------------
+# redundancy_resolved describes the proposal, not the outcome (G-02)
+# ---------------------------------------------------------------------------
+
+def test_redundancy_resolved_is_measured_not_copied_from_the_outcome() -> None:
+    """Invariant: a merge rejected for a reason other than redundancy still
+    reports that its own redundancy was resolved; one that never reached the
+    re-audit reports None (not evaluated), not False.
+    Mutation: restore redundancy_resolved = (outcome == ACCEPTED) -> the
+    coverage-gap report reads False and the blocked one reads False -> red."""
+    ir, audit = _compile_ir_and_audit(CONSOLIDATION_FIXTURE)
+    gap = run_consolidation(
+        corpus=CONSOLIDATION_FIXTURE, confirmation=_confirmed(audit),
+        proposer=NaiveConcatProposer(drop_check=True),
+    )
+    assert gap["rejection_reason"] == "COVERAGE_GAP"
+    assert gap["redundancy_resolved"] is True
+    blocked = run_consolidation(
+        corpus=CONSOLIDATION_FIXTURE, confirmation=_confirmed(audit),
+        proposer=BlockedProposer(),
+    )
+    assert blocked["outcome"] == OUTCOME_BLOCKED
+    assert blocked["redundancy_resolved"] is None

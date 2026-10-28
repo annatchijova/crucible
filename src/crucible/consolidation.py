@@ -485,11 +485,24 @@ def _check_coverage(
 # Novelty check (D), adapted for a merge
 # ---------------------------------------------------------------------------
 
+def _rule_text(ir: dict[str, Any], skill_name: str, rule_id: str | None) -> str | None:
+    """The text of one rule, looked up by the (skill, rule_id) a finding cites."""
+    for skill in ir.get("skills", []):
+        if skill["identity"]["name"] != skill_name:
+            continue
+        for rule in skill.get("rules", []):
+            if rule.get("id") == rule_id:
+                return rule.get("text")
+    return None
+
+
 def _evaluate_novelty(
     cluster: list[str],
     proposed_name: str,
     original_findings: list[dict[str, Any]],
     repaired_findings: list[dict[str, Any]],
+    original_ir: dict[str, Any],
+    repaired_ir: dict[str, Any],
 ) -> list[dict[str, Any]]:
     """Findings in the repaired audit not already accounted for.
 
@@ -502,6 +515,14 @@ def _evaluate_novelty(
     OTHER, unrelated skill is still compared by exact (class, skill) pair,
     since removing/adding skills can have corpus-wide ripple effects
     (e.g. a newly broken reference, a newly orphaned skill).
+
+    STRUCTURAL_REDUNDANCY is the exception: it is a corpus-level finding
+    about one duplicated rule text, attributed to whichever skill holding
+    that text comes first. Merging a cluster away can move that
+    attribution to an untouched skill without anything new appearing
+    (G-01, docs/evidence/2026-10-24-l16-live-real-corpus). It is compared
+    by its own identity -- the duplicated text -- so a duplication is new
+    only if that text was not already duplicated before the merge.
     """
     cluster_set = set(cluster)
     original_classes_for_cluster = {
@@ -515,12 +536,22 @@ def _evaluate_novelty(
         for f in original_findings
         if f.get("skill") not in cluster_set
     }
+    original_duplicated_texts = {
+        _rule_text(original_ir, f.get("skill", ""), f.get("rule_id"))
+        for f in original_findings
+        if f.get("class") == "STRUCTURAL_REDUNDANCY"
+    }
+    original_duplicated_texts.discard(None)
 
     new_findings: list[dict[str, Any]] = []
     for finding in repaired_findings:
         cls = finding.get("class", "")
         skill = finding.get("skill", "")
-        if skill == proposed_name:
+        if cls == "STRUCTURAL_REDUNDANCY":
+            text = _rule_text(repaired_ir, skill, finding.get("rule_id"))
+            if text is None or text not in original_duplicated_texts:
+                new_findings.append(finding)
+        elif skill == proposed_name:
             if cls in _REDUNDANCY_CLASSES:
                 continue  # handled by the redundancy-gone check
             if cls not in original_classes_for_cluster:
@@ -529,6 +560,20 @@ def _evaluate_novelty(
             if (cls, skill) not in original_pairs_for_others:
                 new_findings.append(finding)
     return new_findings
+
+
+def _involves_skill(finding: dict[str, Any], skill_name: str) -> bool:
+    """Whether a SEMANTIC_REDUNDANCY finding's pair includes ``skill_name``.
+
+    The finding is attributed to the lexicographically smaller name of the
+    pair, so checking only ``finding["skill"]`` misses every pair where the
+    other member sorts first (G-03). The pair is recovered from the
+    evidence; an unparseable one falls back to the attributed skill.
+    """
+    pair = _parse_semantic_redundancy_pair(finding)
+    if pair is None:
+        return finding.get("skill") == skill_name
+    return skill_name in pair[:2]
 
 
 # ---------------------------------------------------------------------------
@@ -720,7 +765,7 @@ def _run_gate_for_cluster(
 
     # Redundancy-gone: the merged skill must not still be redundant.
     redundancy_persists = any(
-        f.get("class") == "SEMANTIC_REDUNDANCY" and f.get("skill") == proposed_name
+        f.get("class") == "SEMANTIC_REDUNDANCY" and _involves_skill(f, proposed_name)
         for f in repaired_audit["findings"]
     )
     if redundancy_persists:
@@ -729,6 +774,7 @@ def _run_gate_for_cluster(
             rejection_reason="REDUNDANCY_PERSISTS", cluster=cluster,
             proposal=proposal, repaired_audit_digest=repaired_audit_digest,
             rewritten_external_references=rewritten_refs,
+            redundancy_resolved=False,
         )
 
     # Coverage.
@@ -745,11 +791,13 @@ def _run_gate_for_cluster(
             repaired_audit_digest=repaired_audit_digest,
             coverage_gaps=coverage_gaps,
             rewritten_external_references=rewritten_refs,
+            redundancy_resolved=True,
         )
 
     # Novelty.
     new_findings = _evaluate_novelty(
-        cluster, proposed_name, audit["findings"], repaired_audit["findings"]
+        cluster, proposed_name, audit["findings"], repaired_audit["findings"],
+        ir, repaired_ir,
     )
     if new_findings:
         return _report(
@@ -758,6 +806,7 @@ def _run_gate_for_cluster(
             repaired_audit_digest=repaired_audit_digest,
             new_findings=[f["class"] for f in new_findings],
             rewritten_external_references=rewritten_refs,
+            redundancy_resolved=True,
         )
 
     return _report(
@@ -765,6 +814,7 @@ def _run_gate_for_cluster(
         rejection_reason=None, cluster=cluster, proposal=proposal,
         repaired_audit_digest=repaired_audit_digest,
         rewritten_external_references=rewritten_refs,
+        redundancy_resolved=True,
     )
 
 
@@ -875,7 +925,13 @@ def _report(
     coverage_gaps: list[dict[str, Any]] | None = None,
     new_findings: list[str] | None = None,
     rewritten_external_references: list[dict[str, str]] | None = None,
+    redundancy_resolved: bool | None = None,
 ) -> dict[str, Any]:
+    # redundancy_resolved describes the PROPOSAL under test: whether, once
+    # applied, the merged skill is no longer part of any SEMANTIC_REDUNDANCY
+    # pair. None means the gate stopped before re-auditing, so it was never
+    # evaluated. It was once ``outcome == ACCEPTED``, which reported a merge
+    # rejected for an unrelated reason as unresolved (G-02).
     report: dict[str, Any] = {
         "consolidation_version": CONSOLIDATION_VERSION,
         "base_audit_digest": base_audit_digest,
@@ -888,7 +944,7 @@ def _report(
         "rejection_reason": rejection_reason,
         "coverage_gaps": coverage_gaps or [],
         "new_findings": new_findings or [],
-        "redundancy_resolved": outcome == OUTCOME_ACCEPTED,
+        "redundancy_resolved": redundancy_resolved,
         "determinism_level": "deterministic_text_only",
         "behavioral_gate": None,
     }

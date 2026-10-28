@@ -134,8 +134,10 @@ the originals did not already have.
 corpus the gate accepted one merge and refused the other. The refusal turned
 out to be a gate defect rather than a bad merge: a corpus-level finding
 re-anchored to an untouched skill once the cluster was merged away, and the
-gate reads a moved finding as a new one. Both that defect and a second one in
-`redundancy_resolved` are recorded in the
+gate read a moved finding as a new one. That defect, a second one in
+`redundancy_resolved` and a third in the redundancy-gone check were fixed on
+2026-10-28 ([gate fixes](evidence/2026-10-28-l16-gate-fixes/FINDINGS.md)). The
+original diagnosis is in the
 [live run record](evidence/2026-10-24-l16-live-real-corpus/FINDINGS.md),
 along with a controlled rerun showing the model varies at temperature 0 while
 the gate's verdict does not.

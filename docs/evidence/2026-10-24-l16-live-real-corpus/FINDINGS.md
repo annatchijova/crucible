@@ -125,6 +125,12 @@ corpus-level finding by its own identity -- the duplicated text and the set of
 skills it spans -- rather than by the skill it happens to be attributed to.
 That is a design change, not a one-line guard.
 
+**Update, 2026-10-28.** G-01 and G-02 are fixed, together with a third defect
+of the same kind (G-03). The G-02 diagnosis above was wrong about the
+mechanism: the field was simply `outcome == ACCEPTED`. See
+[the gate fixes](../2026-10-28-l16-gate-fixes/FINDINGS.md), which also replays
+this slice without a model.
+
 ## Direct evidence of model non-determinism
 
 The repository has carried "one run does not establish stability" as a caveat
