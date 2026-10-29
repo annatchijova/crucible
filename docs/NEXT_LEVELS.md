@@ -231,3 +231,14 @@ Repeat adversarial checks across ingestion, provider responses, oracle semantics
 repair acceptance and rendering. Public hosting needs its own authority, path
 access, resource and privacy review; a local directory endpoint is not evidence
 that public deployment is safe. Record corpus licensing and deployment evidence.
+
+## After the hackathon
+
+None of the three gates above are closed. The hackathon deadline bounds what
+could be built and measured in the time available, not the scope of the
+question. The intent is to keep working past the submission by cloning this
+repository and continuing from the open gates: independent held-out
+evaluation first, since every claim about repair and consolidation quality
+rests on it, then the usable-product and release gates. A submission that
+names its own open gates is more useful to a reviewer, and to whoever
+continues the work, than one that reads as finished.
