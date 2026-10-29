@@ -37,25 +37,33 @@ from .narrator import MockNarrationExecutor, NebiusNarrationExecutor
 
 
 class _Counted:
-    """Forward everything to ``inner`` and count the calls that reach a model."""
+    """Forward everything to ``inner``, count the calls that reach a model,
+    and announce each one on stderr so a live run is visible, not silent."""
 
-    def __init__(self, inner: Any) -> None:
+    def __init__(self, inner: Any, label: str = "") -> None:
         self._inner = inner
         self.calls = 0
+        self._label = label
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._inner, name)
 
-    def execute(self, *args: Any) -> Any:
+    def _announce(self) -> None:
         self.calls += 1
+        if self._label:
+            print(f"  -> model call #{self.calls} ({self._label})...",
+                  file=sys.stderr, flush=True)
+
+    def execute(self, *args: Any) -> Any:
+        self._announce()
         return self._inner.execute(*args)
 
     def propose(self, *args: Any) -> Any:
-        self.calls += 1
+        self._announce()
         return self._inner.propose(*args)
 
     def propose_merge(self, *args: Any) -> Any:
-        self.calls += 1
+        self._announce()
         return self._inner.propose_merge(*args)
 
 
@@ -207,19 +215,22 @@ def _run(args: Any, corpus: str, parser: Any, slice_of: tuple[str, list[str]] | 
         return 2
 
     if args.mock:
-        confirm = _Counted(MockConfirmExecutor())
-        narration = _Counted(MockNarrationExecutor())
-        merger = _Counted(UnionConsolidationProposer())
-        repairer = _Counted(RuleBasedProposer())
+        confirm = _Counted(MockConfirmExecutor(), "confirmation")
+        narration = _Counted(MockNarrationExecutor(), "narration")
+        merger = _Counted(UnionConsolidationProposer(), "consolidation")
+        repairer = _Counted(RuleBasedProposer(), "repair")
     else:
-        confirm = _Counted(NebiusConfirmExecutor())
-        narration = _Counted(NebiusNarrationExecutor())
-        merger = _Counted(LLMConsolidationProposer())
-        repairer = _Counted(LLMProposer())
+        confirm = _Counted(NebiusConfirmExecutor(), "confirmation")
+        narration = _Counted(NebiusNarrationExecutor(), "narration")
+        merger = _Counted(LLMConsolidationProposer(), "consolidation")
+        repairer = _Counted(LLMProposer(), "repair")
         if not confirm.is_available():
             print("NEBIUS_API_KEY is not set; use --mock to check the command", file=sys.stderr)
             return 2
 
+    print("starting... each call below is a real model call, nothing is mocked"
+          if not args.mock else "starting (--mock: deterministic stand-ins, no model)...",
+          file=sys.stderr, flush=True)
     start = time.monotonic()
     report = build_final_report(
         corpus, confirm, narration,
