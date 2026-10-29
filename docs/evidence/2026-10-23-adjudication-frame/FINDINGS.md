@@ -105,11 +105,33 @@ as `UNRESOLVED pending a separately recorded third review`.
   held-out corpora.
 - This frame addresses one of the four requested measurements. False negatives
   need a different instrument: a reviewer reading skills without seeing
-  Crucible's output, so that missed defects can be found. No such frame exists
-  yet.
+  Crucible's output, so that missed defects can be found. That instrument now
+  exists, built minutes later the same day:
+  [`2026-10-23-false-negative-frame`](../2026-10-23-false-negative-frame/FINDINGS.md).
 - `UNRESOLVED` is not a hidden rejection. A stratum's confirmed-of-decided
   ratio excludes unresolved items from the denominator, and the unresolved
   count is reported separately so it cannot be quietly dropped.
+
+## Reviewer setup
+
+`frame.json`'s `corpora` entries carry a `provenance_digest` that binds the
+source repository and commit, but not the URL itself in human-readable form —
+that lives only in the sealed
+[held-out corpus records](../2026-10-23-heldout-corpus-seal/FINDINGS.md). To
+read the source a selected finding points at:
+
+| `corpus_id` | Repository | Commit |
+|---|---|---|
+| `nimadorostkar-claude-skills-collection` | `https://github.com/nimadorostkar/Claude-Skills-collection.git` | `238b95e2aff214d992635975ece6ae9844f61dfd` |
+| `terminalskills-skills` | `https://github.com/TerminalSkills/skills.git` | `20719c32fa1cc0bf4598bd3d2c75c058f8c19ddd` |
+
+On 2026-10-28 both corpora were cloned/checked out at these exact commits and
+every one of the 192 selected findings' `source_file_digest` was re-verified
+against the local file at `source_path`: 192/192 matched, 0 missing, 0
+mismatched. A clone of `TerminalSkills/skills` that predates this commit will
+not contain it until `git fetch`ed — the commit lands on `main` after the
+clone's last fetch, not before it, so a stale local mirror looks like a
+missing-commit error rather than a rewritten-history one.
 
 ## Reproducing
 

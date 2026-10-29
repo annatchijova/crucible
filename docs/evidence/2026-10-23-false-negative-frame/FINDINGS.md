@@ -133,6 +133,35 @@ positives in the buckets that have findings, and 22 of 24 items counted after
   missed, not how much it matters. Ranking missed defects by consequence is a
   separate question.
 
+## 2026-10-28 addendum: reproducibility depends on pinning Crucible's own commit
+
+`frame.PRIVATE.json` was never saved after the original build; only
+`commitment.json`'s digests were committed. Re-running `build_fn_frame.py`
+today against the two pinned corpora, with Crucible at the current branch
+HEAD, reproduced the same `packet_digest` but a **different** `commitment_digest`
+and `frame_digest` — `audit_digest` differed for both corpora even though
+`findings_total` stayed at 178 and 837. Seven `fix(audit)`/`fix(compiler)`
+commits landed between this frame's build (`36db015`, 2026-10-23 20:56) and
+now, changing audit content without changing the aggregate count. The claim
+below that "all four outputs reproduce byte-identically across two runs" held
+only for two runs made at the same Crucible commit; it does not hold against
+a later HEAD, and nothing before this addendum recorded which Crucible commit
+built the frame.
+
+Checking out Crucible at `36db015` and rebuilding against the same two pinned
+corpus commits reproduced `commitment_digest`, `frame_digest` and
+`packet_digest` exactly. The resulting `frame.PRIVATE.json` is now saved
+alongside this file (git-ignored, `*.PRIVATE.json`) so this reconstruction
+does not need to be repeated.
+
+**This session has now read that file's bucket distribution**, which the
+"Limits" section above disqualifies from serving as the blind reviewer: "A
+reviewer must be someone who has not seen the finding counts... neither can
+any session that has read the bucket distribution." No bucket-level number
+was relayed to the user in this conversation, but anyone choosing a reviewer
+should not pick this session, and should be cautious about how much of this
+conversation thread a prospective reviewer reads beforehand.
+
 ## Reproducing
 
 ```text
