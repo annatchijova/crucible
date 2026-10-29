@@ -135,6 +135,25 @@ Las observaciones del modelo están separadas de la autoridad del auditor
 determinista; el [contrato de integración](docs/NVIDIA_INTEGRATION.md) documenta ese
 papel. El [cuadro técnico de niveles](TECHNICAL.md#3-construction-levels) detalla el estado.
 
+## Capturas
+
+Un reporte narrado con modelo real sobre un slice de 4 skills de un corpus
+held-out — resumen, recomendación por skill, y el intento de reescritura
+`llm-nebius`, todo atado a hallazgos que el auditor determinista ya había
+sellado:
+
+![Resumen del reporte narrado](visual/screenshot-narrated-report.png)
+![Detalle por skill del reporte narrado](visual/screenshot-narrated-detail.png)
+
+El mismo motor escaneando las skills instaladas de esta misma autora — 101
+escaneadas, 108 hallazgos, 14 clases de defecto, y cobertura `PARTIAL`
+reportada honestamente en vez de tratar en silencio las 198 skills
+salteadas como si estuvieran limpias:
+
+![Escaneo de skills instaladas](visual/screenshot-installed-scan.png)
+
+Más capturas de esta sesión están en [`visual/`](visual/).
+
 ## Probalo
 
 Necesitás Python 3.11 o posterior.

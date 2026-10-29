@@ -131,6 +131,23 @@ Model observations remain separate from deterministic audit authority; the
 [integration contract](docs/NVIDIA_INTEGRATION.md) records the runtime role.
 Detailed implementation status is in the [technical level table](TECHNICAL.md#3-construction-levels).
 
+## Screenshots
+
+A live-model narrated report over a real four-skill slice of a held-out corpus
+— summary, per-skill recommendation, and the `llm-nebius` rewrite attempt,
+all tied to findings the deterministic auditor already sealed:
+
+![Narrated report summary](visual/screenshot-narrated-report.png)
+![Narrated report, per-skill detail](visual/screenshot-narrated-detail.png)
+
+The same engine scanning this author's own installed skills — 101 scanned,
+108 findings, 14 defect classes, and `PARTIAL` coverage reported honestly
+instead of silently treating the 198 skipped skills as clean:
+
+![Installed-skills scan](visual/screenshot-installed-scan.png)
+
+More screenshots from this session are in [`visual/`](visual/).
+
 ## Run it
 
 Python 3.11 or newer is required.
